@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "dataflow": {
+      "command": "npm",
+      "args": ["run", "mcp", "-w", "server"],
+      "cwd": "C:\\Work\\DataFlow",
+      "env": {
+        "MONGODB_URI": "mongodb://127.0.0.1:27017/dataflow"
+      }
+    }
+  }
+}

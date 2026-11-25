@@ -1,0 +1,28 @@
+{
+  "name": "dataflow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local workflow automation with agent chat and MCP",
+  "type": "module",
+  "workspaces": [
+    "server",
+    "web",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,green \"npm run dev -w server\" \"npm run dev -w web\"",
+    "build": "npm run build -w shared && npm run build -w server && npm run build -w web",
+    "start": "npm run start -w server",
+    "mcp": "npm run mcp -w server",
+    "smoke": "npm run smoke -w server",
+    "smoke:nodes": "npm run smoke:nodes -w server",
+    "sync:api-schemas": "pwsh -File scripts/sync-api-request-schemas.ps1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.2"
+  },
+  "allowScripts": {
+    "msnodesqlv8@6.2.2": true
+  }
+}

@@ -1,0 +1,16 @@
+# Nothing happens without a record you can audit
+# Source: https://n8n.io/enterprise/
+
+See every workflow run, every change, and every action, with the records you need to investigate and audit.
+
+## See how n8n is used across the business
+Insights shows executions, failure rates, and time saved for every workflow, agent, and project.
+
+## Full audit trail, tied to identity
+See who created, edited, or deleted a workflow and when. Every change is tied to a user.
+
+## Step-by-step execution history
+Open any past run to see each step's inputs, outputs, and failures. For agents, see which tools they used and when a human stepped in.
+
+## Logs and metrics in your stack
+Stream audit events, logs, and metrics to Splunk, Datadog, Grafana, or your OpenTelemetry endpoint.

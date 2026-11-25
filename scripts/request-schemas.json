@@ -1,0 +1,7219 @@
+{
+  "wealth": {
+    "Admin_Faq": {
+      "controller": "Admin",
+      "action": "Faq",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Admin_UpdateFaq": {
+      "controller": "Admin",
+      "action": "UpdateFaq",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "integer"
+        },
+        "Company": {
+          "type": "string"
+        },
+        "Question": {
+          "type": "string"
+        },
+        "Answer": {
+          "type": "string"
+        },
+        "Sequence": {
+          "type": "integer"
+        },
+        "DateCreated": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "IsActive": {
+          "type": "boolean"
+        },
+        "Category": {
+          "type": "string"
+        },
+        "EditorAnswer": {
+          "type": "string"
+        },
+        "LastModifiedBy": {
+          "type": "string"
+        },
+        "LastModifiedDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Admin_AddFaq": {
+      "controller": "Admin",
+      "action": "AddFaq",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "integer"
+        },
+        "Company": {
+          "type": "string"
+        },
+        "Question": {
+          "type": "string"
+        },
+        "Answer": {
+          "type": "string"
+        },
+        "Sequence": {
+          "type": "integer"
+        },
+        "DateCreated": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "IsActive": {
+          "type": "boolean"
+        },
+        "Category": {
+          "type": "string"
+        },
+        "EditorAnswer": {
+          "type": "string"
+        },
+        "LastModifiedBy": {
+          "type": "string"
+        },
+        "LastModifiedDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Admin_Notifications": {
+      "controller": "Admin",
+      "action": "Notifications",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Admin_UpdateNotification": {
+      "controller": "Admin",
+      "action": "UpdateNotification",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "integer"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "EditorDescription": {
+          "type": "string"
+        },
+        "MessageType": {
+          "type": "string"
+        },
+        "Priority": {
+          "type": "integer"
+        },
+        "IsActive": {
+          "type": "boolean"
+        },
+        "Popup": {
+          "type": "boolean"
+        },
+        "DateCreated": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "LastUpdated": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Admin_AddNotification": {
+      "controller": "Admin",
+      "action": "AddNotification",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "integer"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "EditorDescription": {
+          "type": "string"
+        },
+        "MessageType": {
+          "type": "string"
+        },
+        "Priority": {
+          "type": "integer"
+        },
+        "IsActive": {
+          "type": "boolean"
+        },
+        "Popup": {
+          "type": "boolean"
+        },
+        "DateCreated": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "LastUpdated": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Admin_DeleteNotification": {
+      "controller": "Admin",
+      "action": "DeleteNotification",
+      "method": "DELETE",
+      "query": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Admin_UserActivityLogsAsync": {
+      "controller": "Admin",
+      "action": "UserActivityLogsAsync",
+      "method": "GET",
+      "query": {
+        "dateTimeStamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "body": {}
+    },
+    "Admin_InsertUserActivityAsync": {
+      "controller": "Admin",
+      "action": "InsertUserActivityAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "integer"
+        },
+        "AspNetUsersId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "SessionID": {
+          "type": "string"
+        },
+        "CurrentPage": {
+          "type": "string"
+        },
+        "PreviousPage": {
+          "type": "string"
+        },
+        "IPAddress": {
+          "type": "string"
+        },
+        "DateTimeStamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        }
+      }
+    },
+    "Admin_RegistrationReportAsync": {
+      "controller": "Admin",
+      "action": "RegistrationReportAsync",
+      "method": "GET",
+      "query": {
+        "dateTimeStamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "body": {}
+    },
+    "Admin_SystemRolesAsync": {
+      "controller": "Admin",
+      "action": "SystemRolesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Admin_SystemUserAsync": {
+      "controller": "Admin",
+      "action": "SystemUserAsync",
+      "method": "GET",
+      "query": {
+        "inputSearch": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Admin_AvailableUserRolesListAsync": {
+      "controller": "Admin",
+      "action": "AvailableUserRolesListAsync",
+      "method": "GET",
+      "query": {
+        "userId": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Admin_CurrentUserRolesList": {
+      "controller": "Admin",
+      "action": "CurrentUserRolesList",
+      "method": "GET",
+      "query": {
+        "userId": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Admin_AddUserRoles": {
+      "controller": "Admin",
+      "action": "AddUserRoles",
+      "method": "POST",
+      "query": {
+        "userid": {
+          "type": "string"
+        },
+        "roleid": {
+          "type": "string"
+        },
+        "addedby": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Admin_DeleteUserRoles": {
+      "controller": "Admin",
+      "action": "DeleteUserRoles",
+      "method": "DELETE",
+      "query": {
+        "userid": {
+          "type": "string"
+        },
+        "roleid": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Admin_Edituser": {
+      "controller": "Admin",
+      "action": "Edituser",
+      "method": "POST",
+      "query": {
+        "id": {
+          "type": "string"
+        },
+        "firstName": {
+          "type": "string"
+        },
+        "lastName": {
+          "type": "string"
+        },
+        "emailConfirmed": {
+          "type": "boolean"
+        },
+        "phoneNumberConfirmed": {
+          "type": "boolean"
+        },
+        "isAccountLocked": {
+          "type": "boolean"
+        },
+        "isActive": {
+          "type": "boolean"
+        },
+        "email": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Admin_GetUserByID": {
+      "controller": "Admin",
+      "action": "GetUserByID",
+      "method": "GET",
+      "query": {
+        "userID": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Admin_SystemUserByEmailAsync": {
+      "controller": "Admin",
+      "action": "SystemUserByEmailAsync",
+      "method": "GET",
+      "query": {
+        "email": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Admin_LinkedPortfoliosAsync": {
+      "controller": "Admin",
+      "action": "LinkedPortfoliosAsync",
+      "method": "GET",
+      "query": {
+        "userid": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Admin_DelinkProfileAsync": {
+      "controller": "Admin",
+      "action": "DelinkProfileAsync",
+      "method": "GET",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "userid": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Admin_LinkProfileAsync": {
+      "controller": "Admin",
+      "action": "LinkProfileAsync",
+      "method": "POST",
+      "query": {
+        "aspUserId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "EmailConfirmed": {
+          "type": "boolean"
+        },
+        "PhoneNumberConfirmed": {
+          "type": "boolean"
+        },
+        "IsAccountLocked": {
+          "type": "boolean"
+        },
+        "IsActive": {
+          "type": "boolean"
+        },
+        "TwoFactorEnabled": {
+          "type": "boolean"
+        },
+        "PhoneNumber": {
+          "type": "string"
+        },
+        "LockoutEndDateUtc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "LockoutEnabled": {
+          "type": "boolean"
+        },
+        "AccessFailedCount": {
+          "type": "integer"
+        },
+        "UserName": {
+          "type": "string"
+        },
+        "LastModifiedBy": {
+          "type": "string"
+        },
+        "LastModifiedDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "PasswordHash": {
+          "type": "string"
+        },
+        "SecurityStamp": {
+          "type": "string"
+        },
+        "AccountLocked": {
+          "type": "boolean"
+        },
+        "Roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "LockoutEnd": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "UserBlockType": {
+          "type": "string"
+        }
+      }
+    },
+    "Admin_SetToDefaultProfileAsync": {
+      "controller": "Admin",
+      "action": "SetToDefaultProfileAsync",
+      "method": "GET",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "userid": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Admin_getWebsiteFaqByCategory": {
+      "controller": "Admin",
+      "action": "getWebsiteFaqByCategory",
+      "method": "GET",
+      "query": {
+        "category": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Admin_getAnswerByQuestionId": {
+      "controller": "Admin",
+      "action": "getAnswerByQuestionId",
+      "method": "GET",
+      "query": {
+        "questionId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Admin_UserNotification": {
+      "controller": "Admin",
+      "action": "UserNotification",
+      "method": "GET",
+      "query": {
+        "AspNetUserId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Admin_UpdateUserNotification": {
+      "controller": "Admin",
+      "action": "UpdateUserNotification",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "PrePostId": {
+          "type": "integer"
+        },
+        "AspNetUserId": {
+          "type": "string"
+        },
+        "IsRead": {
+          "type": "boolean"
+        },
+        "IsVisible": {
+          "type": "boolean"
+        },
+        "ReadDateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "NotificationId": {
+          "type": "integer"
+        }
+      }
+    },
+    "Admin_PostNotificationsAsync": {
+      "controller": "Admin",
+      "action": "PostNotificationsAsync",
+      "method": "GET",
+      "query": {
+        "messageType": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Admin_CheckIfPublicHoliday": {
+      "controller": "Admin",
+      "action": "CheckIfPublicHoliday",
+      "method": "GET",
+      "query": {
+        "dateTime": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "body": {}
+    },
+    "Admin_SetIsMainUserProfileAsync": {
+      "controller": "Admin",
+      "action": "SetIsMainUserProfileAsync",
+      "method": "GET",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "userid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "isMainUser": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "Auth_TokenAuthenticate": {
+      "controller": "Auth",
+      "action": "TokenAuthenticate",
+      "method": "POST",
+      "query": {
+        "token": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Auth_ServiceAuthenticate": {
+      "controller": "Auth",
+      "action": "ServiceAuthenticate",
+      "method": "POST",
+      "query": {
+        "clientId": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Auth_ActivateUserAccountAsync": {
+      "controller": "Auth",
+      "action": "ActivateUserAccountAsync",
+      "method": "POST",
+      "query": {
+        "userId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Auth_LinkedAccountNumbersAsync": {
+      "controller": "Auth",
+      "action": "LinkedAccountNumbersAsync",
+      "method": "GET",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Auth_LinkedAccountNumbersForDocumentsAsync": {
+      "controller": "Auth",
+      "action": "LinkedAccountNumbersForDocumentsAsync",
+      "method": "GET",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Auth_LinkedCrmAccountsAsync": {
+      "controller": "Auth",
+      "action": "LinkedCrmAccountsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Auth_ForgotPasswordAsync": {
+      "controller": "Auth",
+      "action": "ForgotPasswordAsync",
+      "method": "POST",
+      "query": {
+        "username": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Auth_ForgotUsernameAsync": {
+      "controller": "Auth",
+      "action": "ForgotUsernameAsync",
+      "method": "POST",
+      "query": {
+        "identityNumber": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Auth_ChangePasswordAsync": {
+      "controller": "Auth",
+      "action": "ChangePasswordAsync",
+      "method": "GET",
+      "query": {
+        "userId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Auth_ResetPasswordAsync": {
+      "controller": "Auth",
+      "action": "ResetPasswordAsync",
+      "method": "POST",
+      "query": {
+        "username": {
+          "type": "string"
+        },
+        "otp": {
+          "type": "string"
+        },
+        "secret": {
+          "type": "string"
+        },
+        "tempPass": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Auth_UsersByEMailAsync": {
+      "controller": "Auth",
+      "action": "UsersByEMailAsync",
+      "method": "GET",
+      "query": {
+        "email": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Auth_DefaultDynamicsUserIdAsync": {
+      "controller": "Auth",
+      "action": "DefaultDynamicsUserIdAsync",
+      "method": "GET",
+      "query": {
+        "aspUserId": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Auth_RegisterIFARequestAsync": {
+      "controller": "Auth",
+      "action": "RegisterIFARequestAsync",
+      "method": "POST",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "roleName": {
+          "type": "string"
+        }
+      },
+      "body": {
+        "UserName": {
+          "type": "string"
+        },
+        "Password": {
+          "type": "string"
+        },
+        "FirstName": {
+          "type": "string"
+        },
+        "Surname": {
+          "type": "string"
+        },
+        "EMail": {
+          "type": "string"
+        },
+        "PhoneNumber": {
+          "type": "string"
+        },
+        "CrmNumber": {
+          "type": "string"
+        },
+        "IDNumber": {
+          "type": "string"
+        },
+        "SasfinAccountNumber": {
+          "type": "string"
+        },
+        "Consent": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Auth_InvidualRelationsAsync": {
+      "controller": "Auth",
+      "action": "InvidualRelationsAsync",
+      "method": "GET",
+      "query": {
+        "input": {
+          "type": "string"
+        }
+      },
+      "body": {
+        "linkedProfileId": {
+          "type": "string"
+        }
+      }
+    },
+    "Auth_CheckIfCurrentUserIsPrimaryAccountHolderAsync": {
+      "controller": "Auth",
+      "action": "CheckIfCurrentUserIsPrimaryAccountHolderAsync",
+      "method": "GET",
+      "query": {
+        "aspNetUserId": {
+          "type": "string"
+        },
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Auth_ElectiveEventAccountsAsync": {
+      "controller": "Auth",
+      "action": "ElectiveEventAccountsAsync",
+      "method": "GET",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "roleId": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Auth_UpdateUserEmailAsync": {
+      "controller": "Auth",
+      "action": "UpdateUserEmailAsync",
+      "method": "POST",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "aspUserId": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Crm_ClientDetailAsync": {
+      "controller": "Crm",
+      "action": "ClientDetailAsync",
+      "method": "GET",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Crm_LinkPortfolioAsync": {
+      "controller": "Crm",
+      "action": "LinkPortfolioAsync",
+      "method": "POST",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "accountNumber": {
+          "type": "string"
+        },
+        "IdNumber": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Surname": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Crm_UpdateClientDetailAsync": {
+      "controller": "Crm",
+      "action": "UpdateClientDetailAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "clientDetailResult": {
+          "type": "string"
+        }
+      }
+    },
+    "Crm_UpdateSubscriptionsAsync": {
+      "controller": "Crm",
+      "action": "UpdateSubscriptionsAsync",
+      "method": "POST",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "isForex": {
+          "type": "boolean"
+        },
+        "isIndices": {
+          "type": "boolean"
+        },
+        "accountList": {
+          "type": "string"
+        }
+      },
+      "body": {
+        "Initials": {
+          "type": "string"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "IdNumber": {
+          "type": "string"
+        },
+        "FullName": {
+          "type": "string"
+        },
+        "MobilePhone": {
+          "type": "string"
+        },
+        "MobilePhone2": {
+          "type": "string"
+        },
+        "EmailAddress": {
+          "type": "string"
+        },
+        "AccountNumber": {
+          "type": "string"
+        },
+        "_sasfinAccount": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ProductName": {
+          "type": "string"
+        },
+        "Category": {
+          "type": "string"
+        },
+        "Frequency": {
+          "type": "string"
+        },
+        "Subscribed": {
+          "type": "boolean"
+        },
+        "SasfinSubscriptions": {
+          "type": "string"
+        },
+        "SasfinAccounts": {
+          "type": "string"
+        }
+      }
+    },
+    "Crm_IndividualByCrmNo": {
+      "controller": "Crm",
+      "action": "IndividualByCrmNo",
+      "method": "GET",
+      "query": {
+        "crmNo": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Crm_LoadSasfinSubscription": {
+      "controller": "Crm",
+      "action": "LoadSasfinSubscription",
+      "method": "GET",
+      "query": {
+        "clientId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Crm_GetAllSasfinSubscriptionAsync": {
+      "controller": "Crm",
+      "action": "GetAllSasfinSubscriptionAsync",
+      "method": "GET",
+      "query": {
+        "option": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "frequencyId": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Crm_GetSasfinAccounts": {
+      "controller": "Crm",
+      "action": "GetSasfinAccounts",
+      "method": "GET",
+      "query": {
+        "clientId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Crm_CreateSasfinSubscriptionAsync": {
+      "controller": "Crm",
+      "action": "CreateSasfinSubscriptionAsync",
+      "method": "POST",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "isForex": {
+          "type": "boolean"
+        },
+        "isIndices": {
+          "type": "boolean"
+        },
+        "accountlist": {
+          "type": "string"
+        },
+        "frequencyValue": {
+          "type": "string"
+        },
+        "acc": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {
+        "Initials": {
+          "type": "string"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "IdNumber": {
+          "type": "string"
+        },
+        "FullName": {
+          "type": "string"
+        },
+        "MobilePhone": {
+          "type": "string"
+        },
+        "MobilePhone2": {
+          "type": "string"
+        },
+        "EmailAddress": {
+          "type": "string"
+        },
+        "AccountNumber": {
+          "type": "string"
+        },
+        "_sasfinAccount": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ProductName": {
+          "type": "string"
+        },
+        "Category": {
+          "type": "string"
+        },
+        "Frequency": {
+          "type": "string"
+        },
+        "Subscribed": {
+          "type": "boolean"
+        },
+        "SasfinSubscriptions": {
+          "type": "string"
+        },
+        "SasfinAccounts": {
+          "type": "string"
+        }
+      }
+    },
+    "Document_ClientDocumentsAsync": {
+      "controller": "Document",
+      "action": "ClientDocumentsAsync",
+      "method": "GET",
+      "query": {
+        "dynamicUserID": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "accountNumber": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "body": {}
+    },
+    "Document_ExportAsync": {
+      "controller": "Document",
+      "action": "ExportAsync",
+      "method": "GET",
+      "query": {
+        "docId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Document_RegenerateOneTimeInfoslipsURL": {
+      "controller": "Document",
+      "action": "RegenerateOneTimeInfoslipsURL",
+      "method": "GET",
+      "query": {
+        "downloadUrl": {
+          "type": "string"
+        },
+        "sendOptions": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Document_GetDocumentFolders": {
+      "controller": "Document",
+      "action": "GetDocumentFolders",
+      "method": "GET",
+      "query": {
+        "UserCrmId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Document_DeleteDocument": {
+      "controller": "Document",
+      "action": "DeleteDocument",
+      "method": "DELETE",
+      "query": {
+        "docId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Document_GetClientDocumentData": {
+      "controller": "Document",
+      "action": "GetClientDocumentData",
+      "method": "GET",
+      "query": {
+        "docId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Document_GetDynamicsCategories": {
+      "controller": "Document",
+      "action": "GetDynamicsCategories",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Document_GetClientDocumentsByFolder": {
+      "controller": "Document",
+      "action": "GetClientDocumentsByFolder",
+      "method": "GET",
+      "query": {
+        "aspNetUserId": {
+          "type": "string"
+        },
+        "folderName": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Document_UploadClientDocumentAsync": {
+      "controller": "Document",
+      "action": "UploadClientDocumentAsync",
+      "method": "POST",
+      "query": {
+        "uplodeUserID": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "aspUserID": {
+          "type": "string"
+        }
+      },
+      "body": {
+        "DocumentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "UploadToCRMUser": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "DocumentName": {
+          "type": "string"
+        },
+        "CreateDate": {
+          "type": "string"
+        },
+        "CreatedBy": {
+          "type": "string"
+        },
+        "ExpiryDate": {
+          "type": "string"
+        },
+        "DynamicsClassificationTypeString": {
+          "type": "string"
+        },
+        "DynamicsClassificationTypeInt": {
+          "type": "integer"
+        },
+        "DocumentSizeInBytes": {
+          "type": "integer"
+        },
+        "ShareWithSasfin": {
+          "type": "boolean"
+        },
+        "IsActive": {
+          "type": "boolean"
+        },
+        "DocumentFolderId": {
+          "type": "integer"
+        },
+        "FreeText": {
+          "type": "string"
+        },
+        "DocumentData": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "DocumentExtention": {
+          "type": "string"
+        },
+        "ContentType": {
+          "type": "string"
+        }
+      }
+    },
+    "Document_GetIdorPassportNumberAsync": {
+      "controller": "Document",
+      "action": "GetIdorPassportNumberAsync",
+      "method": "GET",
+      "query": {
+        "dynamicUserID": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Document_GetSharePointDocumnetAsync": {
+      "controller": "Document",
+      "action": "GetSharePointDocumnetAsync",
+      "method": "GET",
+      "query": {
+        "url": {
+          "type": "string"
+        },
+        "pass": {
+          "type": "string"
+        },
+        "isPasswordProtected": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "Document_GetGeneralDocumentsAsync": {
+      "controller": "Document",
+      "action": "GetGeneralDocumentsAsync",
+      "method": "GET",
+      "query": {
+        "dynamicUserID": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Manage_GetEmailLog": {
+      "controller": "Manage",
+      "action": "GetEmailLog",
+      "method": "GET",
+      "query": {
+        "startDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "body": {}
+    },
+    "Manage_CurrentPortfolioProvider": {
+      "controller": "Manage",
+      "action": "CurrentPortfolioProvider",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Manage_CurrentMarketDataProvider": {
+      "controller": "Manage",
+      "action": "CurrentMarketDataProvider",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Manage_CheckIfCacheAllDynamics": {
+      "controller": "Manage",
+      "action": "CheckIfCacheAllDynamics",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Market_AddWatchlistAsync": {
+      "controller": "Market",
+      "action": "AddWatchlistAsync",
+      "method": "POST",
+      "query": {
+        "aspUserId": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Market_AddWatchlistSharesAsync": {
+      "controller": "Market",
+      "action": "AddWatchlistSharesAsync",
+      "method": "POST",
+      "query": {
+        "watchListId": {
+          "type": "integer"
+        },
+        "instrumentCode": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Market_ForexAsync": {
+      "controller": "Market",
+      "action": "ForexAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Market_IndicesAsync": {
+      "controller": "Market",
+      "action": "IndicesAsync",
+      "method": "GET",
+      "query": {
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "body": {}
+    },
+    "Market_InstrumentLookupAsync": {
+      "controller": "Market",
+      "action": "InstrumentLookupAsync",
+      "method": "GET",
+      "query": {
+        "lookup": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Market_RemoveWatchlistAsync": {
+      "controller": "Market",
+      "action": "RemoveWatchlistAsync",
+      "method": "DELETE",
+      "query": {
+        "watchListId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Market_RemoveWatchlistSharesAsync": {
+      "controller": "Market",
+      "action": "RemoveWatchlistSharesAsync",
+      "method": "DELETE",
+      "query": {
+        "watchListId": {
+          "type": "integer"
+        },
+        "instrumentCode": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Market_UserWatchlistsAsync": {
+      "controller": "Market",
+      "action": "UserWatchlistsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Market_WatchlistSharesAsync": {
+      "controller": "Market",
+      "action": "WatchlistSharesAsync",
+      "method": "POST",
+      "query": {
+        "watchlistId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Market_TickerAsync": {
+      "controller": "Market",
+      "action": "TickerAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Portfolio_DashboardAsync": {
+      "controller": "Portfolio",
+      "action": "DashboardAsync",
+      "method": "GET",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "crmNumber": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Portfolio_PortfolioAsync": {
+      "controller": "Portfolio",
+      "action": "PortfolioAsync",
+      "method": "GET",
+      "query": {
+        "accountNumber": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "crmNumber": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Portfolio_DMWealthPortfolioAsync": {
+      "controller": "Portfolio",
+      "action": "DMWealthPortfolioAsync",
+      "method": "GET",
+      "query": {
+        "account": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "externalAccount": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Portfolio_TransactionAsync": {
+      "controller": "Portfolio",
+      "action": "TransactionAsync",
+      "method": "GET",
+      "query": {
+        "accountNumber": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "crmNumber": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Portfolio_IsShowPortfolioTab": {
+      "controller": "Portfolio",
+      "action": "IsShowPortfolioTab",
+      "method": "GET",
+      "query": {
+        "crmnumber": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Portfolio_PortfolioExportAsync": {
+      "controller": "Portfolio",
+      "action": "PortfolioExportAsync",
+      "method": "GET",
+      "query": {},
+      "body": {
+        "PortfolioPositions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "MarketMessages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ValuationDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "MarketValue": {
+          "type": "number"
+        },
+        "TotalCash": {
+          "type": "number"
+        },
+        "PortfolioMovement": {
+          "type": "number"
+        },
+        "UnsettledPositions": {
+          "type": "number"
+        },
+        "PreviousMarketValue": {
+          "type": "number"
+        },
+        "PreviousValuationDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "LastUpdateDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "AccountNumber": {
+          "type": "string"
+        },
+        "ReportingCurrency": {
+          "type": "string"
+        },
+        "ValuationMessage": {
+          "type": "string"
+        }
+      }
+    },
+    "Portfolio_UpdateInstrumentsReferenceDataAsync": {
+      "controller": "Portfolio",
+      "action": "UpdateInstrumentsReferenceDataAsync",
+      "method": "POST",
+      "query": {},
+      "body": {}
+    },
+    "Portfolio_GetBankListAsync": {
+      "controller": "Portfolio",
+      "action": "GetBankListAsync",
+      "method": "GET",
+      "query": {
+        "provider": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "offshoreallowance": {
+          "type": "string"
+        },
+        "productDynamics": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Portfolio_GetBankDetailsAsync": {
+      "controller": "Portfolio",
+      "action": "GetBankDetailsAsync",
+      "method": "GET",
+      "query": {
+        "provider": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "bank": {
+          "type": "string"
+        },
+        "productDynamics": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Portfolio_GetSasfinLinkedAccountsAsync": {
+      "controller": "Portfolio",
+      "action": "GetSasfinLinkedAccountsAsync",
+      "method": "GET",
+      "query": {
+        "dynamicsUserId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "crmNumber": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "ReferenceData_CountryAsync": {
+      "controller": "ReferenceData",
+      "action": "CountryAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_TitlesAsync": {
+      "controller": "ReferenceData",
+      "action": "TitlesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    }
+  },
+  "wealthOnline": {
+    "FeeOverrideReport_GenerateAndSendAsync": {
+      "controller": "FeeOverrideReport",
+      "action": "GenerateAndSendAsync",
+      "method": "POST",
+      "query": {
+        "fromDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "body": {}
+    },
+    "Manage_GetNotificationsAsync": {
+      "controller": "Manage",
+      "action": "GetNotificationsAsync",
+      "method": "GET",
+      "query": {
+        "Type": {
+          "type": "string"
+        },
+        "Status": {
+          "type": "string"
+        },
+        "CrmNumber": {
+          "type": "string"
+        },
+        "Recipient": {
+          "type": "string"
+        },
+        "DateFrom": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "DateTo": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Search": {
+          "type": "string"
+        },
+        "SortBy": {
+          "type": "string"
+        },
+        "SortDescending": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "Manage_GetNotificationContentAsync": {
+      "controller": "Manage",
+      "action": "GetNotificationContentAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "PageContent_GetPage": {
+      "controller": "PageContent",
+      "action": "GetPage",
+      "method": "GET",
+      "query": {
+        "page": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "PageContent_GetContent": {
+      "controller": "PageContent",
+      "action": "GetContent",
+      "method": "GET",
+      "query": {
+        "page": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "PageContent_GetAll": {
+      "controller": "PageContent",
+      "action": "GetAll",
+      "method": "GET",
+      "query": {
+        "Page": {
+          "type": "string"
+        },
+        "Key": {
+          "type": "string"
+        },
+        "PageNumber": {
+          "type": "integer"
+        },
+        "PageSize": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "PageContent_GetPages": {
+      "controller": "PageContent",
+      "action": "GetPages",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "PageContent_Delete": {
+      "controller": "PageContent",
+      "action": "Delete",
+      "method": "POST",
+      "query": {
+        "page": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "PageContent_Save": {
+      "controller": "PageContent",
+      "action": "Save",
+      "method": "POST",
+      "query": {
+        "page": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      },
+      "body": {
+        "Content": {
+          "type": "string"
+        }
+      }
+    },
+    "UserManagement_GetUsersAsync": {
+      "controller": "UserManagement",
+      "action": "GetUsersAsync",
+      "method": "GET",
+      "query": {
+        "search": {
+          "type": "string"
+        },
+        "page": {
+          "type": "integer"
+        },
+        "pageSize": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "UserManagement_GetUserByIdAsync": {
+      "controller": "UserManagement",
+      "action": "GetUserByIdAsync",
+      "method": "GET",
+      "query": {
+        "userId": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "UserManagement_GetAvailableRolesAsync": {
+      "controller": "UserManagement",
+      "action": "GetAvailableRolesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "UserManagement_UpdateUserRolesAsync": {
+      "controller": "UserManagement",
+      "action": "UpdateUserRolesAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "UserId": {
+          "type": "string"
+        },
+        "Roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Account_LoginAsync": {
+      "controller": "Account",
+      "action": "LoginAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Username": {
+          "type": "string"
+        },
+        "Password": {
+          "type": "string"
+        },
+        "RememberMe": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Account_RefreshAsync": {
+      "controller": "Account",
+      "action": "RefreshAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Token": {
+          "type": "string"
+        },
+        "RefreshToken": {
+          "type": "string"
+        }
+      }
+    },
+    "Account_Verify": {
+      "controller": "Account",
+      "action": "Verify",
+      "method": "GET",
+      "query": {
+        "token": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Account_GetUserInformation": {
+      "controller": "Account",
+      "action": "GetUserInformation",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Account_GetRoles": {
+      "controller": "Account",
+      "action": "GetRoles",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Account_LogoutAsync": {
+      "controller": "Account",
+      "action": "LogoutAsync",
+      "method": "POST",
+      "query": {
+        "userId": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Account_ForgotUsernameWealthAsync": {
+      "controller": "Account",
+      "action": "ForgotUsernameWealthAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "IdentityNumber": {
+          "type": "string"
+        },
+        "Recaptcha": {
+          "type": "string"
+        }
+      }
+    },
+    "Account_ResendForgotUsernameWealthAsync": {
+      "controller": "Account",
+      "action": "ResendForgotUsernameWealthAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "IdentityNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "Account_ForgotPasswordWealthAsync": {
+      "controller": "Account",
+      "action": "ForgotPasswordWealthAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Username": {
+          "type": "string"
+        },
+        "Recaptcha": {
+          "type": "string"
+        }
+      }
+    },
+    "Account_GetResetPasswordTokenAsync": {
+      "controller": "Account",
+      "action": "GetResetPasswordTokenAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Username": {
+          "type": "string"
+        },
+        "Otp": {
+          "type": "string"
+        }
+      }
+    },
+    "Account_ResetPasswordWealthAsync": {
+      "controller": "Account",
+      "action": "ResetPasswordWealthAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Username": {
+          "type": "string"
+        },
+        "Token": {
+          "type": "string"
+        },
+        "NewPassword": {
+          "type": "string"
+        }
+      }
+    },
+    "Account_ResendOtpSmsAsync": {
+      "controller": "Account",
+      "action": "ResendOtpSmsAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Username": {
+          "type": "string"
+        }
+      }
+    },
+    "Account_ConfirmPersonalDetailsAsync": {
+      "controller": "Account",
+      "action": "ConfirmPersonalDetailsAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ConfirmedPersonalEmail": {
+          "type": "string"
+        },
+        "ConfirmedPersonalPhone": {
+          "type": "string"
+        },
+        "IsChanged": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Account_GetOtpDeliveryChannelAsync": {
+      "controller": "Account",
+      "action": "GetOtpDeliveryChannelAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Account_UpdateOtpDeliveryChannelAsync": {
+      "controller": "Account",
+      "action": "UpdateOtpDeliveryChannelAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Channel": {
+          "type": "string"
+        }
+      }
+    },
+    "Account_SendTestOtpAsync": {
+      "controller": "Account",
+      "action": "SendTestOtpAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Channel": {
+          "type": "string"
+        },
+        "PhoneNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "HubTicket_CreateAsync": {
+      "controller": "HubTicket",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {}
+    },
+    "Register_RegisterAsync": {
+      "controller": "Register",
+      "action": "RegisterAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Username": {
+          "type": "string"
+        },
+        "Password": {
+          "type": "string"
+        },
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "Consent": {
+          "type": "boolean"
+        },
+        "IdNumber": {
+          "type": "string"
+        },
+        "PassportNumber": {
+          "type": "string"
+        },
+        "Recaptcha": {
+          "type": "string"
+        }
+      }
+    },
+    "Register_UsernameExistAsync": {
+      "controller": "Register",
+      "action": "UsernameExistAsync",
+      "method": "GET",
+      "query": {
+        "username": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Register_ConfirmEmailAsync": {
+      "controller": "Register",
+      "action": "ConfirmEmailAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Username": {
+          "type": "string"
+        },
+        "IdentificationNumber": {
+          "type": "string"
+        },
+        "Code": {
+          "type": "string"
+        }
+      }
+    },
+    "Register_ConfirmPhoneAsync": {
+      "controller": "Register",
+      "action": "ConfirmPhoneAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Username": {
+          "type": "string"
+        },
+        "IdentificationNumber": {
+          "type": "string"
+        },
+        "Code": {
+          "type": "string"
+        }
+      }
+    },
+    "Register_SendConfirmSmsAsync": {
+      "controller": "Register",
+      "action": "SendConfirmSmsAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Username": {
+          "type": "string"
+        },
+        "IdentificationNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "Register_ResendEmailConfirmationAsync": {
+      "controller": "Register",
+      "action": "ResendEmailConfirmationAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Username": {
+          "type": "string"
+        },
+        "IdentificationNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "Register_GetUserStatusAsync": {
+      "controller": "Register",
+      "action": "GetUserStatusAsync",
+      "method": "GET",
+      "query": {
+        "username": {
+          "type": "string"
+        },
+        "identificationNumber": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_GetGeneralDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetGeneralDetailsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdateGeneralDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdateGeneralDetailsAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "AnotherSasfinAccount": {
+          "type": "boolean"
+        },
+        "AnotherAccountNumber": {
+          "type": "string"
+        },
+        "HaveYouEverBeenDeclaredInsolvent": {
+          "type": "boolean"
+        },
+        "InsolvencyDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "CaseNumber": {
+          "type": "string"
+        },
+        "AdditionalNotes": {
+          "type": "string"
+        }
+      }
+    },
+    "AccountOnboarding_GetBankingDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetBankingDetailsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdateBankingDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdateBankingDetailsAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "AccountNumber": {
+          "type": "string"
+        },
+        "AccountHolder": {
+          "type": "string"
+        },
+        "IsInternationalBank": {
+          "type": "boolean"
+        },
+        "AccountType": {
+          "type": "string"
+        },
+        "BankId": {
+          "type": "integer"
+        },
+        "BankName": {
+          "type": "string"
+        },
+        "BankNameOther": {
+          "type": "string"
+        },
+        "BranchCodeId": {
+          "type": "integer"
+        },
+        "BranchCodeName": {
+          "type": "string"
+        },
+        "BranchCodeOther": {
+          "type": "string"
+        },
+        "BranchName": {
+          "type": "string"
+        },
+        "InternationalCurrency": {
+          "type": "string"
+        },
+        "InternationalSwiftAddress": {
+          "type": "string"
+        },
+        "InternationalSwiftCode": {
+          "type": "string"
+        },
+        "InternationalStreetName": {
+          "type": "string"
+        },
+        "InternationalIbanNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "AccountOnboarding_GetIntroducerDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetIntroducerDetailsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdateIntroducerDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdateIntroducerDetailsAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "NameOfIntroducer": {
+          "type": "string"
+        },
+        "FspName": {
+          "type": "string"
+        },
+        "FspNumber": {
+          "type": "string"
+        },
+        "IsThisAnIfaIntroduction": {
+          "type": "boolean"
+        }
+      }
+    },
+    "AccountOnboarding_GetFatcaDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetFatcaDetailsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdateFatcaDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdateFatcaDetailsAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "IsForeignCitizenOrResident": {
+          "type": "boolean"
+        },
+        "ForeignCitizenshipAddress": {
+          "type": "string"
+        },
+        "HasPowerOfAttorneyWithForeignAddress": {
+          "type": "boolean"
+        },
+        "PowerOfAttorneyAddress": {
+          "type": "string"
+        },
+        "HasForeignTransferInstructions": {
+          "type": "boolean"
+        },
+        "ForeignTransferAddress": {
+          "type": "string"
+        },
+        "HasForeignSignatory": {
+          "type": "boolean"
+        },
+        "ForeignSignatoryAddress": {
+          "type": "string"
+        },
+        "RegisteredForUSTax": {
+          "type": "boolean"
+        },
+        "TaxResidencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "AccountOnboarding_GetFinancialPlannerDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetFinancialPlannerDetailsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdateFinancialPlannerDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdateFinancialPlannerDetailsAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "FinancialPlannerName": {
+          "type": "string"
+        },
+        "FinancialPlannerIdNumber": {
+          "type": "string"
+        }
+      }
+    },
+    "AccountOnboarding_GetSourceOfFundsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetSourceOfFundsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdateSourceOfFundsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdateSourceOfFundsAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "SourceOfFunds": {
+          "type": "string"
+        },
+        "SourceOfFundsOther": {
+          "type": "string"
+        }
+      }
+    },
+    "AccountOnboarding_GetSourceOfIncomeAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetSourceOfIncomeAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdateSourceOfIncomeAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdateSourceOfIncomeAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "SourceOfIncome": {
+          "type": "string"
+        },
+        "SourceOfIncomeOther": {
+          "type": "string"
+        },
+        "BusinessName": {
+          "type": "string"
+        },
+        "NatureOfBusiness": {
+          "type": "string"
+        },
+        "EstimatedAnnualTurnover": {
+          "type": "number"
+        },
+        "JobTitle": {
+          "type": "string"
+        },
+        "IndustrySectorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IndustrySector": {
+          "type": "string"
+        }
+      }
+    },
+    "AccountOnboarding_GetCsdpDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetCsdpDetailsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdateCsdpDetailsAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdateCsdpDetailsAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "HasSecuritiesCSDP": {
+          "type": "boolean"
+        },
+        "SecuritiesCsdpName": {
+          "type": "string"
+        },
+        "SecuritiesCsdpAccountNumber": {
+          "type": "string"
+        },
+        "SecuritiesCsdpBranchCodeId": {
+          "type": "integer"
+        },
+        "SecuritiesCsdpBranchCodeName": {
+          "type": "string"
+        },
+        "SecuritiesCsdpBranchCodeOther": {
+          "type": "string"
+        },
+        "SecuritiesCsdpSCRIPAccountNumber": {
+          "type": "string"
+        },
+        "SecuritiesCsdpBankBicCode": {
+          "type": "string"
+        },
+        "SecuritiesCsdpStrateBusinessPartner": {
+          "type": "string"
+        },
+        "CashSettlementAgentAccountNumber": {
+          "type": "string"
+        },
+        "CashSettlementAgentTypeOfAccount": {
+          "type": "string"
+        },
+        "CashSettlementAgentSCRIPAccountNumber": {
+          "type": "string"
+        },
+        "CashSettlementAgentBankBicCode": {
+          "type": "string"
+        },
+        "CashSettlementAgentStrateBusinessPartner": {
+          "type": "string"
+        },
+        "CashSettlementAgentBankId": {
+          "type": "integer"
+        },
+        "CashSettlementAgentBankName": {
+          "type": "string"
+        },
+        "CashSettlementAgentBankNameOther": {
+          "type": "string"
+        },
+        "CashSettlementAgentBranchCodeId": {
+          "type": "integer"
+        },
+        "CashSettlementAgentBranchCodeName": {
+          "type": "string"
+        },
+        "CashSettlementAgentBranchCodeOther": {
+          "type": "string"
+        }
+      }
+    },
+    "AccountOnboarding_GetFinancialProfileAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetFinancialProfileAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdateFinancialProfileAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdateFinancialProfileAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "ReferredByFinancialPlanner": {
+          "type": "boolean"
+        },
+        "InvestmentPurpose": {
+          "type": "string"
+        },
+        "InvestmentPurposeComment": {
+          "type": "string"
+        },
+        "OverarchingIntention": {
+          "type": "string"
+        },
+        "IncomeRate": {
+          "type": "string"
+        },
+        "IncomeRateComment": {
+          "type": "string"
+        },
+        "OverarchingIntentionRegion": {
+          "type": "string"
+        },
+        "AgeGroup": {
+          "type": "string"
+        },
+        "AgeGroupComment": {
+          "type": "string"
+        },
+        "InvestmentHorizon": {
+          "type": "string"
+        },
+        "InvestmentHorizonComment": {
+          "type": "string"
+        },
+        "IsRetiree": {
+          "type": "boolean"
+        },
+        "RetireeComment": {
+          "type": "string"
+        },
+        "InvestmentExperience": {
+          "type": "string"
+        },
+        "InvestmentExperienceComment": {
+          "type": "string"
+        },
+        "InvestmentAsPercentOfAssets": {
+          "type": "string"
+        },
+        "InvestmentAsPercentOfAssetsComment": {
+          "type": "string"
+        },
+        "AttitudeToRisk": {
+          "type": "string"
+        },
+        "AttitudeToRiskComment": {
+          "type": "string"
+        },
+        "HasLiquidAssets": {
+          "type": "string"
+        },
+        "HasLiquidAssetsComment": {
+          "type": "string"
+        },
+        "MaxPortfolioDropConcern": {
+          "type": "string"
+        },
+        "MaxPortfolioDropConcernComment": {
+          "type": "string"
+        },
+        "ReactionTo30PercentLoss": {
+          "type": "string"
+        },
+        "ReactionTo30PercentLossComment": {
+          "type": "string"
+        },
+        "AdditionalRiskInfo": {
+          "type": "string"
+        },
+        "OtherFinancialNeedsComment": {
+          "type": "string"
+        }
+      }
+    },
+    "AccountOnboarding_GetPowerOfAttorneyAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetPowerOfAttorneyAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdatePowerOfAttorneyAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdatePowerOfAttorneyAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "ContactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "PowerOfAttorneyExist": {
+          "type": "boolean"
+        },
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "IdentityNumber": {
+          "type": "string"
+        },
+        "TitleId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Initials": {
+          "type": "string"
+        },
+        "EmailAddress": {
+          "type": "string"
+        },
+        "MobileNumber": {
+          "type": "string"
+        },
+        "HomeNumber": {
+          "type": "string"
+        },
+        "WorkNumber": {
+          "type": "string"
+        },
+        "RelationshipToClient": {
+          "type": "string"
+        },
+        "AddressForm": {
+          "type": "string"
+        }
+      }
+    },
+    "AccountOnboarding_GetInvestmentSummaryAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetInvestmentSummaryAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdateFeeManagedAccountAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdateFeeManagedAccountAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "LocalPortfolioManagementFeeRate": {
+          "type": "number"
+        },
+        "ForeignPortfolioManagementFeeRate": {
+          "type": "number"
+        }
+      }
+    },
+    "AccountOnboarding_ConfirmDataProcessingConsentAsync": {
+      "controller": "AccountOnboarding",
+      "action": "ConfirmDataProcessingConsentAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_UpdateOnboardingProgressAsync": {
+      "controller": "AccountOnboarding",
+      "action": "UpdateOnboardingProgressAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "CurrentStep": {
+          "type": "string"
+        }
+      }
+    },
+    "AccountOnboarding_NotifyClientOnboardingReadyAsync": {
+      "controller": "AccountOnboarding",
+      "action": "NotifyClientOnboardingReadyAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_GetOnboardingMetadataAsync": {
+      "controller": "AccountOnboarding",
+      "action": "GetOnboardingMetadataAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AccountOnboarding_SearchSasfinAccountByUniqueNumberAsync": {
+      "controller": "AccountOnboarding",
+      "action": "SearchSasfinAccountByUniqueNumberAsync",
+      "method": "GET",
+      "query": {
+        "uniqueNumber": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_CreateOnboardingAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "CreateOnboardingAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ProposalUserData": {
+          "type": "string"
+        },
+        "MandateandProviderDetails": {
+          "type": "string"
+        },
+        "AdvisorDetails": {
+          "type": "string"
+        }
+      }
+    },
+    "AdvisorOnboarding_GetOnboardingByIdAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "GetOnboardingByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_UpdateOnboardingAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "UpdateOnboardingAsync",
+      "method": "POST",
+      "query": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "Id": {
+          "type": "integer"
+        },
+        "IsReadyForClient": {
+          "type": "boolean"
+        },
+        "OnboardingStatus": {
+          "type": "string"
+        },
+        "UpdatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "CancellationReason": {
+          "type": "string"
+        },
+        "ProposalUserData": {
+          "type": "string"
+        },
+        "MandateAndProviderDetails": {
+          "type": "string"
+        },
+        "ObjectivesFinancialNeedsAnalysis": {
+          "type": "string"
+        },
+        "PortfolioSelection": {
+          "type": "string"
+        },
+        "InvestmentFees": {
+          "type": "string"
+        },
+        "AdvisorDetails": {
+          "type": "string"
+        }
+      }
+    },
+    "AdvisorOnboarding_CancelOnboardingAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "CancelOnboardingAsync",
+      "method": "POST",
+      "query": {
+        "id": {
+          "type": "integer"
+        },
+        "cancellationReason": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_GetCreatorOnboardingsAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "GetCreatorOnboardingsAsync",
+      "method": "GET",
+      "query": {
+        "Search": {
+          "type": "string"
+        },
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "CrmNumber": {
+          "type": "string"
+        },
+        "IdentityOrPassport": {
+          "type": "string"
+        },
+        "SortBy": {
+          "type": "string"
+        },
+        "SortDescending": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_GetOnboardingsForReviewAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "GetOnboardingsForReviewAsync",
+      "method": "GET",
+      "query": {
+        "Search": {
+          "type": "string"
+        },
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "CrmNumber": {
+          "type": "string"
+        },
+        "IdentityOrPassport": {
+          "type": "string"
+        },
+        "SortBy": {
+          "type": "string"
+        },
+        "SortDescending": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_SendOnboardingToApprovalAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "SendOnboardingToApprovalAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_ApproveOnboardingAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "ApproveOnboardingAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_ReturnForCorrectionAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "ReturnForCorrectionAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_LockOnboardingReviewAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "LockOnboardingReviewAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_UnlockOnboardingReviewAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "UnlockOnboardingReviewAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_RequestUnlockOnboardingReviewAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "RequestUnlockOnboardingReviewAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_GetOnboardingReviewersAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "GetOnboardingReviewersAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_ReassignOnboardingReviewAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "ReassignOnboardingReviewAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        },
+        "newReviewerId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_ForceUnlockOnboardingReviewAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "ForceUnlockOnboardingReviewAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_CompleteOnboadingAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "CompleteOnboadingAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_HandleMandateSignedAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "HandleMandateSignedAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "AdvisorOnboarding_GetChangeHistoryAsync": {
+      "controller": "AdvisorOnboarding",
+      "action": "GetChangeHistoryAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "ClientOnboarding_StartClientOnboardingAsync": {
+      "controller": "ClientOnboarding",
+      "action": "StartClientOnboardingAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "ClientOnboarding_CompleteClientOnboardingAsync": {
+      "controller": "ClientOnboarding",
+      "action": "CompleteClientOnboardingAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "ClientOnboarding_StartAccountOnboardingAsync": {
+      "controller": "ClientOnboarding",
+      "action": "StartAccountOnboardingAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "ClientOnboarding_GetPersonalDetailsAsync": {
+      "controller": "ClientOnboarding",
+      "action": "GetPersonalDetailsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "ClientOnboarding_GetContactDetailsAsync": {
+      "controller": "ClientOnboarding",
+      "action": "GetContactDetailsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "ClientOnboarding_GetAddressDetailsAsync": {
+      "controller": "ClientOnboarding",
+      "action": "GetAddressDetailsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "ClientOnboarding_GetEmploymentDetailsAsync": {
+      "controller": "ClientOnboarding",
+      "action": "GetEmploymentDetailsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "ClientOnboarding_UpdatePersonalDetailsAsync": {
+      "controller": "ClientOnboarding",
+      "action": "UpdatePersonalDetailsAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "ContactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CrmNumber": {
+          "type": "string"
+        },
+        "TitleId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Initials": {
+          "type": "string"
+        },
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "MiddleName": {
+          "type": "string"
+        },
+        "MaritalStatus": {
+          "type": "string"
+        },
+        "IdentificationTypeCode": {
+          "type": "integer"
+        },
+        "IdentificationType": {
+          "type": "string"
+        },
+        "IdentificationNumber": {
+          "type": "string"
+        },
+        "PassportNumber": {
+          "type": "string"
+        },
+        "IsSouthAfricanTaxResident": {
+          "type": "boolean"
+        },
+        "SouthAfricanTaxNumber": {
+          "type": "string"
+        },
+        "PassportIssueDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "PassportExpiryDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "GenderCode": {
+          "type": "integer"
+        },
+        "Gender": {
+          "type": "string"
+        },
+        "DateOfBirth": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Age": {
+          "type": "integer"
+        },
+        "CountryOfBirthId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CountryOfBirth": {
+          "type": "string"
+        },
+        "TownOrCityOfBirth": {
+          "type": "string"
+        },
+        "CitizenshipId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Citizenship": {
+          "type": "string"
+        },
+        "NationalityId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Nationality": {
+          "type": "string"
+        },
+        "HasDualCitizenship": {
+          "type": "boolean"
+        },
+        "ConsentToReceiveMarketing": {
+          "type": "boolean"
+        },
+        "ReasonForNoTaxNumberCode": {
+          "type": "integer"
+        },
+        "ReasonForNoTaxNumber": {
+          "type": "string"
+        },
+        "ProvisionalTaxPayer": {
+          "type": "boolean"
+        },
+        "DualCitizenship": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "CountryOfResidenceId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CountryOfResidence": {
+          "type": "string"
+        },
+        "RegisteredForTaxInUsa": {
+          "type": "boolean"
+        },
+        "EmigratedFromSA": {
+          "type": "boolean"
+        },
+        "HasFinanciallyEmigrated": {
+          "type": "boolean"
+        },
+        "HasFormallyEmigrated": {
+          "type": "boolean"
+        },
+        "DateOfEmigration": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ClientOnboarding_UpdateContactDetailsAsync": {
+      "controller": "ClientOnboarding",
+      "action": "UpdateContactDetailsAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "ContactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Mobile": {
+          "type": "string"
+        },
+        "Email": {
+          "type": "string"
+        },
+        "Home": {
+          "type": "string"
+        },
+        "Work": {
+          "type": "string"
+        }
+      }
+    },
+    "ClientOnboarding_UpdateAddressDetailsAsync": {
+      "controller": "ClientOnboarding",
+      "action": "UpdateAddressDetailsAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "ContactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "PhysicalAddress": {
+          "type": "string"
+        },
+        "PostalAddress": {
+          "type": "string"
+        },
+        "SameAsPhysicalAddress": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ClientOnboarding_UpdateEmploymentDetailsAsync": {
+      "controller": "ClientOnboarding",
+      "action": "UpdateEmploymentDetailsAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "ContactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "EmployerName": {
+          "type": "string"
+        },
+        "Occupation": {
+          "type": "string"
+        },
+        "IndustrySectorId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IndustrySector": {
+          "type": "string"
+        },
+        "DateEmployed": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "BuildingNumber": {
+          "type": "string"
+        },
+        "BuildingName": {
+          "type": "string"
+        },
+        "StreetNumber": {
+          "type": "string"
+        },
+        "StreetName": {
+          "type": "string"
+        },
+        "Suburb": {
+          "type": "string"
+        },
+        "TownCity": {
+          "type": "string"
+        },
+        "Province": {
+          "type": "string"
+        },
+        "PostalCode": {
+          "type": "string"
+        },
+        "ForeignProvince": {
+          "type": "string"
+        },
+        "CountryId": {
+          "type": "string"
+        }
+      }
+    },
+    "ClientOnboarding_UpdateOnboardingProgressAsync": {
+      "controller": "ClientOnboarding",
+      "action": "UpdateOnboardingProgressAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "CurrentStep": {
+          "type": "string"
+        }
+      }
+    },
+    "ClientOnboarding_NotifyClientOnboardingReadyAsync": {
+      "controller": "ClientOnboarding",
+      "action": "NotifyClientOnboardingReadyAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "ClientOnboarding_GetOnboardingMetadataAsync": {
+      "controller": "ClientOnboarding",
+      "action": "GetOnboardingMetadataAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "IfaClients_ListAsync": {
+      "controller": "IfaClients",
+      "action": "ListAsync",
+      "method": "GET",
+      "query": {
+        "page": {
+          "type": "integer"
+        },
+        "pageSize": {
+          "type": "integer"
+        },
+        "search": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "IfaClients_GetByIdAsync": {
+      "controller": "IfaClients",
+      "action": "GetByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "IfaDashboard_GetAsync": {
+      "controller": "IfaDashboard",
+      "action": "GetAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Proposal_GetCurrentProposalIdAsync": {
+      "controller": "Proposal",
+      "action": "GetCurrentProposalIdAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Proposal_GetCurrentOnboardingsInfoAsync": {
+      "controller": "Proposal",
+      "action": "GetCurrentOnboardingsInfoAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Proposal_GetProposalsAsync": {
+      "controller": "Proposal",
+      "action": "GetProposalsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Proposal_GetProposalsForReviewAsync": {
+      "controller": "Proposal",
+      "action": "GetProposalsForReviewAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Proposal_GetProposalWithDocumentByIdAsync": {
+      "controller": "Proposal",
+      "action": "GetProposalWithDocumentByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_AcceptProposalAsync": {
+      "controller": "Proposal",
+      "action": "AcceptProposalAsync",
+      "method": "POST",
+      "query": {
+        "proposalId": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_AcceptWithRequestProposalAsync": {
+      "controller": "Proposal",
+      "action": "AcceptWithRequestProposalAsync",
+      "method": "POST",
+      "query": {
+        "proposalId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_DeclineWithRequestProposalAsync": {
+      "controller": "Proposal",
+      "action": "DeclineWithRequestProposalAsync",
+      "method": "POST",
+      "query": {
+        "proposalId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_DeclineProposalAsync": {
+      "controller": "Proposal",
+      "action": "DeclineProposalAsync",
+      "method": "POST",
+      "query": {
+        "proposalId": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_CompleteOnboadingAsync": {
+      "controller": "Proposal",
+      "action": "CompleteOnboadingAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_HandleMandateSignedAsync": {
+      "controller": "Proposal",
+      "action": "HandleMandateSignedAsync",
+      "method": "POST",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_GetCreatorProposalsAsync": {
+      "controller": "Proposal",
+      "action": "GetCreatorProposalsAsync",
+      "method": "GET",
+      "query": {
+        "Search": {
+          "type": "string"
+        },
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "CrmNumber": {
+          "type": "string"
+        },
+        "IdentityOrPassport": {
+          "type": "string"
+        },
+        "SortBy": {
+          "type": "string"
+        },
+        "SortDescending": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_GetProposalByIdAsync": {
+      "controller": "Proposal",
+      "action": "GetProposalByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_UpdateProposalAsync": {
+      "controller": "Proposal",
+      "action": "UpdateProposalAsync",
+      "method": "POST",
+      "query": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "ProposalData": {
+          "type": "string"
+        },
+        "MandateDetails": {
+          "type": "string"
+        },
+        "PortfolioSelection": {
+          "type": "string"
+        }
+      }
+    },
+    "Proposal_ResendProposalAsync": {
+      "controller": "Proposal",
+      "action": "ResendProposalAsync",
+      "method": "POST",
+      "query": {
+        "proposalId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_CreateProposalAsync": {
+      "controller": "Proposal",
+      "action": "CreateProposalAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "File": {
+          "type": "string"
+        },
+        "ClientInformation": {
+          "type": "string"
+        },
+        "MandateandProviderDetails": {
+          "type": "string"
+        },
+        "PortfolioSelection": {
+          "type": "string"
+        },
+        "FeeApplicabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Proposal_CreateDirectOnboardingAsync": {
+      "controller": "Proposal",
+      "action": "CreateDirectOnboardingAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ProposalId": {
+          "type": "integer"
+        },
+        "ProposalUserDataRequest": {
+          "type": "string"
+        },
+        "MandateandProviderDetails": {
+          "type": "string"
+        },
+        "ObjectivesFinancialNeedsAnalysis": {
+          "type": "string"
+        },
+        "PortfolioSelection": {
+          "type": "string"
+        },
+        "InvestmentFees": {
+          "type": "string"
+        },
+        "FeeApplicabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Proposal_CreateDirectOnboardingSendEmailAsync": {
+      "controller": "Proposal",
+      "action": "CreateDirectOnboardingSendEmailAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ProposalId": {
+          "type": "integer"
+        },
+        "ProposalUserDataRequest": {
+          "type": "string"
+        },
+        "MandateandProviderDetails": {
+          "type": "string"
+        },
+        "ObjectivesFinancialNeedsAnalysis": {
+          "type": "string"
+        },
+        "PortfolioSelection": {
+          "type": "string"
+        },
+        "InvestmentFees": {
+          "type": "string"
+        },
+        "FeeApplicabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Proposal_StartOnboardingForProposalAsync": {
+      "controller": "Proposal",
+      "action": "StartOnboardingForProposalAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ProposalId": {
+          "type": "integer"
+        },
+        "ProposalUserDataRequest": {
+          "type": "string"
+        },
+        "MandateandProviderDetails": {
+          "type": "string"
+        },
+        "ObjectivesFinancialNeedsAnalysis": {
+          "type": "string"
+        },
+        "PortfolioSelection": {
+          "type": "string"
+        },
+        "InvestmentFees": {
+          "type": "string"
+        },
+        "FeeApplicabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Proposal_StartOnboardingForProposalSendEmailAsync": {
+      "controller": "Proposal",
+      "action": "StartOnboardingForProposalSendEmailAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ProposalId": {
+          "type": "integer"
+        },
+        "ProposalUserDataRequest": {
+          "type": "string"
+        },
+        "MandateandProviderDetails": {
+          "type": "string"
+        },
+        "ObjectivesFinancialNeedsAnalysis": {
+          "type": "string"
+        },
+        "PortfolioSelection": {
+          "type": "string"
+        },
+        "InvestmentFees": {
+          "type": "string"
+        },
+        "FeeApplicabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Proposal_GetCreatorOnboardingsAsync": {
+      "controller": "Proposal",
+      "action": "GetCreatorOnboardingsAsync",
+      "method": "GET",
+      "query": {
+        "Search": {
+          "type": "string"
+        },
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "CrmNumber": {
+          "type": "string"
+        },
+        "IdentityOrPassport": {
+          "type": "string"
+        },
+        "SortBy": {
+          "type": "string"
+        },
+        "SortDescending": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_GetOnboardingByIdAsync": {
+      "controller": "Proposal",
+      "action": "GetOnboardingByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_UpdateOnboardingAsync": {
+      "controller": "Proposal",
+      "action": "UpdateOnboardingAsync",
+      "method": "POST",
+      "query": {
+        "id": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "Id": {
+          "type": "integer"
+        },
+        "IsReadyForClient": {
+          "type": "boolean"
+        },
+        "OnboardingStatus": {
+          "type": "string"
+        },
+        "UpdatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "CancellationReason": {
+          "type": "string"
+        },
+        "ProposalUserData": {
+          "type": "string"
+        },
+        "MandateAndProviderDetails": {
+          "type": "string"
+        },
+        "ObjectivesFinancialNeedsAnalysis": {
+          "type": "string"
+        },
+        "PortfolioSelection": {
+          "type": "string"
+        },
+        "InvestmentFees": {
+          "type": "string"
+        },
+        "AdvisorDetails": {
+          "type": "string"
+        }
+      }
+    },
+    "Proposal_HasInProgressOnboardingsAsync": {
+      "controller": "Proposal",
+      "action": "HasInProgressOnboardingsAsync",
+      "method": "GET",
+      "query": {
+        "dynamicUserId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_HasInProgressProposalsAsync": {
+      "controller": "Proposal",
+      "action": "HasInProgressProposalsAsync",
+      "method": "GET",
+      "query": {
+        "dynamicUserId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_DownloadSignedMandateAsync": {
+      "controller": "Proposal",
+      "action": "DownloadSignedMandateAsync",
+      "method": "GET",
+      "query": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_GenerateMandatePdfAsync": {
+      "controller": "Proposal",
+      "action": "GenerateMandatePdfAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "Quotation_GetQuotationAsync": {
+      "controller": "Quotation",
+      "action": "GetQuotationAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "SasfinDocument_UploadAccountOnboardingDocumentAsync": {
+      "controller": "SasfinDocument",
+      "action": "UploadAccountOnboardingDocumentAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "OnboardingId": {
+          "type": "integer"
+        },
+        "DocumentType": {
+          "type": "string"
+        },
+        "DocumentIndex": {
+          "type": "integer"
+        },
+        "File": {
+          "type": "string"
+        }
+      }
+    },
+    "SasfinDocument_UpdateProposalDocumentAsync": {
+      "controller": "SasfinDocument",
+      "action": "UpdateProposalDocumentAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ProposalId": {
+          "type": "integer"
+        },
+        "File": {
+          "type": "string"
+        }
+      }
+    },
+    "SasfinDocument_DownloadDocumentAsync": {
+      "controller": "SasfinDocument",
+      "action": "DownloadDocumentAsync",
+      "method": "GET",
+      "query": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "SasfinDocument_GetDocumentInfoAsync": {
+      "controller": "SasfinDocument",
+      "action": "GetDocumentInfoAsync",
+      "method": "GET",
+      "query": {
+        "onboardingId": {
+          "type": "integer"
+        },
+        "documentIndex": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "documentType": {
+          "type": "string"
+        }
+      }
+    },
+    "SasSecForm_GetItemContentAsync": {
+      "controller": "SasSecForm",
+      "action": "GetItemContentAsync",
+      "method": "GET",
+      "query": {
+        "version": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "SasSecForm_GetItemContentsAsync": {
+      "controller": "SasSecForm",
+      "action": "GetItemContentsAsync",
+      "method": "GET",
+      "query": {
+        "keys": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "SasSecForm_SetApplicabilityAsync": {
+      "controller": "SasSecForm",
+      "action": "SetApplicabilityAsync",
+      "method": "POST",
+      "query": {
+        "onboardingFormId": {
+          "type": "integer"
+        }
+      },
+      "body": {
+        "Key": {
+          "type": "string"
+        },
+        "IsApplicable": {
+          "type": "boolean"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "SasSecForm_GetClientSasSecFormItemsAsync": {
+      "controller": "SasSecForm",
+      "action": "GetClientSasSecFormItemsAsync",
+      "method": "GET",
+      "query": {
+        "onboardingFormId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "UserDetails_SearchByIdentityOrPassportAsync": {
+      "controller": "UserDetails",
+      "action": "SearchByIdentityOrPassportAsync",
+      "method": "GET",
+      "query": {
+        "identityNumber": {
+          "type": "string"
+        },
+        "passportNumber": {
+          "type": "string"
+        },
+        "identificationType": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "UserDetails_SearchIfaClientsByIdentityOrPassportAsync": {
+      "controller": "UserDetails",
+      "action": "SearchIfaClientsByIdentityOrPassportAsync",
+      "method": "GET",
+      "query": {
+        "identityNumber": {
+          "type": "string"
+        },
+        "passportNumber": {
+          "type": "string"
+        },
+        "identificationType": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Lookup_GetTitlesAsync": {
+      "controller": "Lookup",
+      "action": "GetTitlesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetIdentificationTypesAsync": {
+      "controller": "Lookup",
+      "action": "GetIdentificationTypesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetGendersAsync": {
+      "controller": "Lookup",
+      "action": "GetGendersAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetCountriesAsync": {
+      "controller": "Lookup",
+      "action": "GetCountriesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetNoTaxNumberReasonsAsync": {
+      "controller": "Lookup",
+      "action": "GetNoTaxNumberReasonsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetMaritalStatusAsync": {
+      "controller": "Lookup",
+      "action": "GetMaritalStatusAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetProvincesAsync": {
+      "controller": "Lookup",
+      "action": "GetProvincesAsync",
+      "method": "GET",
+      "query": {
+        "countryId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Lookup_GetAssetManagersAsync": {
+      "controller": "Lookup",
+      "action": "GetAssetManagersAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetProductsAsync": {
+      "controller": "Lookup",
+      "action": "GetProductsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetPortfolioManagersWithCustomTeamsAsync": {
+      "controller": "Lookup",
+      "action": "GetPortfolioManagersWithCustomTeamsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetPortfolioManagersWithTeamsAsync": {
+      "controller": "Lookup",
+      "action": "GetPortfolioManagersWithTeamsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetBankAccountTypesAsync": {
+      "controller": "Lookup",
+      "action": "GetBankAccountTypesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetRelationshipTeamAsync": {
+      "controller": "Lookup",
+      "action": "GetRelationshipTeamAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetForeignTypesAsync": {
+      "controller": "Lookup",
+      "action": "GetForeignTypesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetIndustriesOrSectorsAsync": {
+      "controller": "Lookup",
+      "action": "GetIndustriesOrSectorsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetResidenceTypesAsync": {
+      "controller": "Lookup",
+      "action": "GetResidenceTypesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetBanksAsync": {
+      "controller": "Lookup",
+      "action": "GetBanksAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetBranchCodesAsync": {
+      "controller": "Lookup",
+      "action": "GetBranchCodesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetBanksWithBranchAsync": {
+      "controller": "Lookup",
+      "action": "GetBanksWithBranchAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetOccupationAsync": {
+      "controller": "Lookup",
+      "action": "GetOccupationAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetInternationalCurrenciesAsync": {
+      "controller": "Lookup",
+      "action": "GetInternationalCurrenciesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetCompaniesForIfaAsync": {
+      "controller": "Lookup",
+      "action": "GetCompaniesForIfaAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetIFAsByCompanyAsync": {
+      "controller": "Lookup",
+      "action": "GetIFAsByCompanyAsync",
+      "method": "GET",
+      "query": {
+        "companyId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Lookup_GetSystemUsersByFullNameAsync": {
+      "controller": "Lookup",
+      "action": "GetSystemUsersByFullNameAsync",
+      "method": "GET",
+      "query": {
+        "fullName": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "SasSecLookup_GetBranchPartnersAsync": {
+      "controller": "SasSecLookup",
+      "action": "GetBranchPartnersAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "SasSecLookup_GetProductsAsync": {
+      "controller": "SasSecLookup",
+      "action": "GetProductsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "SasSecLookup_GetAssetManagersByProductAsync": {
+      "controller": "SasSecLookup",
+      "action": "GetAssetManagersByProductAsync",
+      "method": "GET",
+      "query": {
+        "productId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "SasSecLookup_GetInvestmentObjectivesAsync": {
+      "controller": "SasSecLookup",
+      "action": "GetInvestmentObjectivesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "SasSecLookup_GetRiskTolerancesAsync": {
+      "controller": "SasSecLookup",
+      "action": "GetRiskTolerancesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "SasSecLookup_GetPortfolioTypesAsync": {
+      "controller": "SasSecLookup",
+      "action": "GetPortfolioTypesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "SasSecLookup_GetPortfoliosByTypeAsync": {
+      "controller": "SasSecLookup",
+      "action": "GetPortfoliosByTypeAsync",
+      "method": "GET",
+      "query": {
+        "portfolioTypeId": {
+          "type": "integer"
+        }
+      },
+      "body": {}
+    },
+    "SasSecLookup_GetPortfoliosAsync": {
+      "controller": "SasSecLookup",
+      "action": "GetPortfoliosAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Case_CreateAsync": {
+      "controller": "Case",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ContactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CaseTagId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Channel": {
+          "type": "string"
+        },
+        "DocumentTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Case_GetByIdAsync": {
+      "controller": "Case",
+      "action": "GetByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Case_GetForIfaAsync": {
+      "controller": "Case",
+      "action": "GetForIfaAsync",
+      "method": "GET",
+      "query": {
+        "Status": {
+          "type": "string"
+        },
+        "AssignedToId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "OnlyMine": {
+          "type": "boolean"
+        },
+        "SortDescending": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "Case_GetForClientAsync": {
+      "controller": "Case",
+      "action": "GetForClientAsync",
+      "method": "GET",
+      "query": {
+        "Status": {
+          "type": "string"
+        },
+        "AssignedToId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "OnlyMine": {
+          "type": "boolean"
+        },
+        "SortDescending": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "Case_GetForRelationshipTeamAsync": {
+      "controller": "Case",
+      "action": "GetForRelationshipTeamAsync",
+      "method": "GET",
+      "query": {
+        "Status": {
+          "type": "string"
+        },
+        "AssignedToId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "OnlyMine": {
+          "type": "boolean"
+        },
+        "SortDescending": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "Case_GetForOperationsAsync": {
+      "controller": "Case",
+      "action": "GetForOperationsAsync",
+      "method": "GET",
+      "query": {
+        "Status": {
+          "type": "string"
+        },
+        "AssignedToId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "OnlyMine": {
+          "type": "boolean"
+        },
+        "SortDescending": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "Case_UploadDocumentAsync": {
+      "controller": "Case",
+      "action": "UploadDocumentAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "CaseId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "DocumentType": {
+          "type": "string"
+        },
+        "FileName": {
+          "type": "string"
+        },
+        "DocumentBody": {
+          "type": "string"
+        },
+        "MimeType": {
+          "type": "string"
+        }
+      }
+    },
+    "Case_GetDocumentsAsync": {
+      "controller": "Case",
+      "action": "GetDocumentsAsync",
+      "method": "GET",
+      "query": {
+        "caseId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Case_GetDocumentPreviewAsync": {
+      "controller": "Case",
+      "action": "GetDocumentPreviewAsync",
+      "method": "GET",
+      "query": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Case_ReviewDocumentAsync": {
+      "controller": "Case",
+      "action": "ReviewDocumentAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "CaseDocumentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ReviewStatus": {
+          "type": "string"
+        },
+        "ReviewNotes": {
+          "type": "string"
+        }
+      }
+    },
+    "Case_DeleteDocumentAsync": {
+      "controller": "Case",
+      "action": "DeleteDocumentAsync",
+      "method": "POST",
+      "query": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Case_SendMessageAsync": {
+      "controller": "Case",
+      "action": "SendMessageAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "CaseId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Body": {
+          "type": "string"
+        },
+        "CaseDocumentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "Case_GetMessagesAsync": {
+      "controller": "Case",
+      "action": "GetMessagesAsync",
+      "method": "GET",
+      "query": {
+        "caseId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Case_MarkMessagesReadAsync": {
+      "controller": "Case",
+      "action": "MarkMessagesReadAsync",
+      "method": "POST",
+      "query": {
+        "caseId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Case_GetUnreadCountAsync": {
+      "controller": "Case",
+      "action": "GetUnreadCountAsync",
+      "method": "GET",
+      "query": {
+        "caseId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Case_LockCaseAsync": {
+      "controller": "Case",
+      "action": "LockCaseAsync",
+      "method": "POST",
+      "query": {
+        "caseId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Case_UnlockCaseAsync": {
+      "controller": "Case",
+      "action": "UnlockCaseAsync",
+      "method": "POST",
+      "query": {
+        "caseId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Case_ForceUnlockCaseAsync": {
+      "controller": "Case",
+      "action": "ForceUnlockCaseAsync",
+      "method": "POST",
+      "query": {
+        "caseId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Case_ReassignAsync": {
+      "controller": "Case",
+      "action": "ReassignAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "CaseId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "NewAssignedToId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "NewAssignedToType": {
+          "type": "string"
+        }
+      }
+    },
+    "Case_CloseAsync": {
+      "controller": "Case",
+      "action": "CloseAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "CaseId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Comment": {
+          "type": "string"
+        }
+      }
+    },
+    "Case_CancelAsync": {
+      "controller": "Case",
+      "action": "CancelAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "CaseId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Comment": {
+          "type": "string"
+        }
+      }
+    },
+    "Case_GetActivityAsync": {
+      "controller": "Case",
+      "action": "GetActivityAsync",
+      "method": "GET",
+      "query": {
+        "caseId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "CaseTag_GetAllAsync": {
+      "controller": "CaseTag",
+      "action": "GetAllAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "CaseTag_CreateAsync": {
+      "controller": "CaseTag",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Name": {
+          "type": "string"
+        }
+      }
+    },
+    "CaseTag_UpdateAsync": {
+      "controller": "CaseTag",
+      "action": "UpdateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Name": {
+          "type": "string"
+        }
+      }
+    },
+    "CaseTag_DeleteAsync": {
+      "controller": "CaseTag",
+      "action": "DeleteAsync",
+      "method": "POST",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "CommunicationCenter_CreateAsync": {
+      "controller": "CommunicationCenter",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ContactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CaseTagId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Channel": {
+          "type": "string"
+        },
+        "DocumentTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "CommunicationCenter_GetByIdAsync": {
+      "controller": "CommunicationCenter",
+      "action": "GetByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "CommunicationCenter_GetForUserAsync": {
+      "controller": "CommunicationCenter",
+      "action": "GetForUserAsync",
+      "method": "GET",
+      "query": {
+        "Status": {
+          "type": "string"
+        },
+        "CaseTypeCode": {
+          "type": "string"
+        },
+        "TicketNumber": {
+          "type": "string"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "DateFrom": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "DateTo": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "PagingCookie": {
+          "type": "string"
+        },
+        "SortBy": {
+          "type": "string"
+        },
+        "SortDescending": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "CommunicationCenter_GetForUserSystemsAsync": {
+      "controller": "CommunicationCenter",
+      "action": "GetForUserSystemsAsync",
+      "method": "GET",
+      "query": {
+        "Status": {
+          "type": "string"
+        },
+        "CaseTypeCode": {
+          "type": "string"
+        },
+        "TicketNumber": {
+          "type": "string"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "DateFrom": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "DateTo": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "PagingCookie": {
+          "type": "string"
+        },
+        "SortBy": {
+          "type": "string"
+        },
+        "SortDescending": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "CommunicationCenter_GetMessagesAsync": {
+      "controller": "CommunicationCenter",
+      "action": "GetMessagesAsync",
+      "method": "GET",
+      "query": {
+        "incidentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "CommunicationCenter_CreateMessageAsync": {
+      "controller": "CommunicationCenter",
+      "action": "CreateMessageAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "IncidentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Message": {
+          "type": "string"
+        },
+        "FileName": {
+          "type": "string"
+        },
+        "DocumentBody": {
+          "type": "string"
+        },
+        "MimeType": {
+          "type": "string"
+        }
+      }
+    },
+    "CommunicationCenter_GetMessageDocumentAsync": {
+      "controller": "CommunicationCenter",
+      "action": "GetMessageDocumentAsync",
+      "method": "GET",
+      "query": {
+        "messageId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "CommunicationCenter_UpdateStatusAsync": {
+      "controller": "CommunicationCenter",
+      "action": "UpdateStatusAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "IncidentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "Status": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        }
+      }
+    },
+    "CommunicationCenter_CloseCaseAsync": {
+      "controller": "CommunicationCenter",
+      "action": "CloseCaseAsync",
+      "method": "POST",
+      "query": {
+        "incidentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "CommunicationCenter_MarkInProgressAsync": {
+      "controller": "CommunicationCenter",
+      "action": "MarkInProgressAsync",
+      "method": "POST",
+      "query": {
+        "incidentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "CommunicationCenter_ReassignAsync": {
+      "controller": "CommunicationCenter",
+      "action": "ReassignAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "IncidentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "SystemUserId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "CommunicationCenter_LockThreadAsync": {
+      "controller": "CommunicationCenter",
+      "action": "LockThreadAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "IncidentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "CommunicationCenter_UnlockThreadAsync": {
+      "controller": "CommunicationCenter",
+      "action": "UnlockThreadAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "IncidentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "CommunicationCenter_ForceUnlockThreadAsync": {
+      "controller": "CommunicationCenter",
+      "action": "ForceUnlockThreadAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "IncidentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "Market_GetTickerAsync": {
+      "controller": "Market",
+      "action": "GetTickerAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Support_GetWebsiteFaqByCategory": {
+      "controller": "Support",
+      "action": "GetWebsiteFaqByCategory",
+      "method": "GET",
+      "query": {
+        "category": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Support_GetTechnicalData": {
+      "controller": "Support",
+      "action": "GetTechnicalData",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Support_GetConvertedPhoneNumber": {
+      "controller": "Support",
+      "action": "GetConvertedPhoneNumber",
+      "method": "GET",
+      "query": {
+        "phone": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    }
+  },
+  "dynamics": {
+    "Annotation_GetByIdAsync": {
+      "controller": "Annotation",
+      "action": "GetByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Annotation_GetByIncidentIdAsync": {
+      "controller": "Annotation",
+      "action": "GetByIncidentIdAsync",
+      "method": "GET",
+      "query": {
+        "incidentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Annotation_CreateAsync": {
+      "controller": "Annotation",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IncidentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ObjectTypeCode": {
+          "type": "string"
+        },
+        "Subject": {
+          "type": "string"
+        },
+        "NoteText": {
+          "type": "string"
+        },
+        "FileName": {
+          "type": "string"
+        },
+        "DocumentBody": {
+          "type": "string"
+        },
+        "MimeType": {
+          "type": "string"
+        },
+        "IsDocument": {
+          "type": "boolean"
+        },
+        "CreatedById": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CreatedOn": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ModifiedById": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ModifiedOn": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "OwnerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "OwnerIsContact": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Annotation_UpdateAsync": {
+      "controller": "Annotation",
+      "action": "UpdateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IncidentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ObjectTypeCode": {
+          "type": "string"
+        },
+        "Subject": {
+          "type": "string"
+        },
+        "NoteText": {
+          "type": "string"
+        },
+        "FileName": {
+          "type": "string"
+        },
+        "DocumentBody": {
+          "type": "string"
+        },
+        "MimeType": {
+          "type": "string"
+        },
+        "IsDocument": {
+          "type": "boolean"
+        },
+        "CreatedById": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CreatedOn": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ModifiedById": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ModifiedOn": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "OwnerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "OwnerIsContact": {
+          "type": "boolean"
+        }
+      }
+    },
+    "BankingDetails_GetByIdAsync": {
+      "controller": "BankingDetails",
+      "action": "GetByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "BankingDetails_CreateAsync": {
+      "controller": "BankingDetails",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IndividualId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "SasfinAccountId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IsInternationalBank": {
+          "type": "boolean"
+        },
+        "AccountType": {
+          "type": "string"
+        },
+        "BankId": {
+          "type": "integer"
+        },
+        "BankName": {
+          "type": "string"
+        },
+        "BankNameOther": {
+          "type": "string"
+        },
+        "BranchCodeId": {
+          "type": "integer"
+        },
+        "BranchCodeName": {
+          "type": "string"
+        },
+        "BranchCodeOther": {
+          "type": "string"
+        },
+        "BranchName": {
+          "type": "string"
+        },
+        "InternationalCurrency": {
+          "type": "string"
+        },
+        "InternationalSwiftAddress": {
+          "type": "string"
+        },
+        "InternationalSwiftCode": {
+          "type": "string"
+        },
+        "InternationalStreetName": {
+          "type": "string"
+        },
+        "InternationalIbanNumber": {
+          "type": "string"
+        },
+        "Primary": {
+          "type": "boolean"
+        },
+        "AllSasfinAccounts": {
+          "type": "boolean"
+        },
+        "AccountNumber": {
+          "type": "string"
+        },
+        "AccountHolder": {
+          "type": "string"
+        }
+      }
+    },
+    "BankingDetails_UpdateAsync": {
+      "controller": "BankingDetails",
+      "action": "UpdateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IndividualId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "SasfinAccountId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IsInternationalBank": {
+          "type": "boolean"
+        },
+        "AccountType": {
+          "type": "string"
+        },
+        "BankId": {
+          "type": "integer"
+        },
+        "BankName": {
+          "type": "string"
+        },
+        "BankNameOther": {
+          "type": "string"
+        },
+        "BranchCodeId": {
+          "type": "integer"
+        },
+        "BranchCodeName": {
+          "type": "string"
+        },
+        "BranchCodeOther": {
+          "type": "string"
+        },
+        "BranchName": {
+          "type": "string"
+        },
+        "InternationalCurrency": {
+          "type": "string"
+        },
+        "InternationalSwiftAddress": {
+          "type": "string"
+        },
+        "InternationalSwiftCode": {
+          "type": "string"
+        },
+        "InternationalStreetName": {
+          "type": "string"
+        },
+        "InternationalIbanNumber": {
+          "type": "string"
+        },
+        "Primary": {
+          "type": "boolean"
+        },
+        "AllSasfinAccounts": {
+          "type": "boolean"
+        },
+        "AccountNumber": {
+          "type": "string"
+        },
+        "AccountHolder": {
+          "type": "string"
+        }
+      }
+    },
+    "Client_SearchByIdentityOrPassportAsync": {
+      "controller": "Client",
+      "action": "SearchByIdentityOrPassportAsync",
+      "method": "GET",
+      "query": {
+        "identityNumber": {
+          "type": "string"
+        },
+        "passportNumber": {
+          "type": "string"
+        },
+        "saId": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "Client_SearchIfaClientsByIdentityOrPassportAsync": {
+      "controller": "Client",
+      "action": "SearchIfaClientsByIdentityOrPassportAsync",
+      "method": "GET",
+      "query": {
+        "identityNumber": {
+          "type": "string"
+        },
+        "passportNumber": {
+          "type": "string"
+        },
+        "saId": {
+          "type": "boolean"
+        },
+        "ifaContactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Client_GetByIdAsync": {
+      "controller": "Client",
+      "action": "GetByIdAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Client_GetByIdsAsync": {
+      "controller": "Client",
+      "action": "GetByIdsAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "contactIds": {
+          "type": "string"
+        }
+      }
+    },
+    "Client_CreateAsync": {
+      "controller": "Client",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "PersonalDetails": {
+          "type": "string"
+        },
+        "AddressDetails": {
+          "type": "string"
+        },
+        "ContactDetails": {
+          "type": "string"
+        },
+        "EmploymentDetails": {
+          "type": "string"
+        },
+        "GeneralDetails": {
+          "type": "string"
+        },
+        "PowerOfAttorney": {
+          "type": "string"
+        },
+        "Introducer": {
+          "type": "string"
+        }
+      }
+    },
+    "Client_UpdateAsync": {
+      "controller": "Client",
+      "action": "UpdateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "PersonalDetails": {
+          "type": "string"
+        },
+        "AddressDetails": {
+          "type": "string"
+        },
+        "ContactDetails": {
+          "type": "string"
+        },
+        "EmploymentDetails": {
+          "type": "string"
+        },
+        "GeneralDetails": {
+          "type": "string"
+        },
+        "PowerOfAttorney": {
+          "type": "string"
+        },
+        "Introducer": {
+          "type": "string"
+        }
+      }
+    },
+    "Client_DeactivateClientAsync": {
+      "controller": "Client",
+      "action": "DeactivateClientAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ContactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "Client_CreateCrmTaskAsync": {
+      "controller": "Client",
+      "action": "CreateCrmTaskAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "PersonalDetails": {
+          "type": "string"
+        },
+        "AddressDetails": {
+          "type": "string"
+        },
+        "ContactDetails": {
+          "type": "string"
+        },
+        "EmploymentDetails": {
+          "type": "string"
+        },
+        "GeneralDetails": {
+          "type": "string"
+        },
+        "PowerOfAttorney": {
+          "type": "string"
+        },
+        "Introducer": {
+          "type": "string"
+        }
+      }
+    },
+    "CommunicationDistribution_GetLatestBySasfinAccountIdAsync": {
+      "controller": "CommunicationDistribution",
+      "action": "GetLatestBySasfinAccountIdAsync",
+      "method": "GET",
+      "query": {
+        "sasfinAccountId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "CommunicationDistribution_UpdateAsync": {
+      "controller": "CommunicationDistribution",
+      "action": "UpdateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "SasfinAccountId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "PasswordIs": {
+          "type": "string"
+        },
+        "CreatedOn": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Connection_ConnectPowerOfAttorneyAsync": {
+      "controller": "Connection",
+      "action": "ConnectPowerOfAttorneyAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ApplicantContactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "PowerOfAttorneyContactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "Document_UploadAsync": {
+      "controller": "Document",
+      "action": "UploadAsync",
+      "method": "POST",
+      "query": {
+        "clientId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "DocumentTypeId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "DocumentType": {
+          "type": "string"
+        },
+        "UploadedById": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "UploadedByName": {
+          "type": "string"
+        },
+        "FileName": {
+          "type": "string"
+        },
+        "DocumentBody": {
+          "type": "string"
+        },
+        "AdditionalDocumentNotes": {
+          "type": "string"
+        },
+        "OffshoreAccountNumber": {
+          "type": "string"
+        },
+        "MimeType": {
+          "type": "string"
+        },
+        "MimeTypeName": {
+          "type": "string"
+        },
+        "DocumentCategory": {
+          "type": "integer"
+        },
+        "DocumentCategoryName": {
+          "type": "string"
+        },
+        "WebsiteTag": {
+          "type": "integer"
+        },
+        "WebsiteTagName": {
+          "type": "string"
+        },
+        "UploadedOnDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "DocumentCategoryFolder": {
+          "type": "integer"
+        },
+        "DocumentCategoryFolderName": {
+          "type": "string"
+        },
+        "AvailableToClient": {
+          "type": "boolean"
+        },
+        "SasfinAccountId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "SasfinAccountName": {
+          "type": "string"
+        },
+        "ForexApprovalId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ForexApprovalName": {
+          "type": "string"
+        },
+        "AssignToUser": {
+          "type": "boolean"
+        },
+        "OwnerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "OwnerName": {
+          "type": "string"
+        }
+      }
+    },
+    "Document_DownloadAsync": {
+      "controller": "Document",
+      "action": "DownloadAsync",
+      "method": "GET",
+      "query": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Document_GetDocumentInfoAsync": {
+      "controller": "Document",
+      "action": "GetDocumentInfoAsync",
+      "method": "GET",
+      "query": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Document_SetDocumentAvailableToClientAsync": {
+      "controller": "Document",
+      "action": "SetDocumentAvailableToClientAsync",
+      "method": "POST",
+      "query": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "available": {
+          "type": "boolean"
+        }
+      },
+      "body": {}
+    },
+    "Document_DeleteAsync": {
+      "controller": "Document",
+      "action": "DeleteAsync",
+      "method": "POST",
+      "query": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Incident_GetByIdAsync": {
+      "controller": "Incident",
+      "action": "GetByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Incident_GetAsync": {
+      "controller": "Incident",
+      "action": "GetAsync",
+      "method": "GET",
+      "query": {
+        "CustomerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "OwnerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ResponsiblePersonId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "StateCode": {
+          "type": "integer"
+        },
+        "StatusCode": {
+          "type": "integer"
+        },
+        "CaseTypeCode": {
+          "type": "integer"
+        },
+        "TicketNumber": {
+          "type": "string"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "CaseTag": {
+          "type": "string"
+        },
+        "CreatedFrom": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "CreatedTo": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ModifiedFrom": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ModifiedTo": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "DateReceivedFrom": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "DateReceivedTo": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "PageNumber": {
+          "type": "integer"
+        },
+        "PageSize": {
+          "type": "integer"
+        },
+        "PagingCookie": {
+          "type": "string"
+        },
+        "OrderBy": {
+          "type": "string"
+        },
+        "OrderDirection": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Incident_CreateAsync": {
+      "controller": "Incident",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "TicketNumber": {
+          "type": "string"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "CustomerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CaseTypeCode": {
+          "type": "string"
+        },
+        "CaseTag": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "StatusCode": {
+          "type": "string"
+        },
+        "ResponsiblePersonId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "OwnerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "DateReceived": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "CreatedOn": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ModifiedOn": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "Incident_UpdateAsync": {
+      "controller": "Incident",
+      "action": "UpdateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "TicketNumber": {
+          "type": "string"
+        },
+        "Title": {
+          "type": "string"
+        },
+        "Description": {
+          "type": "string"
+        },
+        "CustomerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CaseTypeCode": {
+          "type": "string"
+        },
+        "CaseTag": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "StatusCode": {
+          "type": "string"
+        },
+        "ResponsiblePersonId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "OwnerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "DateReceived": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "CreatedOn": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ModifiedOn": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "InvestmentStrategy_GetInvestmentStrategyByNameAsync": {
+      "controller": "InvestmentStrategy",
+      "action": "GetInvestmentStrategyByNameAsync",
+      "method": "GET",
+      "query": {
+        "strategyName": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Lead_CreateAsync": {
+      "controller": "Lead",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "FirstName": {
+          "type": "string"
+        },
+        "LastName": {
+          "type": "string"
+        },
+        "IdentificationType": {
+          "type": "string"
+        },
+        "IdentificationNumber": {
+          "type": "string"
+        },
+        "PassportNumber": {
+          "type": "string"
+        },
+        "EmailAddress": {
+          "type": "string"
+        },
+        "MobilePhone": {
+          "type": "string"
+        }
+      }
+    },
+    "Lead_CreateOpportunityAsync": {
+      "controller": "Lead",
+      "action": "CreateOpportunityAsync",
+      "method": "POST",
+      "query": {
+        "leadId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Lead_QualifyAndCreateContactAsync": {
+      "controller": "Lead",
+      "action": "QualifyAndCreateContactAsync",
+      "method": "POST",
+      "query": {
+        "leadId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "opportunityId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Lead_DisqualifyAsync": {
+      "controller": "Lead",
+      "action": "DisqualifyAsync",
+      "method": "POST",
+      "query": {
+        "leadId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Opportunity_QualifyAsWonAsync": {
+      "controller": "Opportunity",
+      "action": "QualifyAsWonAsync",
+      "method": "POST",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Opportunity_MarkAsLostAsync": {
+      "controller": "Opportunity",
+      "action": "MarkAsLostAsync",
+      "method": "POST",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Opportunity_ExpireOpportunityAsync": {
+      "controller": "Opportunity",
+      "action": "ExpireOpportunityAsync",
+      "method": "POST",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Proposal_CreateAsync": {
+      "controller": "Proposal",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "Provider_GetProviderByNameAsync": {
+      "controller": "Provider",
+      "action": "GetProviderByNameAsync",
+      "method": "GET",
+      "query": {
+        "providerName": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Provider_GetProviderProductAsync": {
+      "controller": "Provider",
+      "action": "GetProviderProductAsync",
+      "method": "GET",
+      "query": {
+        "providerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "productName": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "ReferenceData_GetReferenceDataAsync": {
+      "controller": "ReferenceData",
+      "action": "GetReferenceDataAsync",
+      "method": "GET",
+      "query": {},
+      "body": {
+        "referenceType": {
+          "type": "string"
+        }
+      }
+    },
+    "ReferenceData_GetAssetManagers": {
+      "controller": "ReferenceData",
+      "action": "GetAssetManagers",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetPortfoliosByAssetManagerAsync": {
+      "controller": "ReferenceData",
+      "action": "GetPortfoliosByAssetManagerAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ReferenceData_GetBanksAsync": {
+      "controller": "ReferenceData",
+      "action": "GetBanksAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetBankAccountTypesAsync": {
+      "controller": "ReferenceData",
+      "action": "GetBankAccountTypesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetBankBranchesAsync": {
+      "controller": "ReferenceData",
+      "action": "GetBankBranchesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetCitizenshipsAsync": {
+      "controller": "ReferenceData",
+      "action": "GetCitizenshipsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetCountriesAsync": {
+      "controller": "ReferenceData",
+      "action": "GetCountriesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetInternationalCurrenciesAsync": {
+      "controller": "ReferenceData",
+      "action": "GetInternationalCurrenciesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetGendersAsync": {
+      "controller": "ReferenceData",
+      "action": "GetGendersAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetIfas": {
+      "controller": "ReferenceData",
+      "action": "GetIfas",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetRepresentativesByIfaAsync": {
+      "controller": "ReferenceData",
+      "action": "GetRepresentativesByIfaAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ReferenceData_GetProvincesAsync": {
+      "controller": "ReferenceData",
+      "action": "GetProvincesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetProvincesByCountryAsync": {
+      "controller": "ReferenceData",
+      "action": "GetProvincesByCountryAsync",
+      "method": "GET",
+      "query": {
+        "countryId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ReferenceData_GetLanguageAsync": {
+      "controller": "ReferenceData",
+      "action": "GetLanguageAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetMaritalStatusAsync": {
+      "controller": "ReferenceData",
+      "action": "GetMaritalStatusAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetPortfolioManagersWithTeamsAsync": {
+      "controller": "ReferenceData",
+      "action": "GetPortfolioManagersWithTeamsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetPortfolioManagersWithCustomTeamsAsync": {
+      "controller": "ReferenceData",
+      "action": "GetPortfolioManagersWithCustomTeamsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetProducts": {
+      "controller": "ReferenceData",
+      "action": "GetProducts",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetRepresentativesAsync": {
+      "controller": "ReferenceData",
+      "action": "GetRepresentativesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetRegionAsync": {
+      "controller": "ReferenceData",
+      "action": "GetRegionAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetTitlesAsync": {
+      "controller": "ReferenceData",
+      "action": "GetTitlesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetReasonForNoTaxNumberForIndividualAsync": {
+      "controller": "ReferenceData",
+      "action": "GetReasonForNoTaxNumberForIndividualAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetIdentificationTypes": {
+      "controller": "ReferenceData",
+      "action": "GetIdentificationTypes",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetRelationshipTeamAsync": {
+      "controller": "ReferenceData",
+      "action": "GetRelationshipTeamAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetResidenceTypesAsync": {
+      "controller": "ReferenceData",
+      "action": "GetResidenceTypesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetForeignTypesAsync": {
+      "controller": "ReferenceData",
+      "action": "GetForeignTypesAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetIndustriesOrSectorsAsync": {
+      "controller": "ReferenceData",
+      "action": "GetIndustriesOrSectorsAsync",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "ReferenceData_GetCompaniesByIfaAsync": {
+      "controller": "ReferenceData",
+      "action": "GetCompaniesByIfaAsync",
+      "method": "GET",
+      "query": {
+        "ifaContactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ReferenceData_GetIFAsByCompanyAsync": {
+      "controller": "ReferenceData",
+      "action": "GetIFAsByCompanyAsync",
+      "method": "GET",
+      "query": {
+        "companyId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ReferenceData_GetIFAClientsAsync": {
+      "controller": "ReferenceData",
+      "action": "GetIFAClientsAsync",
+      "method": "GET",
+      "query": {
+        "ifaContactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ReferenceData_ClientHasIfaAsync": {
+      "controller": "ReferenceData",
+      "action": "ClientHasIfaAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ifaContactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ReferenceData_GetLinkedAdvisorContactIdsAsync": {
+      "controller": "ReferenceData",
+      "action": "GetLinkedAdvisorContactIdsAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ReferenceData_GetLinkedAdvisorCompanyIdsAsync": {
+      "controller": "ReferenceData",
+      "action": "GetLinkedAdvisorCompanyIdsAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ReferenceData_GetRegionBySystemUserIdAsync": {
+      "controller": "ReferenceData",
+      "action": "GetRegionBySystemUserIdAsync",
+      "method": "GET",
+      "query": {
+        "systemUserId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ResidentCountry_GetByContactIdAsync": {
+      "controller": "ResidentCountry",
+      "action": "GetByContactIdAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ResidentCountry_GetByIdAsync": {
+      "controller": "ResidentCountry",
+      "action": "GetByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "ResidentCountry_CreateAsync": {
+      "controller": "ResidentCountry",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ContactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CitizenshipId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CitizenshipName": {
+          "type": "string"
+        },
+        "CountryId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CountryName": {
+          "type": "string"
+        },
+        "TaxNumber": {
+          "type": "string"
+        },
+        "FatcaDeclarationForm": {
+          "type": "boolean"
+        },
+        "ResidenceForTax": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ResidentCountry_UpdateAsync": {
+      "controller": "ResidentCountry",
+      "action": "UpdateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ContactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CitizenshipId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CitizenshipName": {
+          "type": "string"
+        },
+        "CountryId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "CountryName": {
+          "type": "string"
+        },
+        "TaxNumber": {
+          "type": "string"
+        },
+        "FatcaDeclarationForm": {
+          "type": "boolean"
+        },
+        "ResidenceForTax": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ResidentCountry_UpdateRangeAsync": {
+      "controller": "ResidentCountry",
+      "action": "UpdateRangeAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "dtoList": {
+          "type": "string"
+        }
+      }
+    },
+    "ResidentCountry_DeleteAsync": {
+      "controller": "ResidentCountry",
+      "action": "DeleteAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "ResidentCountry_DeleteRangeAsync": {
+      "controller": "ResidentCountry",
+      "action": "DeleteRangeAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "ids": {
+          "type": "string"
+        }
+      }
+    },
+    "RiskAssessment_GetByIdAsync": {
+      "controller": "RiskAssessment",
+      "action": "GetByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "RiskAssessment_GetByContactIdAsync": {
+      "controller": "RiskAssessment",
+      "action": "GetByContactIdAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "RiskAssessment_GetAnswersForQuestionAsync": {
+      "controller": "RiskAssessment",
+      "action": "GetAnswersForQuestionAsync",
+      "method": "GET",
+      "query": {
+        "questionId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "RiskAssessment_GetAnswersByTextAsync": {
+      "controller": "RiskAssessment",
+      "action": "GetAnswersByTextAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "texts": {
+          "type": "string"
+        }
+      }
+    },
+    "RiskAssessment_FindAnsversByTextAsync": {
+      "controller": "RiskAssessment",
+      "action": "FindAnsversByTextAsync",
+      "method": "GET",
+      "query": {
+        "text": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "RiskAssessment_UpdateRangeAsync": {
+      "controller": "RiskAssessment",
+      "action": "UpdateRangeAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "models": {
+          "type": "string"
+        }
+      }
+    },
+    "SasfinAccount_GetByIdAsync": {
+      "controller": "SasfinAccount",
+      "action": "GetByIdAsync",
+      "method": "GET",
+      "query": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "SasfinAccount_CreateAsync": {
+      "controller": "SasfinAccount",
+      "action": "CreateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IndividualId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IfaId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ProvisionalTaxPayer": {
+          "type": "boolean"
+        },
+        "UniqueNumber": {
+          "type": "string"
+        },
+        "EmployerName": {
+          "type": "string"
+        },
+        "NameOfIntroducer": {
+          "type": "string"
+        },
+        "Status": {
+          "type": "string"
+        },
+        "IntendedPurposeOfBusinessRelationship": {
+          "type": "string"
+        },
+        "ProviderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ProviderName": {
+          "type": "string"
+        },
+        "ProviderProductId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ProviderProductName": {
+          "type": "string"
+        },
+        "RelationshipManagerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "RelationshipManagerName": {
+          "type": "string"
+        },
+        "RelationshipTeamId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "RelationshipTeamName": {
+          "type": "string"
+        },
+        "InvestmentManagerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "InvestmentManagerName": {
+          "type": "string"
+        },
+        "BranchCodeValue": {
+          "type": "string"
+        },
+        "PartnerCodeValue": {
+          "type": "string"
+        },
+        "AdvisorCodeValue": {
+          "type": "string"
+        },
+        "StartDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "InvestmentStrategyId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "InvestmentStrategyName": {
+          "type": "string"
+        },
+        "BespokePortfolioDescription": {
+          "type": "string"
+        },
+        "MandateSign": {
+          "type": "boolean"
+        },
+        "MandateType": {
+          "type": "string"
+        },
+        "SecuritiesCsdpName": {
+          "type": "string"
+        },
+        "SecuritiesCsdpAccountNumber": {
+          "type": "string"
+        },
+        "SecuritiesCsdpBranchCodeId": {
+          "type": "integer"
+        },
+        "SecuritiesCsdpBranchCodeName": {
+          "type": "string"
+        },
+        "SecuritiesCsdpBranchCodeOther": {
+          "type": "string"
+        },
+        "SecuritiesCsdpBankBicCode": {
+          "type": "string"
+        },
+        "SecuritiesCsdpStrateBusinessPartner": {
+          "type": "string"
+        },
+        "CashSettlementAgentAccountNumber": {
+          "type": "string"
+        },
+        "CashSettlementAgentTypeOfAccount": {
+          "type": "string"
+        },
+        "CashSettlementAgentBankBicCode": {
+          "type": "string"
+        },
+        "CashSettlementAgentStrateBusinessPartner": {
+          "type": "string"
+        },
+        "CashSettlementAgentBankId": {
+          "type": "integer"
+        },
+        "CashSettlementAgentBankName": {
+          "type": "string"
+        },
+        "CashSettlementAgentBankNameOther": {
+          "type": "string"
+        },
+        "CashSettlementAgentBranchCodeId": {
+          "type": "integer"
+        },
+        "CashSettlementAgentBranchCodeName": {
+          "type": "string"
+        },
+        "CashSettlementAgentBranchCodeOther": {
+          "type": "string"
+        }
+      }
+    },
+    "SasfinAccount_FindExistingByContactIdAsync": {
+      "controller": "SasfinAccount",
+      "action": "FindExistingByContactIdAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "excludeAccountId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "SasfinAccount_GetByContactIdAsync": {
+      "controller": "SasfinAccount",
+      "action": "GetByContactIdAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "SasfinAccount_SearchByUniqueNumberAsync": {
+      "controller": "SasfinAccount",
+      "action": "SearchByUniqueNumberAsync",
+      "method": "GET",
+      "query": {
+        "uniqueNumber": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "SasfinAccount_UpdateAsync": {
+      "controller": "SasfinAccount",
+      "action": "UpdateAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "Id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IndividualId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "IfaId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ProvisionalTaxPayer": {
+          "type": "boolean"
+        },
+        "UniqueNumber": {
+          "type": "string"
+        },
+        "EmployerName": {
+          "type": "string"
+        },
+        "NameOfIntroducer": {
+          "type": "string"
+        },
+        "Status": {
+          "type": "string"
+        },
+        "IntendedPurposeOfBusinessRelationship": {
+          "type": "string"
+        },
+        "ProviderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ProviderName": {
+          "type": "string"
+        },
+        "ProviderProductId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ProviderProductName": {
+          "type": "string"
+        },
+        "RelationshipManagerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "RelationshipManagerName": {
+          "type": "string"
+        },
+        "RelationshipTeamId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "RelationshipTeamName": {
+          "type": "string"
+        },
+        "InvestmentManagerId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "InvestmentManagerName": {
+          "type": "string"
+        },
+        "BranchCodeValue": {
+          "type": "string"
+        },
+        "PartnerCodeValue": {
+          "type": "string"
+        },
+        "AdvisorCodeValue": {
+          "type": "string"
+        },
+        "StartDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "InvestmentStrategyId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "InvestmentStrategyName": {
+          "type": "string"
+        },
+        "BespokePortfolioDescription": {
+          "type": "string"
+        },
+        "MandateSign": {
+          "type": "boolean"
+        },
+        "MandateType": {
+          "type": "string"
+        },
+        "SecuritiesCsdpName": {
+          "type": "string"
+        },
+        "SecuritiesCsdpAccountNumber": {
+          "type": "string"
+        },
+        "SecuritiesCsdpBranchCodeId": {
+          "type": "integer"
+        },
+        "SecuritiesCsdpBranchCodeName": {
+          "type": "string"
+        },
+        "SecuritiesCsdpBranchCodeOther": {
+          "type": "string"
+        },
+        "SecuritiesCsdpBankBicCode": {
+          "type": "string"
+        },
+        "SecuritiesCsdpStrateBusinessPartner": {
+          "type": "string"
+        },
+        "CashSettlementAgentAccountNumber": {
+          "type": "string"
+        },
+        "CashSettlementAgentTypeOfAccount": {
+          "type": "string"
+        },
+        "CashSettlementAgentBankBicCode": {
+          "type": "string"
+        },
+        "CashSettlementAgentStrateBusinessPartner": {
+          "type": "string"
+        },
+        "CashSettlementAgentBankId": {
+          "type": "integer"
+        },
+        "CashSettlementAgentBankName": {
+          "type": "string"
+        },
+        "CashSettlementAgentBankNameOther": {
+          "type": "string"
+        },
+        "CashSettlementAgentBranchCodeId": {
+          "type": "integer"
+        },
+        "CashSettlementAgentBranchCodeName": {
+          "type": "string"
+        },
+        "CashSettlementAgentBranchCodeOther": {
+          "type": "string"
+        }
+      }
+    },
+    "SasfinAccount_HasNoActiveOrNewAccountAsync": {
+      "controller": "SasfinAccount",
+      "action": "HasNoActiveOrNewAccountAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "SasfinAccount_HasNoActiveProductAsync": {
+      "controller": "SasfinAccount",
+      "action": "HasNoActiveProductAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "SystemUser_GetByIdAsync": {
+      "controller": "SystemUser",
+      "action": "GetByIdAsync",
+      "method": "GET",
+      "query": {
+        "systemUserId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "SystemUser_GetByIdsAsync": {
+      "controller": "SystemUser",
+      "action": "GetByIdsAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "systemUserIds": {
+          "type": "string"
+        }
+      }
+    },
+    "SystemUser_GetByContactIdAsync": {
+      "controller": "SystemUser",
+      "action": "GetByContactIdAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "SystemUser_GetByContactIdsAsync": {
+      "controller": "SystemUser",
+      "action": "GetByContactIdsAsync",
+      "method": "POST",
+      "query": {},
+      "body": {
+        "contactIds": {
+          "type": "string"
+        }
+      }
+    },
+    "SystemUser_GetSystemUserTeamByContactIdAsync": {
+      "controller": "SystemUser",
+      "action": "GetSystemUserTeamByContactIdAsync",
+      "method": "GET",
+      "query": {
+        "contactId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "SystemUser_GetSystemUsersByTeamIdAsync": {
+      "controller": "SystemUser",
+      "action": "GetSystemUsersByTeamIdAsync",
+      "method": "GET",
+      "query": {
+        "teamId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "SystemUser_GetSystemUsersByTeamNameAsync": {
+      "controller": "SystemUser",
+      "action": "GetSystemUsersByTeamNameAsync",
+      "method": "GET",
+      "query": {
+        "teamName": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "SystemUser_GetSystemUsersByFullNameAsync": {
+      "controller": "SystemUser",
+      "action": "GetSystemUsersByFullNameAsync",
+      "method": "GET",
+      "query": {
+        "fullName": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    },
+    "Lookup_GetTitles": {
+      "controller": "Lookup",
+      "action": "GetTitles",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetCountries": {
+      "controller": "Lookup",
+      "action": "GetCountries",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetBanks": {
+      "controller": "Lookup",
+      "action": "GetBanks",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetAssetManager": {
+      "controller": "Lookup",
+      "action": "GetAssetManager",
+      "method": "GET",
+      "query": {
+        "productId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Lookup_GetProducts": {
+      "controller": "Lookup",
+      "action": "GetProducts",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetPortfolioManagers": {
+      "controller": "Lookup",
+      "action": "GetPortfolioManagers",
+      "method": "GET",
+      "query": {},
+      "body": {}
+    },
+    "Lookup_GetPortfolios": {
+      "controller": "Lookup",
+      "action": "GetPortfolios",
+      "method": "GET",
+      "query": {
+        "assetmanagerId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "body": {}
+    },
+    "Quotation_GetByIdentificationNumberAsync": {
+      "controller": "Quotation",
+      "action": "GetByIdentificationNumberAsync",
+      "method": "GET",
+      "query": {
+        "identificationNumber": {
+          "type": "string"
+        }
+      },
+      "body": {}
+    }
+  },
+  "stats": {
+    "wealth": 94,
+    "wealthOnline": 213,
+    "dynamics": 110,
+    "onlineClasses": 224,
+    "dynClasses": 75,
+    "wealthClasses": 1276,
+    "onlineWithBody": 65,
+    "dynWithBody": 28,
+    "wealthWithBody": 14
+  }
+}
