@@ -5,12 +5,12 @@ use botflow_node_api::{
 use serde_json::json;
 use std::sync::Arc;
 
-fn meta(ty: &str, name: &str, outs: Vec<PortDef>) -> NodeMetadata {
+fn meta(ty: &str, name: &str, description: &str, outs: Vec<PortDef>) -> NodeMetadata {
     NodeMetadata {
         type_name: ty.into(),
         display_name: name.into(),
         category: "control".into(),
-        description: name.into(),
+        description: description.into(),
         version: 1,
         is_trigger: false,
         inputs: vec![PortDef {
@@ -28,6 +28,7 @@ impl NodeExecutor for SwitchNode {
         meta(
             "switch",
             "Switch",
+            "Route items to different branches by matching rules",
             vec![
                 PortDef {
                     id: "0".into(),
@@ -83,6 +84,7 @@ impl NodeExecutor for NoOpNode {
         meta(
             "noOp",
             "No Operation",
+            "Pass items through unchanged",
             vec![PortDef {
                 id: "main".into(),
                 name: "Main".into(),
@@ -101,6 +103,7 @@ impl NodeExecutor for StopAndErrorNode {
         meta(
             "stopAndError",
             "Stop and Error",
+            "Stop the workflow and raise an error",
             vec![PortDef {
                 id: "main".into(),
                 name: "Main".into(),
@@ -126,6 +129,7 @@ impl NodeExecutor for StickyNoteNode {
         meta(
             "stickyNote",
             "Sticky Note",
+            "Add a note on the canvas (does not affect data)",
             vec![PortDef {
                 id: "main".into(),
                 name: "Main".into(),
@@ -144,6 +148,7 @@ impl NodeExecutor for ExecuteCommandNode {
         meta(
             "executeCommand",
             "Execute Command",
+            "Run a local shell command and capture output",
             vec![PortDef {
                 id: "main".into(),
                 name: "Main".into(),
@@ -182,6 +187,7 @@ impl NodeExecutor for ExecuteWorkflowNode {
         meta(
             "executeWorkflow",
             "Execute Sub-workflow",
+            "Run another workflow and continue with its output",
             vec![PortDef {
                 id: "main".into(),
                 name: "Main".into(),
@@ -210,6 +216,7 @@ impl NodeExecutor for McpCallNode {
         meta(
             "mcpCall",
             "MCP Call",
+            "Invoke an MCP tool from a connected server",
             vec![PortDef {
                 id: "main".into(),
                 name: "Main".into(),

@@ -20,13 +20,13 @@ fn main_ports() -> (Vec<PortDef>, Vec<PortDef>) {
     )
 }
 
-fn meta(ty: &str, name: &str, cat: &str) -> NodeMetadata {
+fn meta(ty: &str, name: &str, cat: &str, description: &str) -> NodeMetadata {
     let (inputs, outputs) = main_ports();
     NodeMetadata {
         type_name: ty.into(),
         display_name: name.into(),
         category: cat.into(),
-        description: name.into(),
+        description: description.into(),
         version: 1,
         is_trigger: false,
         inputs,
@@ -55,12 +55,12 @@ fn field(item: &Value, path: &str) -> Value {
 }
 
 macro_rules! simple_node {
-    ($struct:ident, $ty:expr, $name:expr, $body:expr) => {
+    ($struct:ident, $ty:expr, $name:expr, $desc:expr, $body:expr) => {
         pub struct $struct;
         #[async_trait]
         impl NodeExecutor for $struct {
             fn metadata(&self) -> NodeMetadata {
-                meta($ty, $name, "data")
+                meta($ty, $name, "data", $desc)
             }
             async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
                 ($body)(ctx)
@@ -69,7 +69,7 @@ macro_rules! simple_node {
     };
 }
 
-simple_node!(EditFieldsNode, "editFields", "Edit Fields", |ctx: ExecutionContext| {
+simple_node!(EditFieldsNode, "editFields", "Edit Fields", "Map, rename, or reshape item fields", |ctx: ExecutionContext| {
     let mapping = ctx
         .node
         .parameters
@@ -94,7 +94,7 @@ simple_node!(EditFieldsNode, "editFields", "Edit Fields", |ctx: ExecutionContext
     Ok(NodeResult::single(out))
 });
 
-simple_node!(FilterNode, "filter", "Filter", |ctx: ExecutionContext| {
+simple_node!(FilterNode, "filter", "Filter", "Keep only items that match a condition", |ctx: ExecutionContext| {
     let field_name = ctx
         .node
         .parameters
@@ -136,7 +136,7 @@ simple_node!(FilterNode, "filter", "Filter", |ctx: ExecutionContext| {
     Ok(NodeResult::single(kept))
 });
 
-simple_node!(SortNode, "sort", "Sort", |ctx: ExecutionContext| {
+simple_node!(SortNode, "sort", "Sort", "Sort items by a field ascending or descending", |ctx: ExecutionContext| {
     let field_name = ctx
         .node
         .parameters
@@ -167,7 +167,7 @@ simple_node!(SortNode, "sort", "Sort", |ctx: ExecutionContext| {
     Ok(NodeResult::single(items))
 });
 
-simple_node!(LimitNode, "limit", "Limit", |ctx: ExecutionContext| {
+simple_node!(LimitNode, "limit", "Limit", "Keep only the first N items", |ctx: ExecutionContext| {
     let n = ctx
         .node
         .parameters
@@ -180,7 +180,7 @@ simple_node!(LimitNode, "limit", "Limit", |ctx: ExecutionContext| {
     Ok(NodeResult::single(items))
 });
 
-simple_node!(SplitInBatchesNode, "splitInBatches", "Loop Over Items", |ctx: ExecutionContext| {
+simple_node!(SplitInBatchesNode, "splitInBatches", "Loop Over Items", "Process items in batches of a given size", |ctx: ExecutionContext| {
     let size = ctx
         .node
         .parameters
@@ -191,7 +191,7 @@ simple_node!(SplitInBatchesNode, "splitInBatches", "Loop Over Items", |ctx: Exec
     Ok(NodeResult::single(batch))
 });
 
-simple_node!(SplitOutNode, "splitOut", "Split Out", |ctx: ExecutionContext| {
+simple_node!(SplitOutNode, "splitOut", "Split Out", "Turn an array field into separate items", |ctx: ExecutionContext| {
     let field_name = ctx
         .node
         .parameters
@@ -209,11 +209,11 @@ simple_node!(SplitOutNode, "splitOut", "Split Out", |ctx: ExecutionContext| {
     Ok(NodeResult::single(out))
 });
 
-simple_node!(AggregateNode, "aggregate", "Aggregate", |ctx: ExecutionContext| {
+simple_node!(AggregateNode, "aggregate", "Aggregate", "Combine all items into a single list item", |ctx: ExecutionContext| {
     Ok(NodeResult::single(vec![json!({ "items": ctx.input_items, "count": ctx.input_items.len() })]))
 });
 
-simple_node!(SummarizeNode, "summarize", "Summarize", |ctx: ExecutionContext| {
+simple_node!(SummarizeNode, "summarize", "Summarize", "Compute count, sum, and average for a numeric field", |ctx: ExecutionContext| {
     let field_name = ctx
         .node
         .parameters
@@ -235,11 +235,11 @@ simple_node!(SummarizeNode, "summarize", "Summarize", |ctx: ExecutionContext| {
     })]))
 });
 
-simple_node!(ItemListsNode, "itemLists", "Item Lists", |ctx: ExecutionContext| {
+simple_node!(ItemListsNode, "itemLists", "Item Lists", "Manipulate lists of items (pass-through helper)", |ctx: ExecutionContext| {
     Ok(NodeResult::single(ctx.input_items))
 });
 
-simple_node!(RenameKeysNode, "renameKeys", "Rename Keys", |ctx: ExecutionContext| {
+simple_node!(RenameKeysNode, "renameKeys", "Rename Keys", "Rename object keys on each item", |ctx: ExecutionContext| {
     let mapping = ctx
         .node
         .parameters
@@ -263,7 +263,7 @@ simple_node!(RenameKeysNode, "renameKeys", "Rename Keys", |ctx: ExecutionContext
     Ok(NodeResult::single(out))
 });
 
-simple_node!(RemoveDuplicatesNode, "removeDuplicates", "Remove Duplicates", |ctx: ExecutionContext| {
+simple_node!(RemoveDuplicatesNode, "removeDuplicates", "Remove Duplicates", "Drop duplicate items by value or field", |ctx: ExecutionContext| {
     let field_name = ctx
         .node
         .parameters
@@ -285,7 +285,7 @@ simple_node!(RemoveDuplicatesNode, "removeDuplicates", "Remove Duplicates", |ctx
     Ok(NodeResult::single(out))
 });
 
-simple_node!(CompareDatasetsNode, "compareDatasets", "Compare Datasets", |ctx: ExecutionContext| {
+simple_node!(CompareDatasetsNode, "compareDatasets", "Compare Datasets", "Compare two datasets and surface differences", |ctx: ExecutionContext| {
     Ok(NodeResult::single(vec![json!({
         "items": ctx.input_items,
         "note": "compareDatasets: pass-through with count",
@@ -293,7 +293,7 @@ simple_node!(CompareDatasetsNode, "compareDatasets", "Compare Datasets", |ctx: E
     })]))
 });
 
-simple_node!(CodeNode, "code", "Code", |ctx: ExecutionContext| {
+simple_node!(CodeNode, "code", "Code", "Transform items with custom code or fixed JSON output", |ctx: ExecutionContext| {
     // Sandboxed JS not enabled by default — return items or parameters.json
     if let Some(v) = ctx.node.parameters.get("jsonOutput") {
         return Ok(NodeResult::single(vec![v.clone()]));
@@ -301,7 +301,7 @@ simple_node!(CodeNode, "code", "Code", |ctx: ExecutionContext| {
     Ok(NodeResult::single(ctx.input_items))
 });
 
-simple_node!(AiTransformNode, "aiTransform", "AI Transform", |ctx: ExecutionContext| {
+simple_node!(AiTransformNode, "aiTransform", "AI Transform", "Transform items with an AI prompt", |ctx: ExecutionContext| {
     let prompt = ctx
         .node
         .parameters
@@ -315,7 +315,7 @@ simple_node!(AiTransformNode, "aiTransform", "AI Transform", |ctx: ExecutionCont
     })]))
 });
 
-simple_node!(DateTimeNode, "dateTime", "Date & Time", |ctx: ExecutionContext| {
+simple_node!(DateTimeNode, "dateTime", "Date & Time", "Add the current timestamp to each item", |ctx: ExecutionContext| {
     let now = chrono::Utc::now().to_rfc3339();
     let mut out = Vec::new();
     for mut item in ctx.input_items {
@@ -332,7 +332,7 @@ simple_node!(DateTimeNode, "dateTime", "Date & Time", |ctx: ExecutionContext| {
     Ok(NodeResult::single(out))
 });
 
-simple_node!(CryptoNode, "crypto", "Crypto", |ctx: ExecutionContext| {
+simple_node!(CryptoNode, "crypto", "Crypto", "Hash values with SHA-256", |ctx: ExecutionContext| {
     let action = ctx
         .node
         .parameters
@@ -355,7 +355,7 @@ simple_node!(CryptoNode, "crypto", "Crypto", |ctx: ExecutionContext| {
     Ok(NodeResult::single(vec![json!({ "hash": digest, "action": action })]))
 });
 
-simple_node!(HtmlNode, "html", "HTML", |ctx: ExecutionContext| {
+simple_node!(HtmlNode, "html", "HTML", "Produce or wrap HTML content", |ctx: ExecutionContext| {
     let html = ctx
         .node
         .parameters
@@ -365,7 +365,7 @@ simple_node!(HtmlNode, "html", "HTML", |ctx: ExecutionContext| {
     Ok(NodeResult::single(vec![json!({ "html": html })]))
 });
 
-simple_node!(HtmlExtractNode, "htmlExtract", "HTML Extract", |ctx: ExecutionContext| {
+simple_node!(HtmlExtractNode, "htmlExtract", "HTML Extract", "Extract plain text from HTML", |ctx: ExecutionContext| {
     let html = ctx
         .node
         .parameters
@@ -386,7 +386,7 @@ simple_node!(HtmlExtractNode, "htmlExtract", "HTML Extract", |ctx: ExecutionCont
     Ok(NodeResult::single(vec![json!({ "text": text.trim() })]))
 });
 
-simple_node!(MarkdownNode, "markdown", "Markdown", |ctx: ExecutionContext| {
+simple_node!(MarkdownNode, "markdown", "Markdown", "Pass through Markdown and a simple HTML preview", |ctx: ExecutionContext| {
     let md = ctx
         .node
         .parameters
@@ -397,14 +397,14 @@ simple_node!(MarkdownNode, "markdown", "Markdown", |ctx: ExecutionContext| {
     Ok(NodeResult::single(vec![json!({ "markdown": md, "html": format!("<pre>{}</pre>", md) })]))
 });
 
-simple_node!(TotpNode, "totp", "TOTP", |ctx: ExecutionContext| {
+simple_node!(TotpNode, "totp", "TOTP", "Generate or verify time-based one-time passwords", |ctx: ExecutionContext| {
     Ok(NodeResult::single(vec![json!({
         "note": "Configure TOTP_SECRET; code generation uses HMAC-SHA1 time step",
         "configured": std::env::var("TOTP_SECRET").is_ok(),
     })]))
 });
 
-simple_node!(TimeSavedNode, "timeSaved", "Track Time Saved", |ctx: ExecutionContext| {
+simple_node!(TimeSavedNode, "timeSaved", "Track Time Saved", "Record estimated minutes saved by the workflow", |ctx: ExecutionContext| {
     let minutes = ctx
         .node
         .parameters
@@ -414,11 +414,11 @@ simple_node!(TimeSavedNode, "timeSaved", "Track Time Saved", |ctx: ExecutionCont
     Ok(NodeResult::single(vec![json!({ "timeSavedMinutes": minutes })]))
 });
 
-simple_node!(DataTableNode, "dataTable", "Data Table", |ctx: ExecutionContext| {
+simple_node!(DataTableNode, "dataTable", "Data Table", "Work with tabular rows as workflow items", |ctx: ExecutionContext| {
     Ok(NodeResult::single(ctx.input_items))
 });
 
-simple_node!(ExecutionDataNode, "executionData", "Execution Data", |ctx: ExecutionContext| {
+simple_node!(ExecutionDataNode, "executionData", "Execution Data", "Expose run, workflow, and trace identifiers", |ctx: ExecutionContext| {
     Ok(NodeResult::single(vec![json!({
         "runId": ctx.run_id,
         "workflowId": ctx.workflow_id,
@@ -427,7 +427,7 @@ simple_node!(ExecutionDataNode, "executionData", "Execution Data", |ctx: Executi
     })]))
 });
 
-simple_node!(SimulateNode, "simulate", "Simulate", |ctx: ExecutionContext| {
+simple_node!(SimulateNode, "simulate", "Simulate", "Emit fixed sample output for testing", |ctx: ExecutionContext| {
     let out = ctx
         .node
         .parameters
@@ -437,7 +437,7 @@ simple_node!(SimulateNode, "simulate", "Simulate", |ctx: ExecutionContext| {
     Ok(NodeResult::single(vec![out]))
 });
 
-simple_node!(DebugHelperNode, "debugHelper", "Debug Helper", |ctx: ExecutionContext| {
+simple_node!(DebugHelperNode, "debugHelper", "Debug Helper", "Inspect node parameters and incoming items", |ctx: ExecutionContext| {
     Ok(NodeResult::single(vec![json!({
         "node": ctx.node.name,
         "parameters": ctx.node.parameters,
@@ -445,7 +445,7 @@ simple_node!(DebugHelperNode, "debugHelper", "Debug Helper", |ctx: ExecutionCont
     })]))
 });
 
-simple_node!(EvaluationNode, "evaluation", "Evaluation", |ctx: ExecutionContext| {
+simple_node!(EvaluationNode, "evaluation", "Evaluation", "Mark or score items during evaluation runs", |ctx: ExecutionContext| {
     Ok(NodeResult::single(ctx.input_items))
 });
 

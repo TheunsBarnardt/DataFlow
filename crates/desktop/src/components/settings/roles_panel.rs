@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 
-use crate::components::ui::{Badge, BadgeVariant};
+use crate::components::ui::{
+    Alert, AlertDescription, AlertVariant, Badge, BadgeVariant, Card, CardContent, CardHeader,
+    CardTitle,
+};
 use crate::roles::ROLE_DEFINITIONS;
 
 #[component]
@@ -56,7 +59,14 @@ pub fn RolesPanel() -> Element {
             }
 
             if let Some(message) = err() {
-                div { class: "border-b bg-destructive/10 px-8 py-2 text-sm text-destructive", "{message}" }
+                Alert {
+                    variant: AlertVariant::Destructive,
+                    class: Some("mx-8 mt-2".into()),
+                    AlertDescription {
+                        class: Some("text-destructive".into()),
+                        "{message}"
+                    }
+                }
             }
 
             div { class: "grid gap-4 p-6 md:grid-cols-2 xl:grid-cols-3",
@@ -69,10 +79,10 @@ pub fn RolesPanel() -> Element {
                             format!("{count} user{}", if count == 1 { "" } else { "s" })
                         };
                         rsx! {
-                            div { class: "flex flex-col gap-3 rounded-lg border p-4",
-                                div { class: "flex items-start justify-between gap-2",
+                            Card {
+                                CardHeader { class: Some("flex-row items-start justify-between gap-2 space-y-0 px-4 pt-4 pb-0".into()),
                                     div {
-                                        div { class: "text-sm font-semibold", "{role_def.name}" }
+                                        CardTitle { class: Some("text-sm".into()), "{role_def.name}" }
                                         code { class: "text-[11px] text-muted-foreground", "{role_def.id}" }
                                     }
                                     Badge {
@@ -81,12 +91,14 @@ pub fn RolesPanel() -> Element {
                                         "{count_label}"
                                     }
                                 }
-                                p { class: "text-sm text-muted-foreground", "{role_def.description}" }
-                                ul { class: "space-y-1.5 border-t pt-3",
-                                    for cap in role_def.capabilities.iter() {
-                                        li { class: "flex items-center gap-2 text-[13px] text-foreground",
-                                            span { class: "h-1.5 w-1.5 shrink-0 rounded-full bg-primary" }
-                                            "{cap.label}"
+                                CardContent { class: Some("space-y-3 px-4 pb-4 pt-2".into()),
+                                    p { class: "text-sm text-muted-foreground", "{role_def.description}" }
+                                    ul { class: "space-y-1.5 border-t pt-3",
+                                        for cap in role_def.capabilities.iter() {
+                                            li { class: "flex items-center gap-2 text-[13px] text-foreground",
+                                                span { class: "h-1.5 w-1.5 shrink-0 rounded-full bg-primary" }
+                                                "{cap.label}"
+                                            }
                                         }
                                     }
                                 }

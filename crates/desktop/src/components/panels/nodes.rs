@@ -2,10 +2,13 @@ use std::sync::Mutex;
 
 use dioxus::prelude::*;
 
-use crate::components::icons::Zap;
+use crate::components::flow::node_glyphs::NodeGlyph;
+use crate::components::icons::{Search, Zap};
 use crate::components::panels::json_string;
 use crate::components::ui::{
-    Badge, BadgeVariant, Button, ButtonSize, ButtonVariant, PageLoader,
+    Alert, AlertDescription, AlertVariant, Badge, BadgeVariant, Button, ButtonSize, ButtonVariant,
+    Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle, Input,
+    PageLoader,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Default)]
@@ -114,12 +117,9 @@ fn NodeIconGrid(
                             span {
                                 class: "flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-sm",
                                 style: "background: {color}",
-                                if item.category == "trigger" {
-                                    Zap { class: Some("h-5 w-5".into()) }
-                                } else {
-                                    span { class: "text-xs font-bold uppercase",
-                                        {item.label.chars().next().unwrap_or('?').to_string()}
-                                    }
+                                NodeGlyph {
+                                    ty: item.node_type.clone(),
+                                    class: Some("h-5 w-5".into()),
                                 }
                             }
                             span { class: "line-clamp-2 w-full text-[11px] font-medium leading-tight",
@@ -215,7 +215,11 @@ pub fn NodesPanel(
             if q.is_empty() {
                 return true;
             }
-            let hay = format!("{} {} {}", n.label, n.node_type, n.category).to_lowercase();
+            let hay = format!(
+                "{} {} {} {}",
+                n.label, n.node_type, n.category, n.description
+            )
+            .to_lowercase();
             hay.contains(&q)
         })
         .cloned()
@@ -269,11 +273,10 @@ pub fn NodesPanel(
             }
 
             div { class: "{filter_pad}",
-                input {
-                    class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                    placeholder: "Search nodes…",
-                    value: "{query()}",
-                    oninput: move |e| query.set(e.value()),
+                Input {
+                    placeholder: Some("Search nodes…".into()),
+                    value: query(),
+                    oninput: move |e: FormEvent| query.set(e.value()),
                 }
                 div { class: "flex items-center gap-1 rounded-md bg-muted/50 p-0.5",
                     for (k, label) in [("all", "All"), ("triggers", "Triggers"), ("actions", "Actions")] {
@@ -316,7 +319,14 @@ pub fn NodesPanel(
             }
 
             if let Some(message) = err() {
-                div { class: "px-4 py-2 text-sm text-destructive", "{message}" }
+                Alert {
+                    variant: AlertVariant::Destructive,
+                    class: Some("mx-2 shrink-0 sm:mx-4".into()),
+                    AlertDescription {
+                        class: Some("text-destructive".into()),
+                        "{message}"
+                    }
+                }
             }
 
             if loading() {
@@ -372,7 +382,15 @@ pub fn NodesPanel(
                             }
                         }
                         if empty {
-                            p { class: "text-sm text-muted-foreground", "No nodes match." }
+                            Empty { class: Some("border-0 py-6".into()),
+                                EmptyHeader {
+                                    EmptyMedia { variant: EmptyMediaVariant::Icon,
+                                        Search { class: Some("size-5".into()) }
+                                    }
+                                    EmptyTitle { class: Some("text-sm".into()), "No nodes match" }
+                                    EmptyDescription { "Try a different search or filter." }
+                                }
+                            }
                         }
                     }
                 } else {
@@ -389,21 +407,28 @@ pub fn NodesPanel(
                                         {
                                             let catalog = item.clone();
                                             let desc = item.description.clone();
+                                            let show_desc = !desc.is_empty()
+                                                && !desc.eq_ignore_ascii_case(&item.label);
+                                            let color = node_color(&item.category);
                                             let handler = add_handler.clone();
                                             rsx! {
                                                 div {
                                                     key: "{item.node_type}",
                                                     class: "flex items-start gap-2 rounded-md border bg-card px-2 py-2",
+                                                    span {
+                                                        class: "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white shadow-sm",
+                                                        style: "background: {color}",
+                                                        NodeGlyph {
+                                                            ty: item.node_type.clone(),
+                                                            class: Some("h-4 w-4".into()),
+                                                        }
+                                                    }
                                                     div { class: "min-w-0 flex-1",
-                                                        div { class: "flex items-center gap-1.5 truncate text-sm font-medium",
-                                                            if item.category == "trigger" {
-                                                                Zap { class: Some("h-3.5 w-3.5 shrink-0 text-amber-500".into()) }
-                                                            }
+                                                        div { class: "truncate text-sm font-medium",
                                                             "{item.label}"
                                                         }
-                                                        div { class: "truncate text-xs text-muted-foreground", "{item.node_type}" }
-                                                        if !desc.is_empty() {
-                                                            p { class: "mt-1 line-clamp-2 text-[11px] leading-snug text-muted-foreground",
+                                                        if show_desc {
+                                                            p { class: "mt-0.5 line-clamp-2 text-[11px] leading-snug text-muted-foreground",
                                                                 "{desc}"
                                                             }
                                                         }
@@ -431,7 +456,15 @@ pub fn NodesPanel(
                             }
                         }
                         if empty {
-                            p { class: "text-sm text-muted-foreground", "No nodes match." }
+                            Empty { class: Some("border-0 py-6".into()),
+                                EmptyHeader {
+                                    EmptyMedia { variant: EmptyMediaVariant::Icon,
+                                        Search { class: Some("size-5".into()) }
+                                    }
+                                    EmptyTitle { class: Some("text-sm".into()), "No nodes match" }
+                                    EmptyDescription { "Try a different search or filter." }
+                                }
+                            }
                         }
                     }
                 }

@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 
-use crate::components::ui::{Button, ButtonVariant, ConfirmDeleteDialog, Input, Label, Switch};
+use crate::components::ui::{
+    Alert, AlertDescription, AlertVariant, Button, ButtonVariant, Card, CardContent, CardHeader,
+    CardTitle, ConfirmDeleteDialog, Empty, EmptyDescription, Input, Label, Switch,
+};
 
 #[derive(Clone)]
 struct ApiKeyRow {
@@ -249,45 +252,57 @@ pub fn DataFlowApiPanel() -> Element {
             }
 
             div { class: "space-y-6 p-6",
-                section { class: "rounded-lg border p-4",
-                    h2 { class: "text-sm font-semibold", "Public API access" }
-                    p { class: "mt-2 text-sm text-muted-foreground",
-                        "Each API project is served at "
-                        code { class: "text-foreground", "/apis/{{slug}}" }
-                        " with OpenAPI and Swagger UI under that path. Keys are stored hashed in MongoDB ("
-                        code { class: "text-foreground", "bf_" }
-                        " prefix). Studio "
-                        code { class: "text-foreground", "/api/*" }
-                        " routes still use your signed-in session."
+                Card {
+                    CardHeader { class: Some("px-4 pt-4 pb-0".into()),
+                        CardTitle { class: Some("text-sm".into()), "Public API access" }
+                    }
+                    CardContent { class: Some("px-4 pb-4 pt-2".into()),
+                        p { class: "text-sm text-muted-foreground",
+                            "Each API project is served at "
+                            code { class: "text-foreground", "/apis/{{slug}}" }
+                            " with OpenAPI and Swagger UI under that path. Keys are stored hashed in MongoDB ("
+                            code { class: "text-foreground", "bf_" }
+                            " prefix). Studio "
+                            code { class: "text-foreground", "/api/*" }
+                            " routes still use your signed-in session."
+                        }
                     }
                 }
 
                 if let Some(message) = err() {
-                    div { class: "rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive",
-                        "{message}"
+                    Alert {
+                        variant: AlertVariant::Destructive,
+                        AlertDescription {
+                            class: Some("text-destructive".into()),
+                            "{message}"
+                        }
                     }
                 }
 
                 if let Some(secret) = created_secret() {
-                    section { class: "rounded-lg border border-primary/40 bg-primary/5 p-4",
-                        h2 { class: "text-sm font-semibold", "Copy your new API key" }
-                        p { class: "mt-1 text-sm text-muted-foreground",
-                            "This secret is shown once. Store it securely."
-                        }
-                        code { class: "mt-3 block break-all rounded-md border bg-background px-3 py-2 text-sm",
-                            "{secret}"
-                        }
-                        div { class: "mt-3",
-                            Button {
-                                variant: ButtonVariant::Ghost,
-                                onclick: move |_| created_secret.set(None),
-                                "Dismiss"
+                    Alert {
+                        variant: AlertVariant::Success,
+                        AlertDescription {
+                            div { class: "space-y-2 text-foreground",
+                                p { class: "text-sm font-semibold", "Copy your new API key" }
+                                p { class: "text-sm text-muted-foreground",
+                                    "This secret is shown once. Store it securely."
+                                }
+                                code { class: "block break-all rounded-md border bg-background px-3 py-2 text-sm",
+                                    "{secret}"
+                                }
+                                Button {
+                                    variant: ButtonVariant::Ghost,
+                                    onclick: move |_| created_secret.set(None),
+                                    "Dismiss"
+                                }
                             }
                         }
                     }
                 }
 
-                section { class: "rounded-lg border p-4",
+                Card {
+                    CardContent { class: Some("p-4".into()),
                     h2 { class: "text-sm font-semibold", "Create API key" }
                     div { class: "mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4",
                         div {
@@ -348,9 +363,10 @@ pub fn DataFlowApiPanel() -> Element {
                     p { class: "mt-3 text-xs text-muted-foreground",
                         "Read-only keys may only call GET, HEAD, and OPTIONS. Project scope limits the key to one API project."
                     }
+                    }
                 }
 
-                section { class: "overflow-hidden rounded-lg border",
+                Card { class: Some("overflow-hidden p-0 gap-0".into()),
                     div { class: "flex items-center justify-between border-b bg-muted/40 px-4 py-3",
                         h2 { class: "text-sm font-semibold", "API keys" }
                         span { class: "text-xs text-muted-foreground",
@@ -362,8 +378,10 @@ pub fn DataFlowApiPanel() -> Element {
                         }
                     }
                     if keys().is_empty() && !loading() {
-                        div { class: "px-4 py-8 text-sm text-muted-foreground",
-                            "No API keys yet. Create one to call public API project endpoints."
+                        Empty { class: Some("border-0 py-8".into()),
+                            EmptyDescription {
+                                "No API keys yet. Create one to call public API project endpoints."
+                            }
                         }
                     } else {
                         div { class: "divide-y",

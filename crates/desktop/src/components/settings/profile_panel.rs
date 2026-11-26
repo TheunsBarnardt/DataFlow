@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 
-use crate::components::ui::{Button, Input, Label};
+use crate::components::ui::{
+    Alert, AlertDescription, AlertVariant, Button, Card, CardContent, Input,
+    Label, Skeleton,
+};
 
 fn json_str(v: &serde_json::Value, key: &str) -> String {
     v.get(key)
@@ -70,7 +73,11 @@ pub fn ProfilePanel() -> Element {
 
     if loading() && user().is_none() {
         return rsx! {
-            div { class: "p-6 text-sm text-muted-foreground", "Loading profile…" }
+            div { class: "flex flex-col gap-3 p-6",
+                Skeleton { class: Some("h-8 w-32".into()) }
+                Skeleton { class: Some("h-4 w-48".into()) }
+                Skeleton { class: Some("h-40 w-full rounded-lg".into()) }
+            }
         };
     }
 
@@ -97,22 +104,27 @@ pub fn ProfilePanel() -> Element {
             }
 
             if let Some(message) = err() {
-                div { class: "rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive",
-                    "{message}"
+                Alert {
+                    variant: AlertVariant::Destructive,
+                    AlertDescription {
+                        class: Some("text-destructive".into()),
+                        "{message}"
+                    }
                 }
             }
 
-            div { class: "space-y-3 rounded-lg border p-4",
+            Card {
+                CardContent { class: Some("space-y-3 p-4".into()),
                 div { class: "grid gap-1 text-sm",
-                    span { class: "text-muted-foreground", "Username" }
+                    Label { class: Some("text-muted-foreground".into()), "Username" }
                     span { class: "font-medium", "{username}" }
                 }
                 div { class: "grid gap-1 text-sm",
-                    span { class: "text-muted-foreground", "Email" }
+                    Label { class: Some("text-muted-foreground".into()), "Email" }
                     span { class: "font-medium", "{email}" }
                 }
                 div { class: "grid gap-1 text-sm",
-                    span { class: "text-muted-foreground", "Role" }
+                    Label { class: Some("text-muted-foreground".into()), "Role" }
                     span { class: "font-medium", "{role}" }
                 }
                 div { class: "flex flex-col gap-1.5",
@@ -134,6 +146,7 @@ pub fn ProfilePanel() -> Element {
                     disabled: busy(),
                     onclick: save,
                     "Save profile"
+                }
                 }
             }
         }

@@ -2,14 +2,16 @@ use dioxus::prelude::*;
 
 use crate::components::icons::{ArrowDown, ArrowUp, ChevronRight, RefreshCw};
 use crate::components::panels::json_string;
-use crate::components::ui::{Button, ButtonSize, ButtonVariant};
+use crate::components::ui::{
+    Alert, AlertDescription, AlertVariant, Button, ButtonSize, ButtonVariant, Card, CardContent,
+    CardSize, Empty, EmptyDescription, EmptyHeader,
+};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum MetricId {
     Total,
     Failed,
     FailureRate,
-    TimeSaved,
     AverageRunTime,
 }
 
@@ -19,7 +21,6 @@ impl MetricId {
             Self::Total => "total",
             Self::Failed => "failed",
             Self::FailureRate => "failureRate",
-            Self::TimeSaved => "timeSaved",
             Self::AverageRunTime => "averageRunTime",
         }
     }
@@ -29,8 +30,7 @@ impl MetricId {
             Self::Total => "Prod. executions",
             Self::Failed => "Failed prod. executions",
             Self::FailureRate => "Failure rate",
-            Self::TimeSaved => "Time saved",
-            Self::AverageRunTime => "Run time (avg.)",
+            Self::AverageRunTime => "Execution time (avg.)",
         }
     }
 
@@ -38,7 +38,6 @@ impl MetricId {
         match self {
             Self::Total | Self::Failed => "day",
             Self::FailureRate => "%",
-            Self::TimeSaved => "h",
             Self::AverageRunTime => "s",
         }
     }
@@ -48,7 +47,6 @@ impl MetricId {
             Self::Total => SortKey::Total,
             Self::Failed => SortKey::Failed,
             Self::FailureRate => SortKey::FailureRate,
-            Self::TimeSaved => SortKey::TimeSavedMinutes,
             Self::AverageRunTime => SortKey::AverageRunTimeMs,
         }
     }
@@ -60,7 +58,6 @@ enum SortKey {
     Total,
     Failed,
     FailureRate,
-    TimeSavedMinutes,
     AverageRunTimeMs,
 }
 
@@ -71,7 +68,6 @@ impl SortKey {
             Self::Total => "total",
             Self::Failed => "failed",
             Self::FailureRate => "failureRate",
-            Self::TimeSavedMinutes => "timeSavedMinutes",
             Self::AverageRunTimeMs => "averageRunTimeMs",
         }
     }
@@ -82,26 +78,23 @@ impl SortKey {
             Self::Total => "Prod. executions",
             Self::Failed => "Failed prod. executions",
             Self::FailureRate => "Failure rate",
-            Self::TimeSavedMinutes => "Time saved",
-            Self::AverageRunTimeMs => "Run time (avg.)",
+            Self::AverageRunTimeMs => "Execution time (avg.)",
         }
     }
 }
 
-const METRICS: [MetricId; 5] = [
+const METRICS: [MetricId; 4] = [
     MetricId::Total,
     MetricId::Failed,
     MetricId::FailureRate,
-    MetricId::TimeSaved,
     MetricId::AverageRunTime,
 ];
 
-const TABLE_COLUMNS: [SortKey; 6] = [
+const TABLE_COLUMNS: [SortKey; 5] = [
     SortKey::WorkflowName,
     SortKey::Total,
     SortKey::Failed,
     SortKey::FailureRate,
-    SortKey::TimeSavedMinutes,
     SortKey::AverageRunTimeMs,
 ];
 
@@ -144,21 +137,6 @@ fn fmt_ms(n: f64) -> String {
     }
 }
 
-fn fmt_time_saved(minutes: f64) -> String {
-    if minutes >= 60.0 {
-        let hours = minutes / 60.0;
-        if hours >= 100.0 {
-            format!("{}h", (hours.round() as i64).separate_with_commas_en())
-        } else if hours >= 10.0 {
-            format!("{:.0}h", hours)
-        } else {
-            format!("{:.1}h", hours)
-        }
-    } else {
-        format!("{}m", minutes.round() as i64)
-    }
-}
-
 fn range_label(days: i32) -> String {
     format!("Last {days} days")
 }
@@ -190,7 +168,6 @@ fn metric_display(id: MetricId, insights: &serde_json::Value) -> (String, f64, O
     let display = match id {
         MetricId::Total | MetricId::Failed => fmt_count(raw),
         MetricId::FailureRate => fmt_ratio(raw),
-        MetricId::TimeSaved => fmt_time_saved(raw),
         MetricId::AverageRunTime => fmt_ms(raw),
     };
     (display, raw, previous)
@@ -220,7 +197,7 @@ enum TrendDir {
 fn impact_of(id: MetricId) -> &'static str {
     match id {
         MetricId::Failed | MetricId::FailureRate | MetricId::AverageRunTime => "lower",
-        MetricId::TimeSaved | MetricId::Total => "higher",
+        MetricId::Total => "higher",
     }
 }
 
@@ -241,10 +218,6 @@ fn trend_for(id: MetricId, current: f64, previous: Option<f64>) -> Option<Trend>
     };
     let text = match id {
         MetricId::FailureRate => format!("{:+.1}pp", d * 100.0),
-        MetricId::TimeSaved => {
-            let sign = if d > 0.0 { "+" } else { "−" };
-            format!("{sign}{}", fmt_time_saved(d.abs()))
-        }
         MetricId::AverageRunTime => {
             let sign = if d > 0.0 { "+" } else { "−" };
             format!("{sign}{}", fmt_ms(d.abs()))
@@ -283,7 +256,6 @@ fn series_value(id: MetricId, point: &serde_json::Value) -> f64 {
         MetricId::Total => point.get("total").and_then(|v| v.as_f64()).unwrap_or(0.0),
         MetricId::Failed => point.get("failed").and_then(|v| v.as_f64()).unwrap_or(0.0),
         MetricId::FailureRate => point.get("failureRate").and_then(|v| v.as_f64()).unwrap_or(0.0) * 100.0,
-        MetricId::TimeSaved => point.get("timeSavedMinutes").and_then(|v| v.as_f64()).unwrap_or(0.0) / 60.0,
         MetricId::AverageRunTime => {
             point.get("averageRunTimeMs").and_then(|v| v.as_f64()).unwrap_or(0.0) / 1000.0
         }
@@ -471,9 +443,6 @@ fn format_cell(key: SortKey, row: &serde_json::Value) -> String {
             fmt_count(row.get(key.json_key()).and_then(|v| v.as_f64()).unwrap_or(0.0))
         }
         SortKey::FailureRate => fmt_ratio(row.get("failureRate").and_then(|v| v.as_f64()).unwrap_or(0.0)),
-        SortKey::TimeSavedMinutes => {
-            fmt_time_saved(row.get("timeSavedMinutes").and_then(|v| v.as_f64()).unwrap_or(0.0))
-        }
         SortKey::AverageRunTimeMs => {
             fmt_ms(row.get("averageRunTimeMs").and_then(|v| v.as_f64()).unwrap_or(0.0))
         }
@@ -486,19 +455,31 @@ pub fn InsightsPanel(#[props(default)] refresh_key: u32) -> Element {
     let mut days = use_signal(|| 7_i32);
     let mut err = use_signal(|| None::<String>);
     let mut loading = use_signal(|| true);
-    let mut tick = use_signal(|| 0_u32);
-    let mut selected = use_signal(|| MetricId::TimeSaved);
-    let mut sort_key = use_signal(|| SortKey::TimeSavedMinutes);
+    let mut fetch_epoch = use_signal(|| 0_u32);
+    let mut selected = use_signal(|| MetricId::AverageRunTime);
+    let mut sort_key = use_signal(|| SortKey::AverageRunTimeMs);
     let mut sort_desc = use_signal(|| true);
 
+    // Props aren't reactive — mirror so parent refresh_key bumps re-fetch.
+    let mut refresh_sig = use_signal(|| refresh_key);
+    if *refresh_sig.peek() != refresh_key {
+        refresh_sig.set(refresh_key);
+    }
+
     use_effect(move || {
-        let _ = refresh_key;
-        let _ = tick();
+        let _ = refresh_sig();
+        let _ = days();
+        let _ = fetch_epoch();
+        let epoch = fetch_epoch();
         let d = days();
         loading.set(true);
         spawn(async move {
-            let path = format!("/api/insights?days={d}");
-            match crate::api::get_json(&path).await {
+            let path = format!("/api/insights?days={d}&_={epoch}");
+            let result = crate::api::get_json(&path).await;
+            if fetch_epoch() != epoch {
+                return;
+            }
+            match result {
                 Ok(v) => {
                     insights.set(v.get("insights").cloned());
                     err.set(None);
@@ -566,13 +547,15 @@ pub fn InsightsPanel(#[props(default)] refresh_key: u32) -> Element {
                 }
                 div { class: "flex overflow-hidden rounded-md border",
                     for d in [7_i32, 14, 30] {
-                        button {
+                        Button {
                             key: "{d}",
-                            class: if days() == d {
-                                "bg-primary px-2.5 py-1 text-xs text-primary-foreground"
+                            variant: if days() == d {
+                                ButtonVariant::Default
                             } else {
-                                "bg-card px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted"
+                                ButtonVariant::Ghost
                             },
+                            size: ButtonSize::Sm,
+                            class: Some("rounded-none px-2.5".into()),
                             onclick: move |_| days.set(d),
                             "{d}d"
                         }
@@ -582,19 +565,29 @@ pub fn InsightsPanel(#[props(default)] refresh_key: u32) -> Element {
                     variant: ButtonVariant::Outline,
                     size: ButtonSize::Sm,
                     disabled: loading(),
-                    onclick: move |_| tick.set(tick() + 1),
+                    onclick: move |_| {
+                        if loading() {
+                            return;
+                        }
+                        fetch_epoch.with_mut(|e| *e += 1);
+                    },
                     RefreshCw { class: Some(format!("h-3.5 w-3.5{}", if loading() { " animate-spin" } else { "" })) }
                     "Refresh"
                 }
             }
 
             if let Some(message) = err() {
-                div { class: "rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive",
-                    "{message}"
+                Alert {
+                    variant: AlertVariant::Destructive,
+                    class: Some("bg-destructive/10".into()),
+                    AlertDescription {
+                        class: Some("text-destructive".into()),
+                        "{message}"
+                    }
                 }
             }
 
-            div { class: "grid grid-cols-2 gap-2 lg:grid-cols-5",
+            div { class: "grid grid-cols-2 gap-2 lg:grid-cols-4",
                 for m in METRICS {
                     {
                         let active = selected() == m;
@@ -616,39 +609,44 @@ pub fn InsightsPanel(#[props(default)] refresh_key: u32) -> Element {
                             TrendKind::Negative => "text-destructive",
                             TrendKind::Neutral => "text-muted-foreground",
                         }).unwrap_or("");
+                        let card_class = if active {
+                            "px-3 py-2.5 gap-0 ring-1 ring-primary/40 border-primary transition-colors hover:bg-accent/40"
+                        } else {
+                            "px-3 py-2.5 gap-0 transition-colors hover:bg-accent/40"
+                        };
                         rsx! {
                             button {
                                 key: "{m.key()}",
-                                class: if active {
-                                    "rounded-md border border-primary px-3 py-2.5 text-left ring-1 ring-primary/40 transition-colors hover:bg-accent/40"
-                                } else {
-                                    "rounded-md border bg-card px-3 py-2.5 text-left transition-colors hover:bg-accent/40"
-                                },
+                                class: "w-full text-left",
                                 onclick: move |_| {
                                     selected.set(m);
                                     sort_key.set(m.sort_key());
                                     sort_desc.set(true);
                                 },
-                                div { class: "text-xs font-medium text-foreground", "{m.label()}" }
-                                div { class: "text-[10px] text-muted-foreground", "{range_label(days())}" }
-                                div { class: "mt-2 flex items-end justify-between gap-2",
-                                    div { class: "text-xl font-semibold tabular-nums tracking-tight", "{display}" }
-                                    if let Some(t) = trend {
-                                        span {
-                                            class: "inline-flex items-center gap-0.5 text-[11px] tabular-nums {trend_class}",
-                                            if t.dir == TrendDir::Up {
-                                                ArrowUp { class: Some("h-3 w-3".into()) }
-                                            } else if t.dir == TrendDir::Down {
-                                                ArrowDown { class: Some("h-3 w-3".into()) }
-                                            } else {
-                                                ChevronRight { class: Some("h-3 w-3".into()) }
+                                Card {
+                                    size: CardSize::Sm,
+                                    class: Some(card_class.into()),
+                                    div { class: "text-xs font-medium text-foreground", "{m.label()}" }
+                                    div { class: "text-[10px] text-muted-foreground", "{range_label(days())}" }
+                                    div { class: "mt-2 flex items-end justify-between gap-2",
+                                        div { class: "text-xl font-semibold tabular-nums tracking-tight", "{display}" }
+                                        if let Some(t) = trend {
+                                            span {
+                                                class: "inline-flex items-center gap-0.5 text-[11px] tabular-nums {trend_class}",
+                                                if t.dir == TrendDir::Up {
+                                                    ArrowUp { class: Some("h-3 w-3".into()) }
+                                                } else if t.dir == TrendDir::Down {
+                                                    ArrowDown { class: Some("h-3 w-3".into()) }
+                                                } else {
+                                                    ChevronRight { class: Some("h-3 w-3".into()) }
+                                                }
+                                                "{t.text}"
                                             }
-                                            "{t.text}"
                                         }
                                     }
-                                }
-                                div {
-                                    class: if active { "mt-2 h-0.5 rounded-full bg-primary" } else { "mt-2 h-0.5 rounded-full bg-transparent" },
+                                    div {
+                                        class: if active { "mt-2 h-0.5 rounded-full bg-primary" } else { "mt-2 h-0.5 rounded-full bg-transparent" },
+                                    }
                                 }
                             }
                         }
@@ -656,15 +654,22 @@ pub fn InsightsPanel(#[props(default)] refresh_key: u32) -> Element {
                 }
             }
 
-            div { class: "min-h-0 flex-1 overflow-hidden rounded-md border bg-card",
-                div { class: "flex h-full flex-col gap-4 overflow-y-auto p-3",
+            Card {
+                class: Some("min-h-0 flex-1 overflow-hidden p-0 gap-0".into()),
+                CardContent {
+                    class: Some("flex h-full flex-col gap-4 overflow-y-auto p-3".into()),
                     div { class: "rounded-md border bg-background/40 p-2",
                         if by_time.is_empty() {
-                            div { class: "flex h-[220px] items-center justify-center text-sm text-muted-foreground",
-                                if loading() {
-                                    "Loading chart…"
-                                } else {
-                                    "No execution data in this window"
+                            Empty {
+                                class: Some("h-[220px] border-0".into()),
+                                EmptyHeader {
+                                    EmptyDescription {
+                                        if loading() {
+                                            "Loading chart…"
+                                        } else {
+                                            "No execution data in this window"
+                                        }
+                                    }
                                 }
                             }
                         } else {
@@ -719,7 +724,7 @@ pub fn InsightsPanel(#[props(default)] refresh_key: u32) -> Element {
                                                     td { class: "px-3 py-2.5",
                                                         span { class: "font-medium underline-offset-2 hover:underline", "{name}" }
                                                     }
-                                                    for col in [SortKey::Total, SortKey::Failed, SortKey::FailureRate, SortKey::TimeSavedMinutes, SortKey::AverageRunTimeMs] {
+                                                    for col in [SortKey::Total, SortKey::Failed, SortKey::FailureRate, SortKey::AverageRunTimeMs] {
                                                         td { class: "px-3 py-2.5 tabular-nums", "{format_cell(col, row)}" }
                                                     }
                                                 }
@@ -729,9 +734,16 @@ pub fn InsightsPanel(#[props(default)] refresh_key: u32) -> Element {
                                     if !loading() && insights().is_some() && rows.is_empty() {
                                         tr {
                                             td {
-                                                colspan: "6",
-                                                class: "px-3 py-8 text-center text-muted-foreground",
-                                                "No executions in this window. Run a workflow to see metrics for {selected_meta.label().to_lowercase()}."
+                                                colspan: "5",
+                                                class: "p-0",
+                                                Empty {
+                                                    class: Some("border-0 py-8".into()),
+                                                    EmptyHeader {
+                                                        EmptyDescription {
+                                                            "No executions in this window. Run a workflow to see metrics for {selected_meta.label().to_lowercase()}."
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }

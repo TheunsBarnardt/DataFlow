@@ -1,9 +1,11 @@
 use dioxus::prelude::*;
 
-use crate::components::icons::{Download, RefreshCw, Trash2};
+use crate::components::icons::{Download, RefreshCw, ScrollText, Trash2};
 use crate::components::panels::{json_id, json_string};
 use crate::components::ui::{
-    Badge, BadgeVariant, Button, ButtonSize, ButtonVariant, ConfirmDeleteDialog,
+    Alert, AlertDescription, AlertVariant, Badge, BadgeVariant, Button, ButtonSize, ButtonVariant,
+    Card, CardSize, ConfirmDeleteDialog, Empty, EmptyDescription, EmptyHeader, EmptyMedia,
+    EmptyMediaVariant, EmptyTitle, PageLoader,
 };
 
 fn action_variant(action: &str) -> BadgeVariant {
@@ -45,14 +47,25 @@ pub fn AuditPanel(
     let mut exporting = use_signal(|| false);
     let mut clearing = use_signal(|| false);
     let mut confirm_clear = use_signal(|| false);
-    let mut tick = use_signal(|| 0_u32);
+    let mut fetch_epoch = use_signal(|| 0_u32);
+
+    // Props aren't reactive — mirror so parent refresh_key bumps re-fetch.
+    let mut refresh_sig = use_signal(|| refresh_key);
+    if *refresh_sig.peek() != refresh_key {
+        refresh_sig.set(refresh_key);
+    }
 
     use_effect(move || {
-        let _ = refresh_key;
-        let _ = tick();
+        let _ = refresh_sig();
+        let _ = fetch_epoch();
+        let epoch = fetch_epoch();
         loading.set(true);
         spawn(async move {
-            match crate::api::get_json("/api/audit?limit=80").await {
+            let result = crate::api::get_json(&format!("/api/audit?limit=80&_={epoch}")).await;
+            if fetch_epoch() != epoch {
+                return;
+            }
+            match result {
                 Ok(v) => {
                     events.set(
                         v.get("events")
@@ -136,7 +149,12 @@ pub fn AuditPanel(
                         variant: ButtonVariant::Outline,
                         size: ButtonSize::Sm,
                         disabled: loading(),
-                        onclick: move |_| tick.set(tick() + 1),
+                        onclick: move |_| {
+                            if loading() {
+                                return;
+                            }
+                            fetch_epoch.with_mut(|e| *e += 1);
+                        },
                         RefreshCw {
                             class: Some(if loading() {
                                 "h-3.5 w-3.5 animate-spin".into()
@@ -150,9 +168,18 @@ pub fn AuditPanel(
             }
 
             if let Some(message) = err() {
-                div { class: "text-sm text-destructive", "{message}" }
+                Alert {
+                    variant: AlertVariant::Destructive,
+                    AlertDescription {
+                        class: Some("text-destructive".into()),
+                        "{message}"
+                    }
+                }
             }
 
+            if loading() && events().is_empty() {
+                PageLoader { label: "Loading audit events…", class: Some("min-h-[6rem] flex-1".into()) }
+            } else {
             div { class: "min-h-0 flex-1 overflow-y-auto",
                 div { class: "flex flex-col gap-2",
                     for e in events().iter().cloned() {
@@ -173,9 +200,10 @@ pub fn AuditPanel(
                                 .get("details")
                                 .and_then(details_snippet);
                             rsx! {
-                                div {
+                                Card {
                                     key: "{id}",
-                                    class: "rounded-md border bg-card p-2 text-sm",
+                                    size: CardSize::Sm,
+                                    class: Some("gap-0 p-2 text-sm shadow-none".into()),
                                     div { class: "flex flex-wrap items-center gap-2",
                                         Badge { variant: action_v, "{action}" }
                                         span { class: "font-medium", "{resource}" }
@@ -194,14 +222,20 @@ pub fn AuditPanel(
                         }
                     }
                     if events().is_empty() && err().is_none() && !loading() {
-                        div { class: "rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground",
-                            "No audit events yet. Create, edit, or run a workflow to populate this trail."
+                        Empty { class: Some("border border-dashed".into()),
+                            EmptyHeader {
+                                EmptyMedia { variant: EmptyMediaVariant::Icon,
+                                    ScrollText { class: Some("size-5".into()) }
+                                }
+                                EmptyTitle { class: Some("text-sm".into()), "No audit events yet" }
+                                EmptyDescription {
+                                    "Create, edit, or run a workflow to populate this trail."
+                                }
+                            }
                         }
                     }
-                    if loading() && events().is_empty() {
-                        div { class: "text-sm text-muted-foreground", "Loading audit events…" }
-                    }
                 }
+            }
             }
 
             if confirm_clear() {

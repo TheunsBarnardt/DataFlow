@@ -5,7 +5,9 @@ use crate::components::icons::{
     Settings, Sun, Variable, ChevronLeft, ChevronRight,
 };
 use crate::components::settings::{visible_settings_nav, SettingsPageId};
-use crate::components::ui::{Avatar, AvatarFallback, Badge, BadgeVariant, Separator};
+use crate::components::ui::{
+    Avatar, AvatarFallback, Badge, BadgeVariant, Button, ButtonSize, ButtonVariant, Separator,
+};
 use crate::theme::Theme;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
@@ -80,10 +82,10 @@ pub fn MainSidebar(
                         span { class: "text-sm font-semibold tracking-tight", "DataFlow" }
                     }
                 }
-                button {
-                    r#type: "button",
-                    class: "flex h-7 w-7 items-center justify-center rounded-md border text-muted-foreground hover:bg-muted hover:text-foreground",
-                    title: "New workflow",
+                Button {
+                    size: ButtonSize::IconSm,
+                    variant: ButtonVariant::Outline,
+                    title: Some("New workflow".into()),
                     onclick: move |_| on_new_workflow.call(()),
                     Plus { class: Some("h-4 w-4".into()) }
                 }
@@ -104,9 +106,9 @@ pub fn MainSidebar(
                         div { class: "mt-3 px-2.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground",
                             "Projects"
                         }
-                        button {
-                            r#type: "button",
-                            class: "mt-1 flex items-center gap-2 rounded-md px-2.5 py-2 text-[13px] text-muted-foreground hover:bg-muted",
+                        Button {
+                            variant: ButtonVariant::Ghost,
+                            class: Some("mt-1 h-auto w-full justify-start gap-2 px-2.5 py-2 text-[13px] text-muted-foreground".into()),
                             onclick: move |_| on_new_workflow.call(()),
                             Plus { class: Some("h-3.5 w-3.5".into()) }
                             "Add project"
@@ -137,14 +139,14 @@ pub fn MainSidebar(
             }
 
             div { class: "space-y-1 border-t p-2",
-                button {
-                    r#type: "button",
-                    class: if collapsed {
-                        "flex w-full items-center justify-center gap-2.5 rounded-md px-0 py-2 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground"
+                Button {
+                    variant: ButtonVariant::Ghost,
+                    class: Some(if collapsed {
+                        "h-auto w-full justify-center gap-2.5 px-0 py-2 text-[13px] text-muted-foreground"
                     } else {
-                        "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground"
-                    },
-                    title: if theme == Theme::Dark { "Light mode" } else { "Dark mode" },
+                        "h-auto w-full justify-start gap-2.5 px-2.5 py-2 text-[13px] text-muted-foreground"
+                    }.into()),
+                    title: Some(if theme == Theme::Dark { "Light mode" } else { "Dark mode" }.into()),
                     onclick: move |_| on_toggle_theme.call(()),
                     if theme == Theme::Dark {
                         Sun { class: Some("h-4 w-4".into()) }
@@ -156,26 +158,29 @@ pub fn MainSidebar(
                     }
                 }
                 div { class: "relative",
-                    button {
-                        r#type: "button",
-                        class: {
-                            let active = section == NavSection::Settings || settings_open();
-                            if collapsed {
-                                if active {
-                                    "flex w-full items-center justify-center gap-2.5 rounded-md px-0 py-2 text-[13px] bg-accent font-medium text-foreground outline-none"
-                                } else {
-                                    "flex w-full items-center justify-center gap-2.5 rounded-md px-0 py-2 text-[13px] text-muted-foreground outline-none hover:bg-muted hover:text-foreground"
-                                }
-                            } else if active {
-                                "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] bg-accent font-medium text-foreground outline-none"
+                    {
+                        let active = section == NavSection::Settings || settings_open();
+                        let settings_class = if collapsed {
+                            if active {
+                                "h-auto w-full justify-center gap-2.5 px-0 py-2 text-[13px] bg-accent font-medium text-foreground"
                             } else {
-                                "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] text-muted-foreground outline-none hover:bg-muted hover:text-foreground"
+                                "h-auto w-full justify-center gap-2.5 px-0 py-2 text-[13px] text-muted-foreground"
                             }
-                        },
-                        title: "Settings",
-                        onclick: move |_| settings_open.with_mut(|v| *v = !*v),
-                        Settings { class: Some("h-4 w-4".into()) }
-                        if !collapsed { "Settings" }
+                        } else if active {
+                            "h-auto w-full justify-start gap-2.5 px-2.5 py-2 text-[13px] bg-accent font-medium text-foreground"
+                        } else {
+                            "h-auto w-full justify-start gap-2.5 px-2.5 py-2 text-[13px] text-muted-foreground"
+                        };
+                        rsx! {
+                            Button {
+                                variant: if active { ButtonVariant::Secondary } else { ButtonVariant::Ghost },
+                                class: Some(settings_class.into()),
+                                title: Some("Settings".into()),
+                                onclick: move |_| settings_open.with_mut(|v| *v = !*v),
+                                Settings { class: Some("h-4 w-4".into()) }
+                                if !collapsed { "Settings" }
+                            }
+                        }
                     }
                     if settings_open() {
                         div {
@@ -188,7 +193,7 @@ pub fn MainSidebar(
                                         div {
                                             key: "{label.unwrap_or(\"g\")}-{gi}",
                                             if gi > 0 {
-                                                div { class: "my-2 h-px bg-border" }
+                                                Separator { class: Some("my-2".into()) }
                                             }
                                             if let Some(label) = label {
                                                 div { class: "px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground",
@@ -201,10 +206,10 @@ pub fn MainSidebar(
                                                     let item_label = item.label;
                                                     let badge = item.badge;
                                                     rsx! {
-                                                        button {
+                                                        Button {
                                                             key: "{item_label}",
-                                                            r#type: "button",
-                                                            class: "flex w-full items-center justify-between gap-2 rounded-sm px-2.5 py-2 text-left text-[13px] hover:bg-accent hover:text-accent-foreground",
+                                                            variant: ButtonVariant::Ghost,
+                                                            class: Some("h-auto w-full justify-between gap-2 rounded-sm px-2.5 py-2 text-left text-[13px]".into()),
                                                             onclick: move |_| {
                                                                 settings_open.set(false);
                                                                 on_open_settings.call(page);
@@ -229,14 +234,14 @@ pub fn MainSidebar(
                     }
                 }
                 Separator { class: Some("my-1".into()) }
-                button {
-                    r#type: "button",
-                    class: if collapsed {
-                        "flex w-full items-center justify-center gap-2 rounded-md px-0 py-2 text-left hover:bg-muted"
+                Button {
+                    variant: ButtonVariant::Ghost,
+                    class: Some(if collapsed {
+                        "h-auto w-full justify-center gap-2 px-0 py-2 text-left"
                     } else {
-                        "flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left hover:bg-muted"
-                    },
-                    title: "Profile",
+                        "h-auto w-full justify-start gap-2 px-2.5 py-2 text-left"
+                    }.into()),
+                    title: Some("Profile".into()),
                     onclick: move |_| on_profile.call(()),
                     Avatar {
                         class: Some("size-7 after:border-transparent".into()),
@@ -254,26 +259,26 @@ pub fn MainSidebar(
                     }
                 }
                 if let Some(logout) = on_logout {
-                    button {
-                        r#type: "button",
-                        class: if collapsed {
-                            "flex w-full items-center justify-center gap-2.5 rounded-md px-0 py-2 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground"
+                    Button {
+                        variant: ButtonVariant::Ghost,
+                        class: Some(if collapsed {
+                            "h-auto w-full justify-center gap-2.5 px-0 py-2 text-[13px] text-muted-foreground"
                         } else {
-                            "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground"
-                        },
-                        title: "Sign out",
+                            "h-auto w-full justify-start gap-2.5 px-2.5 py-2 text-[13px] text-muted-foreground"
+                        }.into()),
+                        title: Some("Sign out".into()),
                         onclick: move |_| logout.call(()),
                         LogOut { class: Some("h-4 w-4".into()) }
                         if !collapsed { "Sign out" }
                     }
                 }
-                button {
-                    r#type: "button",
-                    class: if collapsed {
-                        "flex w-full items-center justify-center gap-2 rounded-md px-0 py-1.5 text-[12px] text-muted-foreground hover:bg-muted"
+                Button {
+                    variant: ButtonVariant::Ghost,
+                    class: Some(if collapsed {
+                        "h-auto w-full justify-center gap-2 px-0 py-1.5 text-[12px] text-muted-foreground"
                     } else {
-                        "flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-[12px] text-muted-foreground hover:bg-muted"
-                    },
+                        "h-auto w-full justify-start gap-2 px-2.5 py-1.5 text-[12px] text-muted-foreground"
+                    }.into()),
                     onclick: move |_| on_toggle_collapse.call(()),
                     if collapsed {
                         ChevronRight { class: Some("h-4 w-4".into()) }
@@ -299,20 +304,20 @@ fn NavBtn(
     let active = section == id;
     let class = if collapsed {
         if active {
-            "flex w-full items-center justify-center gap-2.5 rounded-md px-0 py-2 text-left text-[13px] transition-colors bg-accent font-medium text-foreground"
+            "h-auto w-full justify-center gap-2.5 px-0 py-2 text-left text-[13px] bg-accent font-medium text-foreground"
         } else {
-            "flex w-full items-center justify-center gap-2.5 rounded-md px-0 py-2 text-left text-[13px] transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
+            "h-auto w-full justify-center gap-2.5 px-0 py-2 text-left text-[13px] text-muted-foreground"
         }
     } else if active {
-        "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] transition-colors bg-accent font-medium text-foreground"
+        "h-auto w-full justify-start gap-2.5 px-2.5 py-2 text-left text-[13px] bg-accent font-medium text-foreground"
     } else {
-        "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
+        "h-auto w-full justify-start gap-2.5 px-2.5 py-2 text-left text-[13px] text-muted-foreground"
     };
     rsx! {
-        button {
-            r#type: "button",
-            title: "{label}",
-            class: "{class}",
+        Button {
+            variant: if active { ButtonVariant::Secondary } else { ButtonVariant::Ghost },
+            title: Some(label.to_string()),
+            class: Some(class.into()),
             onclick: move |_| on_navigate.call(id),
             {icon}
             if !collapsed {

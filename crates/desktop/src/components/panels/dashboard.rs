@@ -151,9 +151,9 @@ pub fn DashboardPanel(
                                             div {
                                                 key: "{id}",
                                                 class: "flex items-center justify-between gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted",
-                                                button {
-                                                    r#type: "button",
-                                                    class: "min-w-0 flex-1 truncate text-left font-medium",
+                                                Button {
+                                                    variant: ButtonVariant::Link,
+                                                    class: Some("min-w-0 h-auto flex-1 justify-start truncate p-0 text-left font-medium".into()),
                                                     onclick: move |_| on_open_workflow.call(id_open.clone()),
                                                     "{name}"
                                                 }
@@ -265,12 +265,24 @@ pub fn DashboardPanel(
 #[component]
 fn StatCard(label: &'static str, value: usize, onclick: EventHandler<()>) -> Element {
     rsx! {
-        button {
-            r#type: "button",
-            class: "rounded-xl border bg-card p-4 text-left shadow-sm transition-all hover:bg-accent/60 hover:shadow-md active:scale-[0.99]",
+        div {
+            role: "button",
+            tabindex: "0",
+            class: "cursor-pointer text-left outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl",
             onclick: move |_| onclick.call(()),
-            div { class: "text-xs font-medium uppercase tracking-wide text-muted-foreground", "{label}" }
-            div { class: "mt-2 text-2xl font-semibold tabular-nums tracking-tight", "{value}" }
+            onkeydown: move |e: KeyboardEvent| {
+                if e.key() == Key::Enter || e.key() == Key::Character(" ".into()) {
+                    onclick.call(());
+                }
+            },
+            Card {
+                size: CardSize::Sm,
+                class: Some("transition-all hover:bg-accent/60 hover:shadow-md active:scale-[0.99]".into()),
+                CardContent { class: Some("p-4".into()),
+                    div { class: "text-xs font-medium uppercase tracking-wide text-muted-foreground", "{label}" }
+                    div { class: "mt-2 text-2xl font-semibold tabular-nums tracking-tight", "{value}" }
+                }
+            }
         }
     }
 }

@@ -193,6 +193,21 @@ impl JwtAuth {
     }
 }
 
+/// Verify an HS256 JWT with an arbitrary secret and return the payload object.
+/// Used by public `/apis/{slug}` project auth (claims shape varies by issuer).
+pub fn verify_hs256_jwt(token: &str, secret: &str) -> Result<Value, SecurityError> {
+    let mut validation = Validation::default();
+    validation.validate_exp = true;
+    validation.required_spec_claims.clear();
+    decode::<Value>(
+        token,
+        &DecodingKey::from_secret(secret.as_bytes()),
+        &validation,
+    )
+    .map(|d| d.claims)
+    .map_err(|_| SecurityError::Unauthorized)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

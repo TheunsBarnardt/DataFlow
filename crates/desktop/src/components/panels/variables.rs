@@ -1,7 +1,12 @@
 use dioxus::prelude::*;
 
+use crate::components::icons::Variable as VariableIcon;
 use crate::components::panels::{json_id, json_string};
-use crate::components::ui::{ConfirmDeleteDialog, PageLoader};
+use crate::components::ui::{
+    Alert, AlertDescription, AlertVariant, Button, ButtonSize, ButtonVariant, Card,
+    ConfirmDeleteDialog, Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant,
+    EmptyTitle, Input, PageLoader,
+};
 
 #[component]
 pub fn VariablesPanel() -> Element {
@@ -124,15 +129,13 @@ pub fn VariablesPanel() -> Element {
                     }
                 }
                 div { class: "flex flex-wrap items-center gap-2",
-                    input {
-                        class: "flex h-9 w-56 rounded-md border border-input bg-transparent px-3 text-sm",
-                        placeholder: "Search variables...",
-                        value: "{query()}",
-                        oninput: move |e| query.set(e.value()),
+                    Input {
+                        class: Some("w-56".into()),
+                        placeholder: Some("Search variables...".into()),
+                        value: query(),
+                        oninput: move |e: FormEvent| query.set(e.value()),
                     }
-                    button {
-                        r#type: "button",
-                        class: "inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm text-primary-foreground disabled:opacity-50",
+                    Button {
                         disabled: editing_id().as_deref() == Some("new"),
                         onclick: move |_| {
                             editing_id.set(Some("new".into()));
@@ -145,7 +148,14 @@ pub fn VariablesPanel() -> Element {
             }
 
             if let Some(message) = err() {
-                div { class: "border-b bg-destructive/10 px-6 py-2 text-sm text-destructive", "{message}" }
+                Alert {
+                    variant: AlertVariant::Destructive,
+                    class: Some("shrink-0 rounded-none border-x-0 border-t-0 border-b".into()),
+                    AlertDescription {
+                        class: Some("text-destructive".into()),
+                        "{message}"
+                    }
+                }
             }
 
             if loading() {
@@ -153,7 +163,7 @@ pub fn VariablesPanel() -> Element {
             } else {
             div { class: "min-h-0 flex-1 overflow-y-auto",
                 div { class: "p-6",
-                    div { class: "overflow-hidden rounded-lg border bg-card",
+                    Card { class: Some("overflow-hidden p-0 gap-0".into()),
                         div { class: "grid grid-cols-[1.2fr_1.4fr_1.2fr_auto] gap-3 border-b bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground",
                             div { "Key" }
                             div { "Value" }
@@ -163,17 +173,15 @@ pub fn VariablesPanel() -> Element {
 
                         if editing_id().as_deref() == Some("new") {
                             div { class: "grid grid-cols-[1.2fr_1.4fr_1.2fr_auto] items-center gap-3 border-b px-4 py-3",
-                                input {
-                                    class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                                    placeholder: "Key",
-                                    value: "{draft_key()}",
-                                    oninput: move |e| draft_key.set(e.value()),
+                                Input {
+                                    placeholder: Some("Key".into()),
+                                    value: draft_key(),
+                                    oninput: move |e: FormEvent| draft_key.set(e.value()),
                                 }
-                                input {
-                                    class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                                    placeholder: "Value",
-                                    value: "{draft_value()}",
-                                    oninput: move |e| draft_value.set(e.value()),
+                                Input {
+                                    placeholder: Some("Value".into()),
+                                    value: draft_value(),
+                                    oninput: move |e: FormEvent| draft_value.set(e.value()),
                                 }
                                 code { class: "truncate text-sm text-muted-foreground",
                                     {
@@ -184,15 +192,14 @@ pub fn VariablesPanel() -> Element {
                                     }
                                 }
                                 div { class: "flex justify-end gap-2",
-                                    button {
-                                        r#type: "button",
-                                        class: "inline-flex h-8 items-center rounded-md px-3 text-xs text-muted-foreground hover:bg-muted",
+                                    Button {
+                                        size: ButtonSize::Sm,
+                                        variant: ButtonVariant::Ghost,
                                         onclick: cancel_edit,
                                         "Cancel"
                                     }
-                                    button {
-                                        r#type: "button",
-                                        class: "inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs text-primary-foreground disabled:opacity-50",
+                                    Button {
+                                        size: ButtonSize::Sm,
                                         disabled: busy(),
                                         onclick: save,
                                         "Save"
@@ -217,15 +224,13 @@ pub fn VariablesPanel() -> Element {
                                         key: "{id}",
                                         class: "grid grid-cols-[1.2fr_1.4fr_1.2fr_auto] items-center gap-3 border-b px-4 py-3 last:border-b-0",
                                         if is_editing {
-                                            input {
-                                                class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                                                value: "{draft_key()}",
-                                                oninput: move |e| draft_key.set(e.value()),
+                                            Input {
+                                                value: draft_key(),
+                                                oninput: move |e: FormEvent| draft_key.set(e.value()),
                                             }
-                                            input {
-                                                class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                                                value: "{draft_value()}",
-                                                oninput: move |e| draft_value.set(e.value()),
+                                            Input {
+                                                value: draft_value(),
+                                                oninput: move |e: FormEvent| draft_value.set(e.value()),
                                             }
                                             code { class: "truncate text-sm text-muted-foreground",
                                                 {
@@ -236,15 +241,14 @@ pub fn VariablesPanel() -> Element {
                                                 }
                                             }
                                             div { class: "flex justify-end gap-2",
-                                                button {
-                                                    r#type: "button",
-                                                    class: "inline-flex h-8 items-center rounded-md px-3 text-xs text-muted-foreground hover:bg-muted",
+                                                Button {
+                                                    size: ButtonSize::Sm,
+                                                    variant: ButtonVariant::Ghost,
                                                     onclick: cancel_edit,
                                                     "Cancel"
                                                 }
-                                                button {
-                                                    r#type: "button",
-                                                    class: "inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs text-primary-foreground disabled:opacity-50",
+                                                Button {
+                                                    size: ButtonSize::Sm,
                                                     disabled: busy(),
                                                     onclick: save,
                                                     "Save"
@@ -255,9 +259,9 @@ pub fn VariablesPanel() -> Element {
                                             div { class: "truncate text-sm text-muted-foreground", "{value}" }
                                             code { class: "truncate text-sm text-muted-foreground", "$vars.{key}" }
                                             div { class: "flex justify-end gap-2",
-                                                button {
-                                                    r#type: "button",
-                                                    class: "inline-flex h-8 items-center rounded-md border px-3 text-xs hover:bg-muted",
+                                                Button {
+                                                    size: ButtonSize::Sm,
+                                                    variant: ButtonVariant::Outline,
                                                     onclick: move |_| {
                                                         editing_id.set(Some(edit_id.clone()));
                                                         draft_key.set(edit_key.clone());
@@ -265,9 +269,9 @@ pub fn VariablesPanel() -> Element {
                                                     },
                                                     "Edit"
                                                 }
-                                                button {
-                                                    r#type: "button",
-                                                    class: "inline-flex h-8 items-center rounded-md px-3 text-xs text-muted-foreground hover:bg-muted",
+                                                Button {
+                                                    size: ButtonSize::Sm,
+                                                    variant: ButtonVariant::Ghost,
                                                     onclick: move |_| {
                                                         confirm_delete.set(Some((del_id.clone(), del_key.clone())));
                                                     },
@@ -280,8 +284,14 @@ pub fn VariablesPanel() -> Element {
                             }
                         }
                         if filtered.is_empty() && editing_id().as_deref() != Some("new") {
-                            div { class: "px-4 py-10 text-center text-sm text-muted-foreground",
-                                "No variables yet. Click Add variable to create one."
+                            Empty { class: Some("border-0 py-10".into()),
+                                EmptyHeader {
+                                    EmptyMedia { variant: EmptyMediaVariant::Icon,
+                                        VariableIcon { class: Some("size-5".into()) }
+                                    }
+                                    EmptyTitle { class: Some("text-sm".into()), "No variables yet" }
+                                    EmptyDescription { "Click Add variable to create one." }
+                                }
                             }
                         }
                     }

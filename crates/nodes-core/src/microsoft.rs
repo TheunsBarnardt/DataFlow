@@ -5,12 +5,12 @@ use botflow_node_api::{
 use serde_json::json;
 use std::sync::Arc;
 
-fn meta(ty: &str, name: &str) -> NodeMetadata {
+fn meta(ty: &str, name: &str, description: &str) -> NodeMetadata {
     NodeMetadata {
         type_name: ty.into(),
         display_name: name.into(),
         category: "microsoft".into(),
-        description: name.into(),
+        description: description.into(),
         version: 1,
         is_trigger: false,
         inputs: vec![PortDef {
@@ -50,7 +50,11 @@ pub struct MicrosoftGraphNode;
 #[async_trait]
 impl NodeExecutor for MicrosoftGraphNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("microsoftGraph", "Microsoft Graph")
+        meta(
+            "microsoftGraph",
+            "Microsoft Graph",
+            "Call Microsoft Graph REST endpoints",
+        )
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let path = ctx
@@ -69,7 +73,7 @@ pub struct OutlookNode;
 #[async_trait]
 impl NodeExecutor for OutlookNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("outlook", "Outlook")
+        meta("outlook", "Outlook", "Read or send Outlook mail via Graph")
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let op = ctx
@@ -93,7 +97,11 @@ pub struct ExcelOnlineNode;
 #[async_trait]
 impl NodeExecutor for ExcelOnlineNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("excelOnline", "Excel Online")
+        meta(
+            "excelOnline",
+            "Excel Online",
+            "Work with Excel workbooks in OneDrive or SharePoint",
+        )
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let path = ctx
@@ -111,7 +119,11 @@ pub struct SharepointNode;
 #[async_trait]
 impl NodeExecutor for SharepointNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("sharepoint", "SharePoint")
+        meta(
+            "sharepoint",
+            "SharePoint",
+            "Access SharePoint sites, lists, and files",
+        )
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let site = ctx
@@ -136,7 +148,11 @@ pub struct DynamicsNode;
 #[async_trait]
 impl NodeExecutor for DynamicsNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("dynamics", "Dataverse")
+        meta(
+            "dynamics",
+            "Dataverse",
+            "Query or update Dataverse / Dynamics 365 records",
+        )
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let base = std::env::var("DYNAMICS_BASE_URL")

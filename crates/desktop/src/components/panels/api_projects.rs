@@ -1,8 +1,11 @@
 use dioxus::prelude::*;
 
-use crate::components::icons::{ChevronRight, Plus, Search};
+use crate::components::icons::{ChevronRight, MoreHorizontal, Pencil, Plus, Search, Trash2};
 use crate::components::panels::{json_bool, json_id, json_string};
-use crate::components::ui::{PageLoader, Switch};
+use crate::components::ui::{
+    Alert, AlertDescription, AlertVariant, Button, ButtonSize, ButtonVariant, Card,
+    ConfirmDeleteDialog, Empty, EmptyDescription, EmptyHeader, Input, Label, PageLoader, Switch,
+};
 
 fn method_badge_class(method: &str) -> &'static str {
     match method.to_uppercase().as_str() {
@@ -63,6 +66,10 @@ pub fn ApiProjectsPanel(
     let mut version_draft = use_signal(String::new);
     let mut saving_version = use_signal(|| false);
     let mut endpoint_query = use_signal(String::new);
+    let mut menu_for = use_signal(|| None::<String>);
+    let mut confirm_delete = use_signal(|| None::<(String, String)>);
+    let mut editing_project = use_signal(|| None::<(String, String, String)>);
+    let mut busy = use_signal(|| false);
 
     let selected = selected_project_id.clone();
 
@@ -189,9 +196,10 @@ pub fn ApiProjectsPanel(
             div { class: "flex h-full flex-col",
                 div { class: "flex flex-wrap items-end justify-between gap-3 border-b px-6 py-5",
                     div {
-                        button {
-                            r#type: "button",
-                            class: "mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground",
+                        Button {
+                            variant: ButtonVariant::Ghost,
+                            size: ButtonSize::Sm,
+                            class: Some("mb-2 h-auto gap-1 px-0 text-xs text-muted-foreground".into()),
                             onclick: move |_| set_selected(None),
                             "← All API projects"
                         }
@@ -201,14 +209,14 @@ pub fn ApiProjectsPanel(
                             span { "·" }
                             if editing_version() {
                                 span { class: "inline-flex items-center gap-1.5",
-                                    input {
-                                        class: "flex h-7 w-20 rounded-md border border-input bg-transparent px-2 text-sm",
-                                        value: "{version_draft()}",
-                                        oninput: move |e| version_draft.set(e.value()),
+                                    Input {
+                                        class: Some("h-7 w-20 px-2".into()),
+                                        value: version_draft(),
+oninput: move |e: FormEvent| version_draft.set(e.value()),
                                     }
-                                    button {
-                                        r#type: "button",
-                                        class: "inline-flex h-7 items-center rounded-md bg-primary px-2 text-xs text-primary-foreground disabled:opacity-50",
+                                    Button {
+                                        size: ButtonSize::Sm,
+                                        class: Some("h-7 px-2 text-xs".into()),
                                         disabled: saving_version(),
                                         onclick: move |_| {
                                             let id = sel_for_version.clone();
@@ -254,19 +262,21 @@ pub fn ApiProjectsPanel(
                                         },
                                         "Save"
                                     }
-                                    button {
-                                        r#type: "button",
-                                        class: "inline-flex h-7 items-center rounded-md px-2 text-xs text-muted-foreground hover:bg-muted",
+                                    Button {
+                                        variant: ButtonVariant::Ghost,
+                                        size: ButtonSize::Sm,
+                                        class: Some("h-7 px-2 text-xs".into()),
                                         disabled: saving_version(),
                                         onclick: move |_| editing_version.set(false),
                                         "Cancel"
                                     }
                                 }
                             } else {
-                                button {
-                                    r#type: "button",
-                                    class: "rounded px-1 font-medium text-foreground hover:bg-muted",
-                                    title: "Edit version",
+                                Button {
+                                    variant: ButtonVariant::Ghost,
+                                    size: ButtonSize::Sm,
+                                    class: Some("h-auto rounded px-1 font-medium".into()),
+                                    title: Some("Edit version".into()),
                                     onclick: move |_| {
                                         version_draft.set(version_for_edit.clone());
                                         editing_version.set(true);
@@ -295,17 +305,16 @@ pub fn ApiProjectsPanel(
                 }
 
                 div { class: "flex flex-wrap items-end gap-2 border-b px-6 py-3",
-                    div { class: "min-w-[200px] flex-1",
-                        label { class: "text-xs text-muted-foreground", "New path" }
-                        input {
-                            class: "mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                            placeholder: "Controller/Action",
-                            value: "{ep_path()}",
-                            oninput: move |e| ep_path.set(e.value()),
+                    div { class: "min-w-[200px] flex-1 flex flex-col gap-1",
+                        Label { class: Some("text-xs text-muted-foreground".into()), "New path" }
+                        Input {
+                            placeholder: Some("Controller/Action".into()),
+                            value: ep_path(),
+                            oninput: move |e: FormEvent| ep_path.set(e.value()),
                         }
                     }
-                    div {
-                        label { class: "text-xs text-muted-foreground", "Method" }
+                    div { class: "flex flex-col gap-1",
+                        Label { class: Some("text-xs text-muted-foreground".into()), "Method" }
                         select {
                             class: "mt-1 flex h-9 w-[7.5rem] rounded-md border border-input bg-transparent px-2 text-sm",
                             value: "{ep_method()}",
@@ -317,9 +326,7 @@ pub fn ApiProjectsPanel(
                             option { value: "DELETE", "DELETE" }
                         }
                     }
-                    button {
-                        r#type: "button",
-                        class: "inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm text-primary-foreground disabled:opacity-50",
+                    Button {
                         disabled: adding_endpoint(),
                         onclick: move |_| {
                             let id = sel_for_add.clone();
@@ -365,7 +372,14 @@ pub fn ApiProjectsPanel(
                 }
 
                 if let Some(message) = err() {
-                    div { class: "border-b bg-destructive/10 px-6 py-2 text-sm text-destructive", "{message}" }
+                    Alert {
+                        variant: AlertVariant::Destructive,
+                        class: Some("rounded-none border-x-0 border-t-0 bg-destructive/10".into()),
+                        AlertDescription {
+                            class: Some("text-destructive".into()),
+                            "{message}"
+                        }
+                    }
                 }
 
                 div { class: "min-h-0 flex-1 overflow-y-auto",
@@ -373,23 +387,25 @@ pub fn ApiProjectsPanel(
                         div { class: "mb-3 flex flex-wrap items-center justify-between gap-2",
                             div { class: "relative min-w-[200px] max-w-md flex-1",
                                 Search { class: Some("pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground".into()) }
-                                input {
-                                    class: "flex h-9 w-full rounded-md border border-input bg-transparent pl-8 pr-3 text-sm",
-                                    placeholder: "Search endpoints...",
-                                    value: "{endpoint_query()}",
-                                    oninput: move |e| endpoint_query.set(e.value()),
+                                Input {
+                                    class: Some("pl-8".into()),
+                                    placeholder: Some("Search endpoints...".into()),
+                                    value: endpoint_query(),
+                                    oninput: move |e: FormEvent| endpoint_query.set(e.value()),
                                 }
                             }
                             div { class: "text-xs text-muted-foreground", "{count_label}" }
                         }
-                        div { class: "overflow-hidden rounded-lg border bg-card",
-                            div { class: "grid grid-cols-[90px_1.4fr_1fr_80px_100px_80px] gap-3 border-b bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground",
-                                div { "Method" }
-                                div { "Path" }
-                                div { "Summary" }
-                                div { "Version" }
-                                div { "Auth" }
-                                div {}
+                        Card {
+                            class: Some("overflow-hidden p-0 gap-0 shadow-sm".into()),
+                            div {
+                                class: "flex w-full items-center gap-3 border-b bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground",
+                                div { class: "shrink-0", style: "width:90px", "Method" }
+                                div { class: "min-w-0 flex-1", "Path" }
+                                div { class: "min-w-0 flex-1", "Summary" }
+                                div { class: "shrink-0", style: "width:80px", "Version" }
+                                div { class: "shrink-0", style: "width:100px", "Auth" }
+                                div { class: "w-10 shrink-0" }
                             }
                             for ep in filtered.iter().cloned() {
                                 {
@@ -412,22 +428,22 @@ pub fn ApiProjectsPanel(
                                         button {
                                             key: "{eid}",
                                             r#type: "button",
-                                            class: "grid w-full grid-cols-[90px_1.4fr_1fr_80px_100px_80px] gap-3 border-b px-4 py-3 text-left text-sm last:border-b-0 hover:bg-muted/50",
+                                            class: "flex w-full items-center gap-3 border-b px-4 py-3 text-left text-sm last:border-b-0 hover:bg-muted/50",
                                             onclick: move |_| {
                                                 if !wid.is_empty() {
                                                     on_open_workflow.call(wid.clone());
                                                 }
                                             },
-                                            div {
+                                            div { class: "shrink-0", style: "width:90px",
                                                 span { class: "inline-flex items-center rounded-md border px-1.5 py-0.5 text-[10px] font-medium {badge}",
                                                     "{method}"
                                                 }
                                             }
-                                            div { class: "truncate font-medium", "{path}" }
-                                            div { class: "truncate text-muted-foreground", "{summary}" }
-                                            div { class: "text-xs text-muted-foreground", "{ver}" }
-                                            div { class: "text-xs text-muted-foreground", "{ep_auth}" }
-                                            div { class: "flex justify-end text-muted-foreground",
+                                            div { class: "min-w-0 flex-1 truncate font-medium", "{path}" }
+                                            div { class: "min-w-0 flex-1 truncate text-muted-foreground", "{summary}" }
+                                            div { class: "shrink-0 text-xs text-muted-foreground", style: "width:80px", "{ver}" }
+                                            div { class: "shrink-0 text-xs text-muted-foreground", style: "width:100px", "{ep_auth}" }
+                                            div { class: "flex w-10 shrink-0 justify-end text-muted-foreground",
                                                 ChevronRight { class: Some("h-4 w-4".into()) }
                                             }
                                         }
@@ -435,12 +451,20 @@ pub fn ApiProjectsPanel(
                                 }
                             }
                             if endpoints.is_empty() {
-                                div { class: "px-4 py-8 text-center text-sm text-muted-foreground",
-                                    "No endpoints yet — add one above."
+                                Empty {
+                                    class: Some("border-0 px-4 py-8".into()),
+                                    EmptyHeader {
+                                        EmptyDescription { "No endpoints yet — add one above." }
+                                    }
                                 }
                             } else if filtered.is_empty() {
-                                div { class: "px-4 py-8 text-center text-sm text-muted-foreground",
-                                    "No endpoints match \"{endpoint_query().trim()}\"."
+                                Empty {
+                                    class: Some("border-0 px-4 py-8".into()),
+                                    EmptyHeader {
+                                        EmptyDescription {
+                                            "No endpoints match \"{endpoint_query().trim()}\"."
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -462,36 +486,31 @@ pub fn ApiProjectsPanel(
             }
 
             div { class: "flex flex-wrap items-end gap-2 border-b px-6 py-3",
-                div { class: "min-w-[180px]",
-                    label { class: "text-xs text-muted-foreground", "Name" }
-                    input {
-                        class: "mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                        placeholder: "My API",
-                        value: "{new_name()}",
-                        oninput: move |e| new_name.set(e.value()),
+                div { class: "min-w-[180px] flex flex-col gap-1",
+                    Label { class: Some("text-xs text-muted-foreground".into()), "Name" }
+                    Input {
+                        placeholder: Some("My API".into()),
+                        value: new_name(),
+                        oninput: move |e: FormEvent| new_name.set(e.value()),
                     }
                 }
-                div { class: "min-w-[140px]",
-                    label { class: "text-xs text-muted-foreground", "Slug" }
-                    input {
-                        class: "mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                        placeholder: "my-api",
-                        value: "{new_slug()}",
-                        oninput: move |e| new_slug.set(e.value()),
+                div { class: "min-w-[140px] flex flex-col gap-1",
+                    Label { class: Some("text-xs text-muted-foreground".into()), "Slug" }
+                    Input {
+                        placeholder: Some("my-api".into()),
+                        value: new_slug(),
+                        oninput: move |e: FormEvent| new_slug.set(e.value()),
                     }
                 }
-                div { class: "w-[100px]",
-                    label { class: "text-xs text-muted-foreground", "Version" }
-                    input {
-                        class: "mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                        placeholder: "v1",
-                        value: "{new_version()}",
-                        oninput: move |e| new_version.set(e.value()),
+                div { class: "w-[100px] flex flex-col gap-1",
+                    Label { class: Some("text-xs text-muted-foreground".into()), "Version" }
+                    Input {
+                        placeholder: Some("v1".into()),
+                        value: new_version(),
+                        oninput: move |e: FormEvent| new_version.set(e.value()),
                     }
                 }
-                button {
-                    r#type: "button",
-                    class: "inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm text-primary-foreground disabled:opacity-50",
+                Button {
                     disabled: creating(),
                     onclick: move |_| {
                         creating.set(true);
@@ -541,7 +560,14 @@ pub fn ApiProjectsPanel(
             }
 
             if let Some(message) = err() {
-                div { class: "border-b bg-destructive/10 px-6 py-2 text-sm text-destructive", "{message}" }
+                Alert {
+                    variant: AlertVariant::Destructive,
+                    class: Some("rounded-none border-x-0 border-t-0 bg-destructive/10".into()),
+                    AlertDescription {
+                        class: Some("text-destructive".into()),
+                        "{message}"
+                    }
+                }
             }
 
             if list_loading() {
@@ -549,14 +575,17 @@ pub fn ApiProjectsPanel(
             } else {
             div { class: "min-h-0 flex-1 overflow-y-auto",
                 div { class: "p-6",
-                    div { class: "overflow-hidden rounded-lg border bg-card",
-                        div { class: "grid grid-cols-[minmax(0,1.5fr)_120px_80px_100px_140px_auto] gap-3 border-b bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground",
-                            div { "Name" }
-                            div { "Slug" }
-                            div { "Version" }
-                            div { "Status" }
-                            div { "Updated" }
-                            div { class: "text-right", "Swagger" }
+                    Card {
+                        class: Some("overflow-hidden p-0 gap-0 shadow-sm".into()),
+                        div {
+                            class: "flex w-full items-center gap-3 border-b bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground",
+                            div { class: "min-w-0 flex-1", "Name" }
+                            div { class: "shrink-0", style: "width:120px", "Slug" }
+                            div { class: "shrink-0", style: "width:80px", "Version" }
+                            div { class: "shrink-0", style: "width:100px", "Status" }
+                            div { class: "shrink-0", style: "width:140px", "Updated" }
+                            div { class: "shrink-0 text-right", style: "width:110px", "Swagger" }
+                            div { class: "w-10 shrink-0" }
                         }
                         for p in projects().into_iter() {
                             {
@@ -573,6 +602,14 @@ pub fn ApiProjectsPanel(
                                 );
                                 let id_sel = id.clone();
                                 let id_toggle = id.clone();
+                                let id_menu = id.clone();
+                                let id_ctx = id.clone();
+                                let menu_open = menu_for().as_deref() == Some(id.as_str());
+                                let edit_id = id.clone();
+                                let edit_name = name.clone();
+                                let edit_slug = slug.clone();
+                                let del_id = id.clone();
+                                let del_name = name.clone();
                                 let swagger = format!(
                                     "{}/apis/{}/swagger",
                                     crate::api::base_url(),
@@ -581,12 +618,19 @@ pub fn ApiProjectsPanel(
                                 rsx! {
                                     div {
                                         key: "{id}",
-                                        class: "grid w-full cursor-pointer grid-cols-[minmax(0,1.5fr)_120px_80px_100px_140px_auto] items-center gap-3 border-b px-4 py-3 text-left text-sm last:border-b-0 hover:bg-muted/50",
+                                        class: "relative flex w-full cursor-pointer items-center gap-3 border-b px-4 py-3 text-left text-sm last:border-b-0 hover:bg-muted/50",
                                         onclick: move |_| set_selected(Some(id_sel.clone())),
-                                        div { class: "truncate font-medium", "{name}" }
-                                        div { class: "truncate text-muted-foreground", "{slug}" }
-                                        div { class: "truncate text-muted-foreground", "{version}" }
+                                        oncontextmenu: move |e| {
+                                            e.prevent_default();
+                                            e.stop_propagation();
+                                            menu_for.set(Some(id_ctx.clone()));
+                                        },
+                                        div { class: "min-w-0 flex-1 truncate font-medium", "{name}" }
+                                        div { class: "shrink-0 truncate text-muted-foreground", style: "width:120px", "{slug}" }
+                                        div { class: "shrink-0 truncate text-muted-foreground", style: "width:80px", "{version}" }
                                         div {
+                                            class: "shrink-0",
+                                            style: "width:100px",
                                             onclick: move |e| e.stop_propagation(),
                                             Switch {
                                                 checked: enabled,
@@ -615,26 +659,250 @@ pub fn ApiProjectsPanel(
                                                 },
                                             }
                                         }
-                                        div { class: "truncate text-xs text-muted-foreground", "{updated}" }
+                                        div { class: "shrink-0 truncate text-xs text-muted-foreground", style: "width:140px", "{updated}" }
                                         a {
                                             href: "{swagger}",
                                             target: "_blank",
-                                            class: "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground",
+                                            class: "inline-flex shrink-0 items-center justify-end gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground",
+                                            style: "width:110px",
                                             onclick: move |e| e.stop_propagation(),
                                             "Open Swagger"
+                                        }
+                                        div {
+                                            class: "relative flex w-10 shrink-0 justify-end",
+                                            onclick: move |e| e.stop_propagation(),
+                                            button {
+                                                r#type: "button",
+                                                class: "rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground",
+                                                title: "More",
+                                                onclick: move |e| {
+                                                    e.stop_propagation();
+                                                    if menu_for().as_deref() == Some(id_menu.as_str()) {
+                                                        menu_for.set(None);
+                                                    } else {
+                                                        menu_for.set(Some(id_menu.clone()));
+                                                    }
+                                                },
+                                                MoreHorizontal { class: Some("h-4 w-4".into()) }
+                                            }
+                                            if menu_open {
+                                                div {
+                                                    class: "absolute right-0 top-full z-50 mt-1 min-w-[10rem] rounded-md border bg-card p-1 text-sm shadow-md",
+                                                    onclick: move |e| e.stop_propagation(),
+                                                    button {
+                                                        r#type: "button",
+                                                        class: "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 hover:bg-accent",
+                                                        onclick: move |_| {
+                                                            menu_for.set(None);
+                                                            editing_project.set(Some((
+                                                                edit_id.clone(),
+                                                                edit_name.clone(),
+                                                                edit_slug.clone(),
+                                                            )));
+                                                        },
+                                                        Pencil { class: Some("h-4 w-4".into()) }
+                                                        "Edit"
+                                                    }
+                                                    button {
+                                                        r#type: "button",
+                                                        class: "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-destructive hover:bg-destructive/10",
+                                                        onclick: move |_| {
+                                                            menu_for.set(None);
+                                                            confirm_delete.set(Some((
+                                                                del_id.clone(),
+                                                                del_name.clone(),
+                                                            )));
+                                                        },
+                                                        Trash2 { class: Some("h-4 w-4".into()) }
+                                                        "Delete"
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                         if projects().is_empty() {
-                            div { class: "px-4 py-8 text-center text-sm text-muted-foreground",
-                                "No API projects yet. Create one, or start the server to seed Wealth."
+                            Empty {
+                                class: Some("border-0 px-4 py-8".into()),
+                                EmptyHeader {
+                                    EmptyDescription {
+                                        "No API projects yet. Create one, or start the server to seed Wealth."
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
+            }
+
+            if menu_for().is_some() {
+                div {
+                    class: "fixed inset-0 z-40",
+                    onclick: move |_| menu_for.set(None),
+                }
+            }
+
+            if let Some((edit_id, edit_name, edit_slug)) = editing_project() {
+                {
+                    let edit_id_save = edit_id.clone();
+                    let edit_id_name = edit_id.clone();
+                    let edit_id_slug = edit_id.clone();
+                    rsx! {
+                        div {
+                            class: "fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4 backdrop-blur-[1px]",
+                            onclick: move |_| editing_project.set(None),
+                            div {
+                                class: "w-full max-w-sm rounded-xl border bg-card p-5 shadow-2xl",
+                                onclick: move |e| e.stop_propagation(),
+                                role: "dialog",
+                                "aria-modal": "true",
+                                h2 { class: "text-lg font-semibold", "Edit API project" }
+                                p { class: "mt-2 text-sm text-muted-foreground",
+                                    "Update the display name and slug."
+                                }
+                                div { class: "mt-4 flex flex-col gap-3",
+                                    div { class: "flex flex-col gap-1",
+                                        Label { class: Some("text-xs text-muted-foreground".into()), "Name" }
+                                        Input {
+                                            value: edit_name.clone(),
+                                            oninput: move |e: FormEvent| {
+                                                let slug = editing_project()
+                                                    .map(|(_, _, s)| s)
+                                                    .unwrap_or_default();
+                                                editing_project.set(Some((
+                                                    edit_id_name.clone(),
+                                                    e.value(),
+                                                    slug,
+                                                )));
+                                            },
+                                        }
+                                    }
+                                    div { class: "flex flex-col gap-1",
+                                        Label { class: Some("text-xs text-muted-foreground".into()), "Slug" }
+                                        Input {
+                                            value: edit_slug.clone(),
+                                            oninput: move |e: FormEvent| {
+                                                let name = editing_project()
+                                                    .map(|(_, n, _)| n)
+                                                    .unwrap_or_default();
+                                                editing_project.set(Some((
+                                                    edit_id_slug.clone(),
+                                                    name,
+                                                    e.value(),
+                                                )));
+                                            },
+                                        }
+                                    }
+                                }
+                                div { class: "mt-5 flex justify-end gap-2",
+                                    Button {
+                                        variant: ButtonVariant::Ghost,
+                                        disabled: busy(),
+                                        onclick: move |_| editing_project.set(None),
+                                        "Cancel"
+                                    }
+                                    Button {
+                                        disabled: busy(),
+                                        onclick: move |_| {
+                                            let id = edit_id_save.clone();
+                                            let (name, slug) = editing_project()
+                                                .map(|(_, n, s)| {
+                                                    (n.trim().to_string(), s.trim().to_string())
+                                                })
+                                                .unwrap_or_default();
+                                            if name.is_empty() {
+                                                return;
+                                            }
+                                            busy.set(true);
+                                            spawn(async move {
+                                                let mut body = serde_json::json!({ "name": name });
+                                                if !slug.is_empty() {
+                                                    body["slug"] = serde_json::Value::String(slug);
+                                                }
+                                                match crate::api::put_json(
+                                                    &format!("/api/api-projects/{id}"),
+                                                    body,
+                                                )
+                                                .await
+                                                {
+                                                    Ok(_) => {
+                                                        editing_project.set(None);
+                                                        err.set(None);
+                                                        if let Ok(reload) =
+                                                            crate::api::get_json("/api/api-projects")
+                                                                .await
+                                                        {
+                                                            projects.set(
+                                                                reload
+                                                                    .get("projects")
+                                                                    .and_then(|p| p.as_array())
+                                                                    .cloned()
+                                                                    .unwrap_or_default(),
+                                                            );
+                                                        }
+                                                    }
+                                                    Err(e) => err.set(Some(e)),
+                                                }
+                                                busy.set(false);
+                                            });
+                                        },
+                                        "Save"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if let Some((del_id, del_name)) = confirm_delete() {
+                {
+                    let del_id_confirm = del_id.clone();
+                    let description = format!(
+                        "This will permanently delete \"{del_name}\" and all of its endpoints. This action cannot be undone."
+                    );
+                    rsx! {
+                        ConfirmDeleteDialog {
+                            title: "Delete API project?".to_string(),
+                            description,
+                            busy: busy(),
+                            on_cancel: move |_| confirm_delete.set(None),
+                            on_confirm: move |_| {
+                                let id = del_id_confirm.clone();
+                                busy.set(true);
+                                spawn(async move {
+                                    match crate::api::delete_json(&format!("/api/api-projects/{id}"))
+                                        .await
+                                    {
+                                        Ok(_) => {
+                                            confirm_delete.set(None);
+                                            err.set(None);
+                                            if selected_sig().as_deref() == Some(id.as_str()) {
+                                                set_selected(None);
+                                            }
+                                            if let Ok(reload) =
+                                                crate::api::get_json("/api/api-projects").await
+                                            {
+                                                projects.set(
+                                                    reload
+                                                        .get("projects")
+                                                        .and_then(|p| p.as_array())
+                                                        .cloned()
+                                                        .unwrap_or_default(),
+                                                );
+                                            }
+                                        }
+                                        Err(e) => err.set(Some(e)),
+                                    }
+                                    busy.set(false);
+                                });
+                            },
+                        }
+                    }
+                }
             }
         }
     }

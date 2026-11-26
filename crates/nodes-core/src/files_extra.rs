@@ -6,12 +6,12 @@ use serde_json::json;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-fn meta(ty: &str, name: &str) -> NodeMetadata {
+fn meta(ty: &str, name: &str, description: &str) -> NodeMetadata {
     NodeMetadata {
         type_name: ty.into(),
         display_name: name.into(),
         category: "files".into(),
-        description: name.into(),
+        description: description.into(),
         version: 1,
         is_trigger: false,
         inputs: vec![PortDef {
@@ -42,7 +42,11 @@ pub struct ListFilesNode;
 #[async_trait]
 impl NodeExecutor for ListFilesNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("listFiles", "List Files")
+        meta(
+            "listFiles",
+            "List Files",
+            "List files and folders in a directory",
+        )
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let path = ctx
@@ -75,7 +79,7 @@ pub struct MoveFileNode;
 #[async_trait]
 impl NodeExecutor for MoveFileNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("moveFile", "Move File")
+        meta("moveFile", "Move File", "Move or rename a file on disk")
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let from = ctx
@@ -105,7 +109,7 @@ pub struct CopyFileNode;
 #[async_trait]
 impl NodeExecutor for CopyFileNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("copyFile", "Copy File")
+        meta("copyFile", "Copy File", "Copy a file to another path")
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let from = ctx
@@ -131,7 +135,11 @@ pub struct DeleteFileNode;
 #[async_trait]
 impl NodeExecutor for DeleteFileNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("deleteFile", "Delete File")
+        meta(
+            "deleteFile",
+            "Delete File",
+            "Delete a file or folder from disk",
+        )
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let path = ctx
@@ -158,7 +166,7 @@ pub struct JsonNode;
 #[async_trait]
 impl NodeExecutor for JsonNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("json", "JSON")
+        meta("json", "JSON", "Parse or stringify JSON data")
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let op = ctx
@@ -193,7 +201,7 @@ pub struct CsvNode;
 #[async_trait]
 impl NodeExecutor for CsvNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("csv", "CSV")
+        meta("csv", "CSV", "Parse CSV text into rows of objects")
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let text = ctx
@@ -231,7 +239,7 @@ pub struct XmlNode;
 #[async_trait]
 impl NodeExecutor for XmlNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("xml", "XML")
+        meta("xml", "XML", "Pass through or wrap XML content")
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let xml = ctx
@@ -245,12 +253,12 @@ impl NodeExecutor for XmlNode {
 }
 
 macro_rules! stub_file {
-    ($struct:ident, $ty:expr, $name:expr) => {
+    ($struct:ident, $ty:expr, $name:expr, $desc:expr) => {
         pub struct $struct;
         #[async_trait]
         impl NodeExecutor for $struct {
             fn metadata(&self) -> NodeMetadata {
-                meta($ty, $name)
+                meta($ty, $name, $desc)
             }
             async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
                 Ok(NodeResult::single(vec![json!({
@@ -263,15 +271,55 @@ macro_rules! stub_file {
     };
 }
 
-stub_file!(ExcelNode, "excel", "Excel File");
-stub_file!(ZipNode, "zip", "Zip");
-stub_file!(CompressionNode, "compression", "Compression");
-stub_file!(ConvertToFileNode, "convertToFile", "Convert to File");
-stub_file!(ExtractFromFileNode, "extractFromFile", "Extract from File");
-stub_file!(ReadPdfNode, "readPdf", "Read PDF");
-stub_file!(MoveBinaryDataNode, "moveBinaryData", "Move Binary Data");
-stub_file!(EditImageNode, "editImage", "Edit Image");
-stub_file!(IcalendarNode, "icalendar", "iCalendar");
+stub_file!(
+    ExcelNode,
+    "excel",
+    "Excel File",
+    "Read or write Excel spreadsheet files"
+);
+stub_file!(ZipNode, "zip", "Zip", "Create or extract ZIP archives");
+stub_file!(
+    CompressionNode,
+    "compression",
+    "Compression",
+    "Compress or decompress file data"
+);
+stub_file!(
+    ConvertToFileNode,
+    "convertToFile",
+    "Convert to File",
+    "Convert item data into a downloadable file"
+);
+stub_file!(
+    ExtractFromFileNode,
+    "extractFromFile",
+    "Extract from File",
+    "Extract content and fields from a file"
+);
+stub_file!(
+    ReadPdfNode,
+    "readPdf",
+    "Read PDF",
+    "Extract text and metadata from a PDF"
+);
+stub_file!(
+    MoveBinaryDataNode,
+    "moveBinaryData",
+    "Move Binary Data",
+    "Move binary data between items or fields"
+);
+stub_file!(
+    EditImageNode,
+    "editImage",
+    "Edit Image",
+    "Resize, crop, or transform an image"
+);
+stub_file!(
+    IcalendarNode,
+    "icalendar",
+    "iCalendar",
+    "Parse or create iCalendar (.ics) events"
+);
 
 pub fn register(registry: &mut NodeRegistry) {
     registry.register(Arc::new(ListFilesNode));

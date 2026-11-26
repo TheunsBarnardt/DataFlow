@@ -8,8 +8,8 @@ use crate::components::flow::StudioNodeData;
 use crate::components::icons::{ArrowLeft, ChevronLeft, ChevronRight, Play, Trash2, X};
 use crate::components::node_schemas::{field_visible, get_schema, merge_defaults, sanitize_parameters};
 use crate::components::ui::{
-    ConfirmDeleteDialog, ResizableHandle, ResizableOrientation, ResizablePanel,
-    ResizablePanelGroup, Switch,
+    Button, ButtonSize, ButtonVariant, ConfirmDeleteDialog, Input, Label, ResizableHandle,
+    ResizableOrientation, ResizablePanel, ResizablePanelGroup, Switch,
 };
 
 use super::field_control::FieldControl;
@@ -241,9 +241,10 @@ pub struct NodeUpdate {
 fn ItemPager(index: usize, total: usize, on_change: EventHandler<usize>) -> Element {
     rsx! {
         div { class: "flex items-center gap-0.5 text-[11px] text-muted-foreground",
-            button {
-                r#type: "button",
-                class: "rounded p-0.5 hover:bg-muted disabled:opacity-40",
+            Button {
+                size: ButtonSize::IconSm,
+                variant: ButtonVariant::Ghost,
+                class: Some("size-6".into()),
                 disabled: index == 0,
                 onclick: move |_| on_change.call(index.saturating_sub(1)),
                 ChevronLeft { class: Some("h-3.5 w-3.5".into()) }
@@ -251,9 +252,10 @@ fn ItemPager(index: usize, total: usize, on_change: EventHandler<usize>) -> Elem
             span { class: "min-w-[3.5rem] text-center tabular-nums",
                 "{index + 1} / {total}"
             }
-            button {
-                r#type: "button",
-                class: "rounded p-0.5 hover:bg-muted disabled:opacity-40",
+            Button {
+                size: ButtonSize::IconSm,
+                variant: ButtonVariant::Ghost,
+                class: Some("size-6".into()),
                 disabled: index + 1 >= total,
                 onclick: move |_| on_change.call(index + 1),
                 ChevronRight { class: Some("h-3.5 w-3.5".into()) }
@@ -320,7 +322,7 @@ fn NodeSettingsTab(
                         }
                     },
                 }
-                label { class: "text-xs", "Always Output Data" }
+                Label { class: Some("text-xs".into()), "Always Output Data" }
             }
             div { class: "flex items-center gap-2",
                 Switch {
@@ -333,7 +335,7 @@ fn NodeSettingsTab(
                         }
                     },
                 }
-                label { class: "text-xs", "Execute Once" }
+                Label { class: Some("text-xs".into()), "Execute Once" }
             }
             div { class: "flex items-center gap-2",
                 Switch {
@@ -346,20 +348,18 @@ fn NodeSettingsTab(
                         }
                     },
                 }
-                label { class: "text-xs", "Retry On Fail" }
+                Label { class: Some("text-xs".into()), "Retry On Fail" }
             }
             if retry {
                 div { class: "flex flex-col gap-1.5",
-                    span { class: "text-[11px] font-medium text-muted-foreground", "Max Tries" }
-                    input {
-                        r#type: "number",
-                        min: "1",
-                        class: "h-9 w-full rounded-md border border-input bg-background px-3 text-sm",
-                        value: "{max_tries}",
+                    Label { class: Some("text-[11px] text-muted-foreground".into()), "Max Tries" }
+                    Input {
+                        r#type: Some("number".into()),
+                        value: max_tries.to_string(),
                         oninput: {
                             let nid = id.clone();
                             let settings = settings.clone();
-                            move |e| {
+                            move |e: FormEvent| {
                                 let n: u64 = e.value().parse().unwrap_or(3).max(1);
                                 patch_settings(nid.clone(), settings.clone(), "maxTries", json!(n), on_update);
                             }
@@ -367,16 +367,14 @@ fn NodeSettingsTab(
                     }
                 }
                 div { class: "flex flex-col gap-1.5",
-                    span { class: "text-[11px] font-medium text-muted-foreground", "Wait Between Tries (ms)" }
-                    input {
-                        r#type: "number",
-                        min: "0",
-                        class: "h-9 w-full rounded-md border border-input bg-background px-3 text-sm",
-                        value: "{wait_ms}",
+                    Label { class: Some("text-[11px] text-muted-foreground".into()), "Wait Between Tries (ms)" }
+                    Input {
+                        r#type: Some("number".into()),
+                        value: wait_ms.to_string(),
                         oninput: {
                             let nid = id.clone();
                             let settings = settings.clone();
-                            move |e| {
+                            move |e: FormEvent| {
                                 let n: u64 = e.value().parse().unwrap_or(0);
                                 patch_settings(nid.clone(), settings.clone(), "waitBetweenTries", json!(n), on_update);
                             }
@@ -395,10 +393,10 @@ fn NodeSettingsTab(
                         }
                     },
                 }
-                label { class: "text-xs", "Deactivated" }
+                Label { class: Some("text-xs".into()), "Deactivated" }
             }
             div { class: "flex flex-col gap-1.5",
-                span { class: "text-[11px] font-medium text-muted-foreground", "On Error" }
+                Label { class: Some("text-[11px] text-muted-foreground".into()), "On Error" }
                 select {
                     class: "h-9 w-full rounded-md border border-input bg-background px-3 text-sm",
                     value: "{on_error}",
@@ -415,7 +413,7 @@ fn NodeSettingsTab(
                 }
             }
             div { class: "flex flex-col gap-1.5",
-                span { class: "text-[11px] font-medium text-muted-foreground", "Notes" }
+                Label { class: Some("text-[11px] text-muted-foreground".into()), "Notes" }
                 textarea {
                     class: "min-h-[72px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs",
                     value: "{notes}",
@@ -445,7 +443,7 @@ fn NodeSettingsTab(
                         }
                     },
                 }
-                label { class: "text-xs", "Display note in flow" }
+                Label { class: Some("text-xs".into()), "Display note in flow" }
             }
             div { class: "rounded-md border bg-muted/20 px-2.5 py-1.5 text-[11px] text-muted-foreground",
                 "Id "
@@ -639,10 +637,10 @@ pub fn NodeDetailsPanel(
                             div {
                                 class: "flex shrink-0 items-center gap-3 border-b px-4 py-2.5",
                                 style: "box-shadow: inset 3px 0 0 var(--brand)",
-                                button {
-                                    r#type: "button",
-                                    class: "rounded-md p-1.5 text-muted-foreground hover:bg-muted",
-                                    title: "Back",
+                                Button {
+                                    size: ButtonSize::IconSm,
+                                    variant: ButtonVariant::Ghost,
+                                    title: Some("Back".into()),
                                     onclick: move |_| on_close.call(()),
                                     ArrowLeft { class: Some("h-4 w-4".into()) }
                                 }
@@ -652,13 +650,13 @@ pub fn NodeDetailsPanel(
                                     NodeGlyph { ty: ty.clone(), class: Some("size-5".into()) }
                                 }
                                 div { class: "min-w-0 flex-1",
-                                    input {
-                                        class: "h-8 w-full border-transparent bg-transparent px-1 text-sm font-semibold shadow-none focus:border-input focus:bg-background rounded-md",
-                                        placeholder: "Node name",
-                                        value: "{name}",
+                                    Input {
+                                        class: Some("h-8 border-transparent bg-transparent px-1 text-sm font-semibold shadow-none focus:border-input focus:bg-background".into()),
+                                        placeholder: Some("Node name".into()),
+                                        value: name.clone(),
                                         oninput: {
                                             let id = id.clone();
-                                            move |e| {
+                                            move |e: FormEvent| {
                                                 on_update.call(NodeUpdate {
                                                     id: id.clone(),
                                                     name: Some(e.value()),
@@ -674,9 +672,10 @@ pub fn NodeDetailsPanel(
                                 }
                                 div { class: "flex shrink-0 items-center gap-1.5",
                                     if can_execute {
-                                        button {
-                                            r#type: "button",
-                                            class: "inline-flex h-8 shrink-0 items-center gap-1 rounded-md border px-2 text-xs hover:bg-muted disabled:opacity-50",
+                                        Button {
+                                            size: ButtonSize::Sm,
+                                            variant: ButtonVariant::Outline,
+                                            class: Some("h-8 shrink-0 gap-1 px-2 text-xs".into()),
                                             disabled: executing(),
                                             onclick: {
                                                 let id = id.clone();
@@ -691,10 +690,11 @@ pub fn NodeDetailsPanel(
                                             if executing() { "Running…" } else { "Execute step" }
                                         }
                                     }
-                                    button {
-                                        r#type: "button",
-                                        class: "inline-flex h-8 items-center gap-1 rounded-md border border-destructive/40 px-2 text-xs text-destructive hover:bg-destructive/10",
-                                        title: "Delete node",
+                                    Button {
+                                        size: ButtonSize::Sm,
+                                        variant: ButtonVariant::Outline,
+                                        class: Some("h-8 gap-1 border-destructive/40 px-2 text-xs text-destructive hover:bg-destructive/10".into()),
+                                        title: Some("Delete node".into()),
                                         onclick: {
                                             let id = id.clone();
                                             let name = name.clone();
@@ -704,10 +704,10 @@ pub fn NodeDetailsPanel(
                                         },
                                         Trash2 { class: Some("h-3.5 w-3.5".into()) }
                                     }
-                                    button {
-                                        r#type: "button",
-                                        class: "rounded-md p-1.5 text-muted-foreground hover:bg-muted",
-                                        title: "Close",
+                                    Button {
+                                        size: ButtonSize::IconSm,
+                                        variant: ButtonVariant::Ghost,
+                                        title: Some("Close".into()),
                                         onclick: move |_| on_close.call(()),
                                         X { class: Some("h-4 w-4".into()) }
                                     }
@@ -756,23 +756,25 @@ pub fn NodeDetailsPanel(
                                     class: Some("flex h-full min-h-0 flex-col".into()),
                                     div { class: "shrink-0 border-b px-3 pt-2",
                                         div { class: "flex items-center gap-0.5 rounded-md bg-muted/50 p-0.5",
-                                            button {
-                                                r#type: "button",
-                                                class: if center_tab() == "parameters" {
-                                                    "flex-1 rounded px-2 py-1 text-[10px] font-medium bg-card text-foreground shadow-sm"
+                                            Button {
+                                                size: ButtonSize::Sm,
+                                                variant: if center_tab() == "parameters" {
+                                                    ButtonVariant::Secondary
                                                 } else {
-                                                    "flex-1 rounded px-2 py-1 text-[10px] font-medium text-muted-foreground"
+                                                    ButtonVariant::Ghost
                                                 },
+                                                class: Some("h-auto flex-1 rounded px-2 py-1 text-[10px] font-medium".into()),
                                                 onclick: move |_| center_tab.set("parameters".into()),
                                                 "Parameters"
                                             }
-                                            button {
-                                                r#type: "button",
-                                                class: if center_tab() == "settings" {
-                                                    "flex-1 rounded px-2 py-1 text-[10px] font-medium bg-card text-foreground shadow-sm"
+                                            Button {
+                                                size: ButtonSize::Sm,
+                                                variant: if center_tab() == "settings" {
+                                                    ButtonVariant::Secondary
                                                 } else {
-                                                    "flex-1 rounded px-2 py-1 text-[10px] font-medium text-muted-foreground"
+                                                    ButtonVariant::Ghost
                                                 },
+                                                class: Some("h-auto flex-1 rounded px-2 py-1 text-[10px] font-medium".into()),
                                                 onclick: move |_| center_tab.set("settings".into()),
                                                 "Settings"
                                             }
@@ -877,10 +879,11 @@ pub fn NodeDetailsPanel(
                                                 span { class: "text-[10px] text-muted-foreground", "1 item" }
                                             }
                                             if let Some(ref out) = effective_output {
-                                                button {
-                                                    r#type: "button",
-                                                    class: "rounded border px-1.5 py-0.5 text-[10px] hover:bg-muted",
-                                                    title: "Pin output as sample",
+                                                Button {
+                                                    size: ButtonSize::Sm,
+                                                    variant: ButtonVariant::Outline,
+                                                    class: Some("h-auto rounded px-1.5 py-0.5 text-[10px]".into()),
+                                                    title: Some("Pin output as sample".into()),
                                                     onclick: {
                                                         let id = id.clone();
                                                         let out = out.clone();
@@ -913,18 +916,18 @@ pub fn NodeDetailsPanel(
                 } else {
                     div { class: "flex shrink-0 items-center gap-2 border-b px-4 py-2.5",
                         style: "box-shadow: inset 3px 0 0 var(--brand)",
-                        button {
-                            r#type: "button",
-                            class: "rounded-md p-1.5 text-muted-foreground hover:bg-muted",
-                            title: "Back",
+                        Button {
+                            size: ButtonSize::IconSm,
+                            variant: ButtonVariant::Ghost,
+                            title: Some("Back".into()),
                             onclick: move |_| on_close.call(()),
                             ArrowLeft { class: Some("h-4 w-4".into()) }
                         }
                         h2 { class: "flex-1 truncate text-sm font-semibold", "Node details" }
-                        button {
-                            r#type: "button",
-                            class: "rounded-md p-1.5 text-muted-foreground hover:bg-muted",
-                            title: "Close",
+                        Button {
+                            size: ButtonSize::IconSm,
+                            variant: ButtonVariant::Ghost,
+                            title: Some("Close".into()),
                             onclick: move |_| on_close.call(()),
                             X { class: Some("h-4 w-4".into()) }
                         }
@@ -1083,7 +1086,7 @@ fn GenericParamsEditor(
                 let text = value_as_editable_text(&value);
                 rsx! {
                     div { class: "mb-3 flex flex-col gap-1.5",
-                        label { class: "text-xs font-medium", "{key_label}" }
+                        Label { class: Some("text-xs font-medium".into()), "{key_label}" }
                         textarea {
                             class: "min-h-[64px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs",
                             value: "{text}",
@@ -1109,8 +1112,10 @@ fn GenericParamsEditor(
             let node_type = node_type.clone();
             let parameters = parameters.clone();
             rsx! {
-                button {
-                    class: "inline-flex h-8 items-center rounded-md border px-3 text-xs",
+                Button {
+                    size: ButtonSize::Sm,
+                    variant: ButtonVariant::Outline,
+                    class: Some("h-8 px-3 text-xs".into()),
                     onclick: move |_| {
                         let mut params = parameters.clone();
                         if let Some(obj) = params.as_object_mut() {

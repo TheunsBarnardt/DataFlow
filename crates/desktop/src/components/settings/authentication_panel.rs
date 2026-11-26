@@ -1,5 +1,9 @@
 use dioxus::prelude::*;
 
+use crate::components::ui::{
+    Alert, AlertDescription, AlertVariant, Card, CardContent,
+};
+
 #[derive(Clone, Default)]
 struct AuthSettingsSnapshot {
     sso_enabled: bool,
@@ -108,28 +112,36 @@ pub fn AuthenticationPanel() -> Element {
             }
 
             if !api_available() {
-                div { class: "rounded-lg border border-dashed bg-muted/20 p-4 text-sm text-muted-foreground",
-                    p { class: "font-medium text-foreground", "Embedded BotFlow server" }
-                    p { class: "mt-2",
-                        "This desktop build uses local JWT login ("
-                        code { class: "rounded bg-muted px-1 text-xs", "/api/v1/auth/login" }
-                        "). Full authentication settings are available when connected to the Node/DataFlow API server."
-                    }
-                    if let Some(message) = err() {
-                        p { class: "mt-2 text-xs text-destructive", "{message}" }
-                    }
-                    ul { class: "mt-3 list-inside list-disc space-y-1 text-xs",
-                        li { "SSO (SAML / OpenID Connect) — planned" }
-                        li { "LDAP directory sign-in & sync — planned" }
-                        li { "Session policies & MFA enforcement — planned" }
-                        li { "Provider-specific configuration UI — planned" }
+                Card { class: Some("border-dashed bg-muted/20".into()),
+                    CardContent { class: Some("space-y-2 p-4 text-sm text-muted-foreground".into()),
+                        p { class: "font-medium text-foreground", "Embedded BotFlow server" }
+                        p {
+                            "This desktop build uses local JWT login ("
+                            code { class: "rounded bg-muted px-1 text-xs", "/api/v1/auth/login" }
+                            "). Full authentication settings are available when connected to the Node/DataFlow API server."
+                        }
+                        if let Some(message) = err() {
+                            Alert {
+                                variant: AlertVariant::Destructive,
+                                AlertDescription {
+                                    class: Some("text-destructive text-xs".into()),
+                                    "{message}"
+                                }
+                            }
+                        }
+                        ul { class: "list-inside list-disc space-y-1 text-xs",
+                            li { "SSO (SAML / OpenID Connect) — planned" }
+                            li { "LDAP directory sign-in & sync — planned" }
+                            li { "Session policies & MFA enforcement — planned" }
+                            li { "Provider-specific configuration UI — planned" }
+                        }
                     }
                 }
             }
 
             section { class: "flex flex-col gap-4",
                 h2 { class: "text-base font-semibold", "Sign-in methods" }
-                div { class: "overflow-hidden rounded-md border bg-card",
+                Card { class: Some("overflow-hidden p-0 gap-0".into()),
                     AuthRow {
                         title: "Single sign-on (SSO)",
                         description: "Let people sign in through your identity provider with SAML or OpenID Connect.",
@@ -164,7 +176,7 @@ pub fn AuthenticationPanel() -> Element {
 
             section { class: "flex flex-col gap-4",
                 h2 { class: "text-base font-semibold", "Requirements" }
-                div { class: "overflow-hidden rounded-md border bg-card",
+                Card { class: Some("overflow-hidden p-0 gap-0".into()),
                     AuthRow {
                         title: "Two-factor authentication",
                         description: "Require two-factor authentication for people who sign in with email and password.",

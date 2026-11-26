@@ -3,8 +3,8 @@ use dioxus::prelude::*;
 use crate::components::icons::{Bot, ChevronDown, ChevronLeft, ChevronRight, History, Pencil, Wrench};
 use crate::components::panels::{json_id, json_string};
 use crate::components::ui::{
-    Button, ButtonSize, ButtonVariant, ResizableHandle, ResizableOrientation,
-    ResizablePanel, ResizablePanelGroup,
+    Alert, AlertDescription, AlertVariant, Button, ButtonSize, ButtonVariant, ResizableHandle,
+    ResizableOrientation, ResizablePanel, ResizablePanelGroup,
 };
 
 #[derive(Clone, Debug)]
@@ -346,9 +346,17 @@ pub fn ChatPanel(
             }
 
             if let Some(message) = err() {
-                div {
-                    class: if compact { "mx-3 rounded-md bg-destructive/10 px-3 py-1.5 text-xs text-destructive" } else { "rounded-md bg-destructive/10 px-3 py-1.5 text-xs text-destructive" },
-                    "{message}"
+                Alert {
+                    variant: AlertVariant::Destructive,
+                    class: Some(if compact {
+                        "mx-3 bg-destructive/10 py-1.5 text-xs".into()
+                    } else {
+                        "bg-destructive/10 py-1.5 text-xs".into()
+                    }),
+                    AlertDescription {
+                        class: Some("text-destructive".into()),
+                        "{message}"
+                    }
                 }
             }
 
@@ -581,7 +589,7 @@ pub fn ChatPanel(
                             max_pct: 55.0,
                             class: Some("flex min-h-0 flex-col gap-2 pt-2".into()),
                             textarea {
-                                class: "min-h-[4.5rem] w-full flex-1 resize-none rounded-md border border-input bg-transparent px-3 py-2 text-sm",
+                                class: "text-foreground placeholder:text-muted-foreground border-input flex min-h-[4.5rem] w-full flex-1 resize-none rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
                                 placeholder: "Try: \"create webhook http flow\" or paste workflow JSON",
                                 value: "{text()}",
                                 disabled: busy() || thread().is_none(),

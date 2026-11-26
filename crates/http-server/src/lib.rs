@@ -1,5 +1,6 @@
 mod auth;
 mod insights;
+mod public_apis;
 mod routes;
 mod ui;
 
@@ -65,13 +66,15 @@ pub fn build_router(state: AppState, cfg: &HttpConfig) -> Router {
             .allow_credentials(true)
     };
 
+    let http_state = routes::HttpState {
+        app: state.clone(),
+        jwt: cfg.jwt.clone(),
+        auth_disabled: cfg.auth_disabled,
+    };
     let mut app = Router::new()
         .merge(routes::router(state.clone(), cfg.clone()))
-        .merge(ui::router().with_state(routes::HttpState {
-            app: state,
-            jwt: cfg.jwt.clone(),
-            auth_disabled: cfg.auth_disabled,
-        }));
+        .merge(public_apis::router().with_state(http_state.clone()))
+        .merge(ui::router().with_state(http_state));
 
     // Local Monaco (desktop Query/SQL highlighting) — avoids blocked CDN in webview.
     if let Some(monaco_dir) = monaco_static_dir() {

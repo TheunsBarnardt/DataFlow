@@ -6,8 +6,10 @@ use crate::components::panels::{
     format_local_datetime, has_binary_data, json_id, json_string, BinaryViewer,
 };
 use crate::components::ui::{
-    Badge, BadgeVariant, Button, ButtonSize, ButtonVariant, ConfirmDeleteDialog, PageLoader,
-    ResizableHandle, ResizableOrientation, ResizablePanel, ResizablePanelGroup,
+    Alert, AlertDescription, AlertVariant, Badge, BadgeVariant, Button, ButtonSize, ButtonVariant,
+    Card, CardContent, CardHeader, CardSize, CardTitle, ConfirmDeleteDialog, Empty,
+    EmptyDescription, EmptyHeader, EmptyTitle, PageLoader, ResizableHandle, ResizableOrientation,
+    ResizablePanel, ResizablePanelGroup,
 };
 
 fn run_status_variant(status: &str, failed: bool) -> BadgeVariant {
@@ -148,9 +150,13 @@ fn StepRow(log: serde_json::Value) -> Element {
             if open() {
                 div { class: "flex flex-col gap-2 border-t px-2 py-2",
                     if let Some(err) = error {
-                        div {
-                            class: "rounded-md border border-destructive/30 bg-destructive/10 px-2 py-1.5 text-xs text-destructive whitespace-pre-wrap break-words",
-                            "{err}"
+                        Alert {
+                            variant: AlertVariant::Destructive,
+                            class: Some("border-destructive/30 bg-destructive/10 px-2 py-1.5 text-xs".into()),
+                            AlertDescription {
+                                class: Some("text-destructive whitespace-pre-wrap break-words".into()),
+                                "{err}"
+                            }
                         }
                     }
                     div {
@@ -189,32 +195,52 @@ pub fn RunsPanel(
     let mut loading = use_signal(|| true);
     let mut detail_loading = use_signal(|| false);
     let mut internal_selected = use_signal(|| None::<String>);
-    let mut manual_refresh = use_signal(|| 0u32);
+    let mut list_epoch = use_signal(|| 0u32);
+    let mut list_request_id = use_signal(|| 0u32);
+    // Request id must NOT be read via signal() inside the effect body — that
+    // re-subscribes and re-fires forever (stuck "Loading run…").
+    let mut detail_request_id = use_signal(|| 0u32);
     let use_internal_selection = selected_run_id.is_none();
-    let workflow_id_fetch = workflow_id.clone();
     let workflow_id_clear = workflow_id.clone();
-    let selected_run_external = selected_run_id.clone();
 
-    // Props aren't reactive — mirror into a signal so effects re-run after Execute.
+    // Props aren't reactive — mirror into signals so effects re-run after Execute / nav.
     let mut refresh_sig = use_signal(|| refresh_key);
     if *refresh_sig.peek() != refresh_key {
         refresh_sig.set(refresh_key);
     }
+    let mut workflow_id_sig = use_signal(|| workflow_id.clone());
+    if *workflow_id_sig.peek() != workflow_id {
+        workflow_id_sig.set(workflow_id.clone());
+    }
+    let mut selected_run_external = use_signal(|| selected_run_id.clone());
+    if *selected_run_external.peek() != selected_run_id {
+        selected_run_external.set(selected_run_id.clone());
+    }
 
-    let selected_id = selected_run_external.clone().or_else(|| internal_selected());
+    let selected_id = selected_run_external().or_else(|| internal_selected());
 
     use_effect(move || {
         let _ = refresh_sig();
-        let _ = manual_refresh();
-        let wf = workflow_id_fetch.clone();
+        let _ = workflow_id_sig();
+        let _ = list_epoch();
+        let mut req = 0u32;
+        list_request_id.with_mut(|id| {
+            *id += 1;
+            req = *id;
+        });
+        let wf = workflow_id_sig();
         let select_newest = use_internal_selection;
         loading.set(true);
         spawn(async move {
-            let mut path = "/api/runs?limit=40".to_string();
+            let mut path = format!("/api/runs?limit=40&_={req}");
             if let Some(id) = wf {
                 path.push_str(&format!("&workflowId={}", urlencoding_placeholder(&id)));
             }
-            match crate::api::get_json(&path).await {
+            let result = crate::api::get_json(&path).await;
+            if list_request_id() != req {
+                return;
+            }
+            match result {
                 Ok(v) => {
                     let list = v
                         .get("runs")
@@ -239,19 +265,32 @@ pub fn RunsPanel(
 
     use_effect(move || {
         let _ = refresh_sig();
-        let _ = manual_refresh();
-        let id = selected_run_external.clone().or_else(|| internal_selected());
+        let _ = list_epoch();
+        let id = selected_run_external().or_else(|| internal_selected());
+        let mut req = 0u32;
+        detail_request_id.with_mut(|n| {
+            *n += 1;
+            req = *n;
+        });
         spawn(async move {
             match id {
                 None => {
+                    if detail_request_id() != req {
+                        return;
+                    }
                     detail.set(None);
                     detail_loading.set(false);
                 }
                 Some(rid) => {
                     detail_loading.set(true);
-                    let path = format!("/api/runs/{rid}");
-                    if let Ok(v) = crate::api::get_json(&path).await {
-                        detail.set(v.get("run").cloned());
+                    let path = format!("/api/runs/{rid}?_={req}");
+                    let result = crate::api::get_json(&path).await;
+                    if detail_request_id() != req {
+                        return;
+                    }
+                    match result {
+                        Ok(v) => detail.set(v.get("run").cloned()),
+                        Err(_) => detail.set(None),
                     }
                     detail_loading.set(false);
                 }
@@ -273,9 +312,16 @@ pub fn RunsPanel(
                             if loading() {
                                 return;
                             }
-                            manual_refresh.set(manual_refresh() + 1);
+                            // Bump epoch so the list effect re-fetches immediately.
+                            list_epoch.with_mut(|e| *e += 1);
                         },
-                        RefreshCw { class: Some("size-3.5".into()) }
+                        RefreshCw {
+                            class: Some(if loading() {
+                                "size-3.5 animate-spin".into()
+                            } else {
+                                "size-3.5".into()
+                            })
+                        }
                         "Refresh"
                     }
                     Button {
@@ -329,19 +375,17 @@ pub fn RunsPanel(
                                     class: "{row_class}",
                                     onclick: move |_| {
                                         if internal {
+                                            // Detail fetch is owned by the selection effect.
                                             internal_selected.set(Some(select_id.clone()));
                                         }
-                                        let path = format!("/api/runs/{select_id}");
-                                        let cb = cb.clone();
-                                        spawn(async move {
-                                            if let Ok(v) = crate::api::get_json(&path).await {
-                                                let run = v.get("run").cloned();
-                                                detail.set(run.clone());
-                                                if let Some(cb) = cb {
-                                                    cb.call(run);
+                                        if let Some(cb) = cb.clone() {
+                                            let path = format!("/api/runs/{select_id}");
+                                            spawn(async move {
+                                                if let Ok(v) = crate::api::get_json(&path).await {
+                                                    cb.call(v.get("run").cloned());
                                                 }
-                                            }
-                                        });
+                                            });
+                                        }
                                     },
                                     div { class: "flex flex-wrap items-center gap-2",
                                         span { class: "font-medium", "{wf_name}" }
@@ -363,7 +407,12 @@ pub fn RunsPanel(
                         }
                     }
                     if runs().is_empty() {
-                        div { class: "text-sm text-muted-foreground", "No runs yet" }
+                        Empty {
+                            class: Some("border-dashed p-6".into()),
+                            EmptyHeader {
+                                EmptyTitle { class: Some("text-sm".into()), "No runs yet" }
+                            }
+                        }
                     }
                     }
                 }
@@ -434,13 +483,26 @@ pub fn RunsPanel(
                 panel_index: 1,
                 min_pct: 25.0,
                 max_pct: 75.0,
-                class: Some("flex h-full min-h-0 flex-col gap-2 rounded-md border bg-card p-2".into()),
-                h2 { class: "text-sm font-semibold", "Step history" }
+                class: Some("flex h-full min-h-0 flex-col".into()),
+                Card {
+                    size: CardSize::Sm,
+                    class: Some("flex h-full min-h-0 flex-col gap-2 py-2".into()),
+                    CardHeader {
+                        class: Some("px-2 pb-0".into()),
+                        CardTitle { class: Some("text-sm".into()), "Step history" }
+                    }
+                    CardContent {
+                        class: Some("flex min-h-0 flex-1 flex-col overflow-hidden px-2".into()),
                 if detail_loading() {
                     PageLoader { label: "Loading run…", class: Some("min-h-[8rem]") }
                 } else if detail().is_none() {
-                    div { class: "text-sm text-muted-foreground",
-                        "Select a run to inspect each step's inputs, outputs, and failures."
+                    Empty {
+                        class: Some("border-0 p-4".into()),
+                        EmptyHeader {
+                            EmptyDescription {
+                                "Select a run to inspect each step's inputs, outputs, and failures."
+                            }
+                        }
                     }
                 } else if let Some(d) = detail() {
                     {
@@ -468,9 +530,13 @@ pub fn RunsPanel(
                                 div { class: "flex flex-col gap-2 pr-2",
                                     div { class: "text-xs text-muted-foreground", "{meta}" }
                                     if let Some(e) = detail_error {
-                                        div {
-                                            class: "rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-xs text-destructive whitespace-pre-wrap break-words",
-                                            "{e}"
+                                        Alert {
+                                            variant: AlertVariant::Destructive,
+                                            class: Some("bg-destructive/10 px-2 py-1.5 text-xs".into()),
+                                            AlertDescription {
+                                                class: Some("text-destructive whitespace-pre-wrap break-words".into()),
+                                                "{e}"
+                                            }
                                         }
                                     }
                                     if let Some(logs) = d.get("logs").and_then(|l| l.as_array()) {
@@ -488,11 +554,18 @@ pub fn RunsPanel(
                                         }
                                     }
                                     if d.get("logs").and_then(|l| l.as_array()).map(|a| a.is_empty()).unwrap_or(true) {
-                                        div { class: "text-sm text-muted-foreground", "No step logs" }
+                                        Empty {
+                                            class: Some("border-0 p-4".into()),
+                                            EmptyHeader {
+                                                EmptyDescription { "No step logs" }
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
+                    }
+                }
                     }
                 }
             }

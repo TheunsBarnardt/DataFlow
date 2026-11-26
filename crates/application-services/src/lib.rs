@@ -10,6 +10,7 @@ use botflow_workflow_validation::validate_workflow;
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::RwLock;
 
 #[derive(Clone)]
@@ -131,6 +132,77 @@ impl AppState {
         });
 
         Ok(run)
+    }
+
+    /// Run a workflow and wait until it finishes (public `/apis/{slug}` dispatch).
+    pub async fn run_workflow_and_wait(
+        &self,
+        id: &str,
+        input: Value,
+        timeout: Duration,
+    ) -> Result<RunDoc> {
+        let wf = storage::get_workflow(&self.db, id)
+            .await?
+            .ok_or_else(|| anyhow!("workflow not found"))?;
+        let credentials = self.resolve_credentials_for_nodes(&wf.nodes).await;
+        let handle = self
+            .scheduler
+            .execute_with_credentials(wf, input, credentials)
+            .await
+            .map_err(|e| anyhow!(e))?;
+        let mut run = handle.run.lock().await.clone();
+        run = storage::insert_run(&self.db, run).await?;
+        {
+            let mut guard = handle.run.lock().await;
+            guard.id = run.id.clone();
+        }
+        let run_id = run.id.clone().unwrap_or_default();
+        self.active_runs
+            .write()
+            .await
+            .insert(run_id.clone(), handle.clone());
+
+        let deadline = tokio::time::Instant::now() + timeout;
+        let final_run = loop {
+            {
+                let guard = handle.run.lock().await;
+                if guard.finished_at.is_some() {
+                    break guard.clone();
+                }
+            }
+            if tokio::time::Instant::now() >= deadline {
+                handle.request_cancel();
+                let _ = tokio::time::timeout(
+                    Duration::from_secs(2),
+                    handle.finished.notified(),
+                )
+                .await;
+                let timed_out = handle.run.lock().await.clone();
+                self.active_runs.write().await.remove(&run_id);
+                let redacted = RunDoc {
+                    output: timed_out.output.as_ref().map(redact_value),
+                    ..timed_out
+                };
+                let _ = storage::update_run(&self.db, &redacted).await;
+                return Err(anyhow!(
+                    "API workflow timed out after {}s",
+                    timeout.as_secs()
+                ));
+            }
+            tokio::select! {
+                _ = handle.finished.notified() => {},
+                _ = tokio::time::sleep(Duration::from_millis(25)) => {},
+                _ = tokio::time::sleep_until(deadline) => {},
+            }
+        };
+
+        let redacted = RunDoc {
+            output: final_run.output.as_ref().map(redact_value),
+            ..final_run.clone()
+        };
+        let _ = storage::update_run(&self.db, &redacted).await;
+        self.active_runs.write().await.remove(&run_id);
+        Ok(final_run)
     }
 
     /// Decrypt credential blobs referenced by node `credentialId` parameters.

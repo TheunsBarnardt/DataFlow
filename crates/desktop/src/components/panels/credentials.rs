@@ -3,7 +3,8 @@ use dioxus::prelude::*;
 use crate::components::icons::X;
 use crate::components::panels::{json_bool, json_id, json_string};
 use crate::components::ui::{
-    Button, ButtonSize, ButtonVariant, ConfirmDeleteDialog, Label, PageLoader, Switch,
+    Alert, AlertDescription, AlertVariant, Button, ButtonSize, ButtonVariant, ConfirmDeleteDialog,
+    Empty, EmptyDescription, Input, Label, PageLoader, Switch,
 };
 
 #[derive(Clone, Copy)]
@@ -1607,11 +1608,10 @@ pub fn CredentialDialog(
                         }
                     }
                     div { class: "flex min-h-0 flex-1 flex-col gap-3 p-5",
-                        input {
-                            class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                            placeholder: "Search apps and services…",
-                            value: "{type_query()}",
-                            oninput: move |e: Event<FormData>| type_query.set(e.value()),
+                        Input {
+                            placeholder: Some("Search apps and services…".into()),
+                            value: type_query(),
+                            oninput: move |e: FormEvent| type_query.set(e.value()),
                         }
                         div { class: "max-h-[min(40vh,320px)] overflow-y-auto rounded-md border",
                             {
@@ -1624,10 +1624,10 @@ pub fn CredentialDialog(
                                                 .position(|x| x.type_name == t.type_name)
                                                 .unwrap_or(idx);
                                             rsx! {
-                                                button {
+                                                Button {
                                                     key: "{t.type_name}",
-                                                    r#type: "button",
-                                                    class: "flex h-auto w-full flex-col items-start gap-0.5 border-b px-3 py-2.5 text-left last:border-b-0 hover:bg-accent",
+                                                    variant: ButtonVariant::Ghost,
+                                                    class: Some("h-auto w-full flex-col items-start gap-0.5 rounded-none border-b px-3 py-2.5 text-left last:border-b-0".into()),
                                                     onclick: move |_| pick_type(real_idx),
                                                     span { class: "text-sm font-medium", "{t.display_name}" }
                                                     span { class: "text-xs text-muted-foreground",
@@ -1641,8 +1641,8 @@ pub fn CredentialDialog(
                                         }
                                     }
                                     if types.is_empty() {
-                                        div { class: "px-3 py-8 text-center text-sm text-muted-foreground",
-                                            "No matching credential types"
+                                        Empty { class: Some("border-0 py-8".into()),
+                                            EmptyDescription { "No matching credential types" }
                                         }
                                     }
                                 }
@@ -1693,9 +1693,10 @@ pub fn CredentialDialog(
                                 onclick: move |_| on_save.call(()),
                                 "Save"
                             }
-                            button {
-                                class: "inline-flex h-7 w-7 items-center justify-center rounded-md hover:bg-muted",
-                                "aria-label": "Close",
+                            Button {
+                                size: ButtonSize::IconSm,
+                                variant: ButtonVariant::Ghost,
+                                title: Some("Close".into()),
                                 onclick: move |_| close(),
                                 X { class: Some("h-4 w-4".into()) }
                             }
@@ -1720,16 +1721,22 @@ pub fn CredentialDialog(
                         }
                         div { class: "max-h-[min(55vh,480px)] overflow-y-auto p-5",
                             if let Some(msg) = form_err() {
-                                p { class: "mb-3 text-sm text-destructive", "{msg}" }
+                                Alert {
+                                    variant: AlertVariant::Destructive,
+                                    class: Some("mb-3".into()),
+                                    AlertDescription {
+                                        class: Some("text-destructive".into()),
+                                        "{msg}"
+                                    }
+                                }
                             }
                             div { class: "flex max-w-lg flex-col gap-4",
                                 div { class: "flex flex-col gap-2",
-                                    Label { "Credential name" }
-                                    input {
-                                        class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                                        value: "{name()}",
-                                        placeholder: "{def.display_name} account",
-                                        oninput: move |e: Event<FormData>| name.set(e.value()),
+                                    Label { class: Some("text-xs text-muted-foreground".into()), "Credential name" }
+                                    Input {
+                                        value: name(),
+                                        placeholder: Some(format!("{} account", def.display_name)),
+                                        oninput: move |e: FormEvent| name.set(e.value()),
                                     }
                                 }
                                 if sidebar() == "details" {
@@ -1757,6 +1764,7 @@ pub fn CredentialDialog(
                                                     div { class: "flex flex-col gap-2",
                                                         key: "{fkey}",
                                                         Label {
+                                                            class: Some("text-xs text-muted-foreground".into()),
                                                             "{f.label}"
                                                             if f.required { " *" }
                                                         }
@@ -1829,21 +1837,38 @@ pub fn CredentialDialog(
                                                                     ""
                                                                 };
                                                                 rsx! {
-                                                                    input {
-                                                                        class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                                                                        r#type: "{input_ty}",
-                                                                        placeholder: "{f.placeholder}",
-                                                                        value: "{current}",
-                                                                        list: "{list_id}",
-                                                                        oninput: move |e: Event<FormData>| {
-                                                                            let val = e.value();
-                                                                            field_values.with_mut(|m| {
-                                                                                m.insert(
-                                                                                    key.clone(),
-                                                                                    serde_json::Value::String(val),
-                                                                                );
-                                                                            });
-                                                                        },
+                                                                    if use_db_datalist {
+                                                                        input {
+                                                                            class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
+                                                                            r#type: "{input_ty}",
+                                                                            placeholder: "{f.placeholder}",
+                                                                            value: "{current}",
+                                                                            list: "{list_id}",
+                                                                            oninput: move |e: Event<FormData>| {
+                                                                                let val = e.value();
+                                                                                field_values.with_mut(|m| {
+                                                                                    m.insert(
+                                                                                        key.clone(),
+                                                                                        serde_json::Value::String(val),
+                                                                                    );
+                                                                                });
+                                                                            },
+                                                                        }
+                                                                    } else {
+                                                                        Input {
+                                                                            r#type: Some(input_ty.into()),
+                                                                            placeholder: Some(f.placeholder.into()),
+                                                                            value: current,
+                                                                            oninput: move |e: FormEvent| {
+                                                                                let val = e.value();
+                                                                                field_values.with_mut(|m| {
+                                                                                    m.insert(
+                                                                                        key.clone(),
+                                                                                        serde_json::Value::String(val),
+                                                                                    );
+                                                                                });
+                                                                            },
+                                                                        }
                                                                     }
                                                                     if use_db_datalist {
                                                                         datalist { id: "mssql-db-list",
@@ -1998,11 +2023,11 @@ pub fn CredentialsPanel() -> Element {
                     }
                 }
                 div { class: "flex flex-wrap items-center gap-2",
-                    input {
-                        class: "flex h-9 w-56 rounded-md border border-input bg-transparent px-3 text-sm",
-                        placeholder: "Search credentials...",
-                        value: "{query()}",
-                        oninput: move |e: Event<FormData>| query.set(e.value()),
+                    Input {
+                        class: Some("w-56".into()),
+                        placeholder: Some("Search credentials...".into()),
+                        value: query(),
+                        oninput: move |e: FormEvent| query.set(e.value()),
                     }
                     Button {
                         onclick: move |_| {
@@ -2017,7 +2042,14 @@ pub fn CredentialsPanel() -> Element {
             }
 
             if let Some(message) = err() {
-                div { class: "border-b bg-destructive/10 px-6 py-2 text-sm text-destructive", "{message}" }
+                Alert {
+                    variant: AlertVariant::Destructive,
+                    class: Some("mx-6 my-2".into()),
+                    AlertDescription {
+                        class: Some("text-destructive".into()),
+                        "{message}"
+                    }
+                }
             }
 
             if loading() {
@@ -2073,8 +2105,10 @@ pub fn CredentialsPanel() -> Element {
                             }
                         }
                         if filtered.is_empty() {
-                            div { class: "px-4 py-10 text-center text-sm text-muted-foreground",
-                                "No credentials yet. Click Add credential to create one."
+                            Empty { class: Some("border-0 py-10".into()),
+                                EmptyDescription {
+                                    "No credentials yet. Click Add credential to create one."
+                                }
                             }
                         }
                     }

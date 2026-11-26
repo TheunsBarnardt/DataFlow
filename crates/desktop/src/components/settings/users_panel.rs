@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 
-use crate::components::ui::{Button, Input, Switch};
+use crate::components::ui::{
+    Alert, AlertDescription, AlertVariant, Button, Card, CardContent, CardHeader, CardTitle, Empty,
+    EmptyDescription, Input, Label, Switch,
+};
 use crate::roles::DATAFLOW_ROLES;
 
 fn json_str(v: &serde_json::Value, key: &str) -> String {
@@ -124,56 +127,87 @@ pub fn UsersPanel() -> Element {
             }
 
             if let Some(message) = err() {
-                div { class: "border-b bg-destructive/10 px-8 py-2 text-sm text-destructive", "{message}" }
+                Alert {
+                    variant: AlertVariant::Destructive,
+                    class: Some("mx-6 mt-2".into()),
+                    AlertDescription {
+                        class: Some("text-destructive".into()),
+                        "{message}"
+                    }
+                }
             }
 
             div { class: "grid gap-6 p-6 lg:grid-cols-[minmax(280px,360px)_1fr]",
-                div { class: "space-y-3 rounded-lg border p-4",
-                    h2 { class: "text-sm font-semibold", "Create user" }
-                    Input {
-                        placeholder: Some("Display name".into()),
-                        value: name(),
-                        oninput: move |e: FormEvent| name.set(e.value()),
+                Card {
+                    CardHeader { class: Some("px-4 pt-4 pb-0".into()),
+                        CardTitle { class: Some("text-sm".into()), "Create user" }
                     }
-                    Input {
-                        placeholder: Some("Username".into()),
-                        value: username(),
-                        oninput: move |e: FormEvent| username.set(e.value()),
+                    CardContent { class: Some("space-y-3 px-4 pb-4".into()),
+                    div { class: "flex flex-col gap-1.5",
+                        Label { class: Some("text-xs text-muted-foreground".into()), "Display name" }
+                        Input {
+                            placeholder: Some("Display name".into()),
+                            value: name(),
+                            oninput: move |e: FormEvent| name.set(e.value()),
+                        }
                     }
-                    Input {
-                        placeholder: Some("Email".into()),
-                        r#type: Some("email".into()),
-                        value: email(),
-                        oninput: move |e: FormEvent| email.set(e.value()),
+                    div { class: "flex flex-col gap-1.5",
+                        Label { class: Some("text-xs text-muted-foreground".into()), "Username" }
+                        Input {
+                            placeholder: Some("Username".into()),
+                            value: username(),
+                            oninput: move |e: FormEvent| username.set(e.value()),
+                        }
                     }
-                    Input {
-                        placeholder: Some("Password".into()),
-                        r#type: Some("password".into()),
-                        value: password(),
-                        oninput: move |e: FormEvent| password.set(e.value()),
+                    div { class: "flex flex-col gap-1.5",
+                        Label { class: Some("text-xs text-muted-foreground".into()), "Email" }
+                        Input {
+                            placeholder: Some("Email".into()),
+                            r#type: Some("email".into()),
+                            value: email(),
+                            oninput: move |e: FormEvent| email.set(e.value()),
+                        }
                     }
-                    Input {
-                        placeholder: Some("Company (optional)".into()),
-                        value: company_name(),
-                        oninput: move |e: FormEvent| company_name.set(e.value()),
+                    div { class: "flex flex-col gap-1.5",
+                        Label { class: Some("text-xs text-muted-foreground".into()), "Password" }
+                        Input {
+                            placeholder: Some("Password".into()),
+                            r#type: Some("password".into()),
+                            value: password(),
+                            oninput: move |e: FormEvent| password.set(e.value()),
+                        }
                     }
+                    div { class: "flex flex-col gap-1.5",
+                        Label { class: Some("text-xs text-muted-foreground".into()), "Company" }
+                        Input {
+                            placeholder: Some("Company (optional)".into()),
+                            value: company_name(),
+                            oninput: move |e: FormEvent| company_name.set(e.value()),
+                        }
+                    }
+                    div { class: "flex flex-col gap-1.5",
+                        Label { class: Some("text-xs text-muted-foreground".into()), "Role" }
                     RoleSelect {
                         value: role(),
                         class: None,
                         on_change: move |r| role.set(r),
+                    }
                     }
                     Button {
                         disabled: busy(),
                         onclick: create_user,
                         "Create"
                     }
+                    }
                 }
 
-                div { class: "min-w-0 overflow-auto rounded-lg border",
+                Card { class: Some("min-w-0 overflow-auto p-0 gap-0".into()),
                     if loading() {
-                        div { class: "p-4 text-sm text-muted-foreground", "Loading…" }
+                        CardContent { class: Some("p-4 text-sm text-muted-foreground".into()), "Loading…" }
                     } else if users().is_empty() {
-                        div { class: "p-4 text-sm text-muted-foreground", "No users" }
+                        Empty { class: Some("border-0 py-10".into()),
+                            EmptyDescription { "No users" }
+                        }
                     } else {
                         table { class: "w-full text-left text-sm",
                             thead { class: "border-b bg-muted/40 text-xs text-muted-foreground",

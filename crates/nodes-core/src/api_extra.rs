@@ -3,15 +3,15 @@ use botflow_node_api::{
     ExecutionContext, NodeError, NodeExecutor, NodeMetadata, NodeRegistry, NodeResult, PortDef,
 };
 use botflow_security::JwtAuth;
-use serde_json::json;
+use serde_json::{json, Value};
 use std::sync::Arc;
 
-fn meta(ty: &str, name: &str) -> NodeMetadata {
+fn meta(ty: &str, name: &str, description: &str) -> NodeMetadata {
     NodeMetadata {
         type_name: ty.into(),
         display_name: name.into(),
         category: "api".into(),
-        description: name.into(),
+        description: description.into(),
         version: 1,
         is_trigger: false,
         inputs: vec![PortDef {
@@ -29,7 +29,11 @@ pub struct WebhookRespondNode;
 #[async_trait]
 impl NodeExecutor for WebhookRespondNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("webhookRespond", "Respond to Webhook")
+        meta(
+            "webhookRespond",
+            "Respond to Webhook",
+            "Send an HTTP response back to a webhook caller",
+        )
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let status = ctx
@@ -57,7 +61,11 @@ pub struct ApiRespondNode;
 #[async_trait]
 impl NodeExecutor for ApiRespondNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("apiRespond", "Respond to API")
+        meta(
+            "apiRespond",
+            "Respond to API",
+            "Return a response for an API endpoint request",
+        )
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let status = ctx
@@ -66,13 +74,25 @@ impl NodeExecutor for ApiRespondNode {
             .get("statusCode")
             .and_then(|v| v.as_u64())
             .unwrap_or(200);
+        let mode = ctx
+            .node
+            .parameters
+            .get("responseData")
+            .and_then(|v| v.as_str())
+            .unwrap_or("firstEntryJson");
         let body = ctx
             .node
             .parameters
             .get("body")
             .cloned()
-            .or_else(|| ctx.input_items.first().cloned())
-            .unwrap_or(json!({}));
+            .unwrap_or_else(|| match mode {
+                "allEntries" => Value::Array(ctx.input_items.clone()),
+                _ => ctx
+                    .input_items
+                    .first()
+                    .cloned()
+                    .unwrap_or_else(|| json!({})),
+            });
         Ok(NodeResult::single(vec![json!({
             "respond": true,
             "statusCode": status,
@@ -85,7 +105,7 @@ pub struct GraphqlNode;
 #[async_trait]
 impl NodeExecutor for GraphqlNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("graphql", "GraphQL")
+        meta("graphql", "GraphQL", "Run a GraphQL query or mutation")
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let url = ctx
@@ -125,7 +145,7 @@ pub struct JwtNode;
 #[async_trait]
 impl NodeExecutor for JwtNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("jwt", "JWT")
+        meta("jwt", "JWT", "Sign or verify JSON Web Tokens")
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let op = ctx
@@ -186,7 +206,7 @@ pub struct RssReadNode;
 #[async_trait]
 impl NodeExecutor for RssReadNode {
     fn metadata(&self) -> NodeMetadata {
-        meta("rssRead", "RSS Read")
+        meta("rssRead", "RSS Read", "Fetch and read an RSS or Atom feed")
     }
     async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
         let url = ctx
@@ -208,12 +228,12 @@ impl NodeExecutor for RssReadNode {
 }
 
 macro_rules! stub_api {
-    ($struct:ident, $ty:expr, $name:expr) => {
+    ($struct:ident, $ty:expr, $name:expr, $desc:expr) => {
         pub struct $struct;
         #[async_trait]
         impl NodeExecutor for $struct {
             fn metadata(&self) -> NodeMetadata {
-                meta($ty, $name)
+                meta($ty, $name, $desc)
             }
             async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
                 Ok(NodeResult::single(vec![json!({
@@ -226,12 +246,12 @@ macro_rules! stub_api {
     };
 }
 
-stub_api!(N8nApiNode, "n8nApi", "n8n");
-stub_api!(FormNode, "form", "Form");
-stub_api!(FtpNode, "ftp", "FTP");
-stub_api!(SshNode, "ssh", "SSH");
-stub_api!(GitNode, "git", "Git");
-stub_api!(LdapNode, "ldap", "LDAP");
+stub_api!(N8nApiNode, "n8nApi", "n8n", "Call the n8n public API");
+stub_api!(FormNode, "form", "Form", "Collect or process form field values");
+stub_api!(FtpNode, "ftp", "FTP", "Upload or download files over FTP/SFTP");
+stub_api!(SshNode, "ssh", "SSH", "Run a command on a remote host over SSH");
+stub_api!(GitNode, "git", "Git", "Run Git operations on a repository");
+stub_api!(LdapNode, "ldap", "LDAP", "Search or update directory entries via LDAP");
 
 pub fn register(registry: &mut NodeRegistry) {
     registry.register(Arc::new(WebhookRespondNode));

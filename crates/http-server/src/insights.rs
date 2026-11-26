@@ -43,13 +43,7 @@ fn summarize(list: &[&RunDoc]) -> Summary {
         .iter()
         .map(|r| r.time_saved_minutes.unwrap_or(0.0))
         .sum();
-    let with_duration: Vec<f64> = list
-        .iter()
-        .filter_map(|r| {
-            let finished = r.finished_at?;
-            Some((finished - r.started_at).num_milliseconds() as f64)
-        })
-        .collect();
+    let with_duration: Vec<f64> = list.iter().filter_map(|r| run_duration_ms(r)).collect();
     let average_run_time_ms = if with_duration.is_empty() {
         0.0
     } else {
@@ -62,6 +56,16 @@ fn summarize(list: &[&RunDoc]) -> Summary {
         time_saved_minutes,
         average_run_time_ms,
     }
+}
+
+fn run_duration_ms(run: &RunDoc) -> Option<f64> {
+    let finished = run.finished_at?;
+    let micros = (finished - run.started_at).num_microseconds()?;
+    if micros < 0 {
+        return None;
+    }
+    // Sub-ms runs still count so the chart isn't a flat zero line.
+    Some((micros as f64 / 1000.0).max(0.001))
 }
 
 fn in_range(run: &RunDoc, from: DateTime<Utc>, to: DateTime<Utc>, end_inclusive: bool) -> bool {
@@ -154,6 +158,18 @@ pub fn build_insights(runs: &[RunDoc], days: i64) -> Value {
                 .and_then(|r| r.workflow_name.clone())
                 .filter(|n| !n.is_empty())
                 .unwrap_or_else(|| workflow_id.clone());
+            let executions: Vec<Value> = list
+                .iter()
+                .filter_map(|r| {
+                    let duration_ms = run_duration_ms(r)?;
+                    Some(json!({
+                        "at": r.started_at.to_rfc3339(),
+                        "date": day_key(r.started_at),
+                        "durationMs": duration_ms,
+                        "status": format!("{:?}", r.status).to_lowercase(),
+                    }))
+                })
+                .collect();
             json!({
                 "workflowId": workflow_id,
                 "workflowName": workflow_name,
@@ -162,6 +178,8 @@ pub fn build_insights(runs: &[RunDoc], days: i64) -> Value {
                 "failureRate": s.failure_rate,
                 "timeSavedMinutes": s.time_saved_minutes,
                 "averageRunTimeMs": s.average_run_time_ms,
+                "byTime": build_by_time(&list, bounds.from, bounds.to),
+                "executions": executions,
             })
         })
         .collect();
