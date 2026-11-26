@@ -149,7 +149,12 @@ pub fn WorkflowList(
             } else {
             div { class: "min-h-0 flex-1 overflow-y-auto",
                 div { class: "p-6",
-                    Card { class: Some("overflow-hidden p-0 gap-0".into()),
+                    Card {
+                        class: Some(if menu_for().is_some() {
+                            "relative z-50 overflow-visible p-0 gap-0".into()
+                        } else {
+                            "overflow-hidden p-0 gap-0".into()
+                        }),
                         div {
                             class: "flex w-full items-center gap-3 border-b bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground",
                             div { class: "min-w-0 flex-1", "Name" }
@@ -172,6 +177,11 @@ pub fn WorkflowList(
                                 let id_menu = id.clone();
                                 let id_ctx = id.clone();
                                 let menu_open = menu_for().as_deref() == Some(id.as_str());
+                                let row_class = if menu_open {
+                                    "relative z-10 flex w-full items-center gap-3 border-b px-4 py-3 text-sm last:border-b-0 hover:bg-muted/50"
+                                } else {
+                                    "relative flex w-full items-center gap-3 border-b px-4 py-3 text-sm last:border-b-0 hover:bg-muted/50"
+                                };
                                 let edit_id = id.clone();
                                 let edit_name = name.clone();
                                 let del_id = id.clone();
@@ -179,7 +189,7 @@ pub fn WorkflowList(
                                 rsx! {
                                     div {
                                         key: "{id}",
-                                        class: "relative flex w-full items-center gap-3 border-b px-4 py-3 text-sm last:border-b-0 hover:bg-muted/50",
+                                        class: "{row_class}",
                                         oncontextmenu: move |e| {
                                             e.prevent_default();
                                             e.stop_propagation();
@@ -225,7 +235,7 @@ pub fn WorkflowList(
                                             }
                                             if menu_open {
                                                 div {
-                                                    class: "absolute right-0 top-full z-50 mt-1 min-w-[10rem] rounded-md border bg-card p-1 text-sm shadow-md",
+                                                    class: "absolute right-0 top-full z-50 mt-1 min-w-[10rem] rounded-md border bg-popover p-1 text-popover-foreground text-sm shadow-md",
                                                     onclick: move |e| e.stop_propagation(),
                                                     button {
                                                         r#type: "button",
