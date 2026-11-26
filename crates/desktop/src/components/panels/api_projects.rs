@@ -37,11 +37,7 @@ fn auth_label(project: &serde_json::Value) -> String {
 }
 
 fn format_updated(raw: &str) -> String {
-    if raw.is_empty() {
-        return String::new();
-    }
-    // Keep ISO readable; desktop has no locale formatter wired.
-    raw.replace('T', " ").trim_end_matches('Z').to_string()
+    crate::components::panels::format_local_datetime(raw)
 }
 
 #[component]

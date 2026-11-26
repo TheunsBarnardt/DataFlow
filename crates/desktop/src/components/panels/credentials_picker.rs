@@ -105,9 +105,14 @@ pub fn CredentialsPicker(
         "Select credential…".to_string()
     };
 
+    // WebView <select> ignores the select `value` attribute; mark options with `selected`.
+    let show_placeholder = value.is_empty() || selected_missing;
+    let select_key = format!("{}:{}:{}", value, options.len(), reload_tick());
+
     rsx! {
         select {
             id: id,
+            key: "{select_key}",
             class: "flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm",
             value: "{value}",
             disabled: waiting,
@@ -121,11 +126,13 @@ pub fn CredentialsPicker(
             },
             option {
                 value: "",
+                selected: show_placeholder,
                 "{placeholder}"
             }
             for c in options {
                 {
                     let cid = json_id(&c);
+                    let is_selected = !show_placeholder && cid == value;
                     let name = c.get("name").map(json_string).unwrap_or_else(|| cid.clone());
                     let ty = c.get("type").map(json_string).unwrap_or_default();
                     let label = if ty.is_empty() {
@@ -134,18 +141,25 @@ pub fn CredentialsPicker(
                         format!("{name} ({ty})")
                     };
                     rsx! {
-                        option { key: "{cid}", value: "{cid}", "{label}" }
+                        option {
+                            key: "{cid}",
+                            value: "{cid}",
+                            selected: is_selected,
+                            "{label}"
+                        }
                     }
                 }
             }
             option {
                 disabled: true,
                 value: "__sep__",
+                selected: false,
                 "────────────"
             }
             option {
                 value: CREATE_VALUE,
                 class: "text-primary",
+                selected: false,
                 "+ Create new {type_label}…"
             }
         }

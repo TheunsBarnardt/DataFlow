@@ -36,9 +36,18 @@ pub fn set_runtime_handle(handle: tokio::runtime::Handle) {
     let _ = TOKIO_HANDLE.set(handle);
 }
 
-fn client() -> reqwest::Client {
+fn client_timeout(path: &str) -> std::time::Duration {
+    // Credential probes (esp. MSSQL) can take longer than a normal API call.
+    if path.contains("/credentials/test") {
+        std::time::Duration::from_secs(60)
+    } else {
+        std::time::Duration::from_secs(15)
+    }
+}
+
+fn client(path: &str) -> reqwest::Client {
     reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(15))
+        .timeout(client_timeout(path))
         .build()
         .expect("http client")
 }
@@ -55,7 +64,7 @@ fn url(path: &str) -> String {
 }
 
 async fn send(method: reqwest::Method, path: &str, body: Option<Value>) -> Result<Value, String> {
-    let mut req = client().request(method, url(path));
+    let mut req = client(path).request(method, url(path));
     if let Some(Some(token)) = AUTH_TOKEN.get().map(|t| t.read().unwrap().clone()) {
         req = req.bearer_auth(token);
     }

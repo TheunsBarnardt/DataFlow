@@ -28,10 +28,19 @@ fn json_str(v: &serde_json::Value, key: &str) -> String {
 }
 
 fn format_ts(v: &serde_json::Value) -> String {
-    v.as_str()
-        .map(|s| s.to_string())
-        .or_else(|| v.as_i64().map(|n| n.to_string()))
-        .unwrap_or_else(|| "—".into())
+    if let Some(s) = v.as_str() {
+        return crate::components::panels::format_local_datetime(s);
+    }
+    if let Some(ms) = v.as_i64() {
+        if let Some(dt) = chrono::DateTime::from_timestamp_millis(ms) {
+            return dt
+                .with_timezone(&chrono::Local)
+                .format("%Y-%m-%d %H:%M:%S")
+                .to_string();
+        }
+        return ms.to_string();
+    }
+    "—".into()
 }
 
 fn parse_keys(v: &serde_json::Value) -> Vec<ApiKeyRow> {

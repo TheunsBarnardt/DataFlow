@@ -5,7 +5,7 @@ use crate::components::icons::{
     Settings, Sun, Variable, ChevronLeft, ChevronRight,
 };
 use crate::components::settings::{visible_settings_nav, SettingsPageId};
-use crate::components::ui::{Badge, BadgeVariant};
+use crate::components::ui::{Avatar, AvatarFallback, Badge, BadgeVariant, Separator};
 use crate::theme::Theme;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
@@ -228,6 +228,7 @@ pub fn MainSidebar(
                         }
                     }
                 }
+                Separator { class: Some("my-1".into()) }
                 button {
                     r#type: "button",
                     class: if collapsed {
@@ -237,10 +238,12 @@ pub fn MainSidebar(
                     },
                     title: "Profile",
                     onclick: move |_| on_profile.call(()),
-                    div {
-                        class: "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white",
-                        style: "background: var(--brand)",
-                        "{initials}"
+                    Avatar {
+                        class: Some("size-7 after:border-transparent".into()),
+                        AvatarFallback {
+                            class: Some("bg-[var(--brand)] text-[10px] font-semibold text-white".into()),
+                            "{initials}"
+                        }
                     }
                     if !collapsed {
                         div { class: "min-w-0",

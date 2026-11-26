@@ -19,9 +19,7 @@ fn action_variant(action: &str) -> BadgeVariant {
 }
 
 fn format_event_time(at: &str) -> String {
-    chrono::DateTime::parse_from_rfc3339(at)
-        .map(|d| d.format("%b %d, %Y %H:%M").to_string())
-        .unwrap_or_else(|_| at.to_string())
+    crate::components::panels::format_local_datetime_short(at)
 }
 
 fn details_snippet(details: &serde_json::Value) -> Option<String> {

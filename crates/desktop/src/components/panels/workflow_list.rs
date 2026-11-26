@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
 use crate::components::icons::{Plus, Search};
-use crate::components::panels::{json_bool, json_id, json_string};
+use crate::components::panels::{format_local_datetime, json_bool, json_id, json_string};
 use crate::components::ui::{Button, PageLoader, Switch};
 
 #[component]
@@ -134,17 +134,9 @@ pub fn WorkflowList(
                                 let name = w.get("name").map(json_string).unwrap_or_else(|| "Untitled".into());
                                 let enabled = json_bool(&w, "enabled", false);
                                 let version = w.get("version").map(json_string).unwrap_or_else(|| "1".into());
-                                let updated = {
-                                    let raw = w.get("updatedAt").map(json_string).unwrap_or_default();
-                                    // Match React locale-ish short display when ISO.
-                                    if let Some((date, rest)) = raw.split_once('T') {
-                                        let time = rest.trim_end_matches('Z');
-                                        let time = time.split('.').next().unwrap_or(time);
-                                        format!("{date} {time}")
-                                    } else {
-                                        raw
-                                    }
-                                };
+                                let updated = format_local_datetime(
+                                    &w.get("updatedAt").map(json_string).unwrap_or_default(),
+                                );
                                 let id_open = id.clone();
                                 let id_toggle = id.clone();
                                 rsx! {

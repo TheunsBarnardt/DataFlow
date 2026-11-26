@@ -1,8 +1,10 @@
 use dioxus::prelude::*;
 use serde_json::Value;
 
-use crate::components::icons::{ChevronDown, ChevronRight, Trash2};
-use crate::components::panels::{has_binary_data, json_id, json_string, BinaryViewer};
+use crate::components::icons::{ChevronDown, ChevronRight, RefreshCw, Trash2};
+use crate::components::panels::{
+    format_local_datetime, has_binary_data, json_id, json_string, BinaryViewer,
+};
 use crate::components::ui::{
     Badge, BadgeVariant, Button, ButtonSize, ButtonVariant, ConfirmDeleteDialog, PageLoader,
     ResizableHandle, ResizableOrientation, ResizablePanel, ResizablePanelGroup,
@@ -55,6 +57,15 @@ fn log_duration_ms(log: &serde_json::Value) -> i64 {
     }
 }
 
+fn run_duration_ms(run: &serde_json::Value) -> Option<i64> {
+    let started = run.get("startedAt").and_then(|x| x.as_str()).unwrap_or("");
+    let finished = run.get("finishedAt").and_then(|x| x.as_str()).unwrap_or("");
+    match (parse_time_ms(started), parse_time_ms(finished)) {
+        (Some(s), Some(f)) if f >= s => Some(f - s),
+        _ => None,
+    }
+}
+
 fn format_duration_ms(ms: i64) -> String {
     if ms < 1000 {
         format!("{}ms", ms)
@@ -92,7 +103,7 @@ fn JsonBlock(value: Option<serde_json::Value>) -> Element {
 fn StepRow(log: serde_json::Value) -> Element {
     let step_status = log.get("status").and_then(|s| s.as_str()).unwrap_or("");
     let failed = step_status == "failed";
-    let mut open = use_signal(|| failed);
+    let mut open = use_signal(|| true);
     let node = log.get("nodeName").map(json_string).unwrap_or_default();
     let error = log
         .get("error")
@@ -178,16 +189,25 @@ pub fn RunsPanel(
     let mut loading = use_signal(|| true);
     let mut detail_loading = use_signal(|| false);
     let mut internal_selected = use_signal(|| None::<String>);
+    let mut manual_refresh = use_signal(|| 0u32);
     let use_internal_selection = selected_run_id.is_none();
     let workflow_id_fetch = workflow_id.clone();
     let workflow_id_clear = workflow_id.clone();
     let selected_run_external = selected_run_id.clone();
 
+    // Props aren't reactive — mirror into a signal so effects re-run after Execute.
+    let mut refresh_sig = use_signal(|| refresh_key);
+    if *refresh_sig.peek() != refresh_key {
+        refresh_sig.set(refresh_key);
+    }
+
     let selected_id = selected_run_external.clone().or_else(|| internal_selected());
 
     use_effect(move || {
-        let _ = refresh_key;
+        let _ = refresh_sig();
+        let _ = manual_refresh();
         let wf = workflow_id_fetch.clone();
+        let select_newest = use_internal_selection;
         loading.set(true);
         spawn(async move {
             let mut path = "/api/runs?limit=40".to_string();
@@ -196,12 +216,19 @@ pub fn RunsPanel(
             }
             match crate::api::get_json(&path).await {
                 Ok(v) => {
-                    runs.set(
-                        v.get("runs")
-                            .and_then(|x| x.as_array())
-                            .cloned()
-                            .unwrap_or_default(),
-                    );
+                    let list = v
+                        .get("runs")
+                        .and_then(|x| x.as_array())
+                        .cloned()
+                        .unwrap_or_default();
+                    let newest_id = list.first().map(json_id);
+                    runs.set(list);
+                    // Keep step history on the latest run when Execute bumps refresh_key.
+                    if select_newest {
+                        if let Some(id) = newest_id {
+                            internal_selected.set(Some(id));
+                        }
+                    }
                     err.set(None);
                 }
                 Err(e) => err.set(Some(e)),
@@ -211,8 +238,9 @@ pub fn RunsPanel(
     });
 
     use_effect(move || {
+        let _ = refresh_sig();
+        let _ = manual_refresh();
         let id = selected_run_external.clone().or_else(|| internal_selected());
-        let _ = refresh_key;
         spawn(async move {
             match id {
                 None => {
@@ -235,19 +263,35 @@ pub fn RunsPanel(
         div { class: "flex h-full min-h-0 flex-col gap-2",
             div { class: "flex items-center justify-between gap-2",
                 h2 { class: "text-sm font-semibold", "Runs" }
-                Button {
-                    variant: ButtonVariant::Ghost,
-                    size: ButtonSize::Sm,
-                    class: Some("h-7 gap-1.5 px-2 text-xs text-muted-foreground".into()),
-                    disabled: runs().is_empty() || clearing(),
-                    onclick: move |_| {
-                        if runs().is_empty() || clearing() {
-                            return;
-                        }
-                        confirm_clear.set(true);
-                    },
-                    Trash2 { class: Some("size-3.5".into()) }
-                    "Clear"
+                div { class: "flex items-center gap-0.5",
+                    Button {
+                        variant: ButtonVariant::Ghost,
+                        size: ButtonSize::Sm,
+                        class: Some("h-7 gap-1.5 px-2 text-xs text-muted-foreground".into()),
+                        disabled: loading(),
+                        onclick: move |_| {
+                            if loading() {
+                                return;
+                            }
+                            manual_refresh.set(manual_refresh() + 1);
+                        },
+                        RefreshCw { class: Some("size-3.5".into()) }
+                        "Refresh"
+                    }
+                    Button {
+                        variant: ButtonVariant::Ghost,
+                        size: ButtonSize::Sm,
+                        class: Some("h-7 gap-1.5 px-2 text-xs text-muted-foreground".into()),
+                        disabled: runs().is_empty() || clearing(),
+                        onclick: move |_| {
+                            if runs().is_empty() || clearing() {
+                                return;
+                            }
+                            confirm_clear.set(true);
+                        },
+                        Trash2 { class: Some("size-3.5".into()) }
+                        "Clear"
+                    }
                 }
             }
             div { class: "min-h-0 flex-1 overflow-y-auto",
@@ -261,7 +305,10 @@ pub fn RunsPanel(
                             let wf_name = r.get("workflowName").map(json_string).unwrap_or_default();
                             let status = r.get("status").map(json_string).unwrap_or_default();
                             let trigger = r.get("trigger").map(json_string).unwrap_or_default();
-                            let started = r.get("startedAt").map(json_string).unwrap_or_default();
+                            let started = format_local_datetime(
+                                &r.get("startedAt").map(json_string).unwrap_or_default(),
+                            );
+                            let duration = run_duration_ms(&r).map(format_duration_ms);
                             let err_preview = run_error_text(&r);
                             let failed = status == "failed" || err_preview.is_some();
                             let selected = selected_id.as_deref() == Some(id.as_str());
@@ -299,6 +346,9 @@ pub fn RunsPanel(
                                     div { class: "flex flex-wrap items-center gap-2",
                                         span { class: "font-medium", "{wf_name}" }
                                         Badge { variant: badge_variant, "{status}" }
+                                        if let Some(dur) = duration.clone() {
+                                            Badge { variant: BadgeVariant::Outline, "{dur}" }
+                                        }
                                         span { class: "text-xs text-muted-foreground", "{trigger}" }
                                     }
                                     div { class: "text-xs text-muted-foreground", "{started}" }

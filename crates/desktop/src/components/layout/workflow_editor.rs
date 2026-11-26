@@ -585,11 +585,11 @@ pub fn WorkflowEditor(
                 if logs_open() {
                     ResizablePanelGroup {
                         orientation: ResizableOrientation::Vertical,
-                        initial_sizes: vec![70.0, 30.0],
+                        initial_sizes: vec![65.0, 35.0],
                         class: Some("relative min-h-0 flex-1".into()),
                         ResizablePanel {
                             panel_index: 0,
-                            min_pct: 40.0,
+                            min_pct: 30.0,
                             max_pct: 85.0,
                             class: Some("relative flex min-h-0 flex-col".into()),
                             {editor_main(
@@ -612,7 +612,7 @@ pub fn WorkflowEditor(
                         ResizablePanel {
                             panel_index: 1,
                             min_pct: 15.0,
-                            max_pct: 60.0,
+                            max_pct: 70.0,
                             class: Some("flex min-h-0 flex-col border-t bg-card".into()),
                             button {
                                 r#type: "button",

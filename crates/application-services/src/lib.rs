@@ -192,9 +192,22 @@ impl AppState {
             .resolve_for_node(&node)
             .map_err(|e| anyhow!(e))?;
         let input_items = match input {
+            None | Some(Value::Null) => {
+                if node.node_type == "apiEndpoint" {
+                    api_endpoint_request_sample(&node.parameters)
+                } else {
+                    vec![json!({})]
+                }
+            }
+            Some(Value::Array(arr)) if arr.is_empty() || arr.iter().all(|v| v.is_null()) => {
+                if node.node_type == "apiEndpoint" {
+                    api_endpoint_request_sample(&node.parameters)
+                } else {
+                    vec![json!({})]
+                }
+            }
             Some(Value::Array(arr)) => arr,
             Some(v) => vec![v],
-            None => vec![json!({})],
         };
         let ctx = ExecutionContext {
             run_id: format!("step-{}", uuid::Uuid::new_v4()),
@@ -248,6 +261,67 @@ impl AppState {
     pub async fn list_runs_for_insights(&self) -> Result<Vec<RunDoc>> {
         storage::list_runs(&self.db, None, 5_000).await
     }
+}
+
+/// Request-shaped item for apiEndpoint Execute step when the client omits input.
+fn api_endpoint_request_sample(parameters: &Value) -> Vec<Value> {
+    let method = parameters
+        .get("method")
+        .and_then(|v| v.as_str())
+        .unwrap_or("GET");
+    let path = parameters
+        .get("path")
+        .and_then(|v| v.as_str())
+        .unwrap_or("");
+    let query = sample_object_from_schema(parameters.get("requestQuerySchema"));
+    let body = {
+        let from_schema = sample_object_from_schema(parameters.get("requestBodySchema"));
+        if from_schema.as_object().map(|o| !o.is_empty()).unwrap_or(false) {
+            from_schema
+        } else if matches!(
+            method.to_ascii_uppercase().as_str(),
+            "POST" | "PUT" | "PATCH"
+        ) {
+            json!({})
+        } else {
+            Value::Null
+        }
+    };
+    vec![json!({
+        "method": method,
+        "path": path,
+        "headers": {},
+        "query": query,
+        "body": body,
+    })]
+}
+
+fn sample_object_from_schema(schema: Option<&Value>) -> Value {
+    let Some(schema) = schema.filter(|s| s.is_object()) else {
+        return json!({});
+    };
+    if schema.get("$ref").is_some() {
+        return json!({});
+    }
+    let Some(props) = schema.get("properties").and_then(|v| v.as_object()) else {
+        return json!({});
+    };
+    let mut out = serde_json::Map::new();
+    for (k, prop) in props {
+        if let Some(d) = prop.get("default").or_else(|| prop.get("example")) {
+            out.insert(k.clone(), d.clone());
+            continue;
+        }
+        let sample = match prop.get("type").and_then(|v| v.as_str()) {
+            Some("integer") | Some("number") => json!(0),
+            Some("boolean") => json!(false),
+            Some("array") => json!([]),
+            Some("object") => json!({}),
+            _ => json!(""),
+        };
+        out.insert(k.clone(), sample);
+    }
+    Value::Object(out)
 }
 
 fn decrypt_credential_data(secrets: &SecretBox, blob: &str) -> Value {

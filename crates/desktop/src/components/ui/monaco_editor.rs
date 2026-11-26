@@ -123,6 +123,15 @@ pub fn MonacoEditor(
     }});
   }}
 
+  function ensureCss(vsPath) {{
+    if (document.querySelector('link[data-bf-monaco-css]')) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = vsPath + '/editor/editor.main.css';
+    link.dataset.bfMonacoCss = '1';
+    document.head.appendChild(link);
+  }}
+
   function ensureLoader() {{
     return new Promise((resolve, reject) => {{
       if (window.monaco) {{ resolve(window.monaco); return; }}
@@ -130,13 +139,22 @@ pub fn MonacoEditor(
       const base = (window.__bfApiBase || '').replace(/\/$/, '');
       const localVs = base + '/vendor/monaco/vs';
       const cdnVs = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs';
+      let settled = false;
+      const done = (fn, arg) => {{
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        fn(arg);
+      }};
+      const timer = setTimeout(() => done(reject, new Error('monaco load timeout')), 12000);
       const tryLoad = (vsPath, onFail) => {{
+        ensureCss(vsPath);
         const existing = document.querySelector('script[data-bf-monaco-loader]');
         const start = () => {{
           try {{
             window.require.config({{ paths: {{ vs: vsPath }} }});
             window.require(['vs/editor/editor.main'], () => {{
-              if (window.monaco) resolve(window.monaco);
+              if (window.monaco) done(resolve, window.monaco);
               else onFail(new Error('monaco missing after load'));
             }}, onFail);
           }} catch (e) {{ onFail(e); }}
@@ -154,7 +172,7 @@ pub fn MonacoEditor(
         s.onerror = () => onFail(new Error('failed to fetch ' + s.src));
         document.head.appendChild(s);
       }};
-      tryLoad(localVs, () => tryLoad(cdnVs, reject));
+      tryLoad(localVs, () => tryLoad(cdnVs, (e) => done(reject, e)));
     }});
   }}
 
@@ -439,25 +457,9 @@ pub fn MonacoEditor(
                 );
 
                 let mut eval = document::eval(&script);
-                // Seed variables list
-                if let Ok(v) = crate::api::get_json("/api/variables").await {
-                    let vars: Vec<serde_json::Value> = v
-                        .get("variables")
-                        .and_then(|x| x.as_array())
-                        .cloned()
-                        .unwrap_or_default()
-                        .into_iter()
-                        .map(|item| {
-                            serde_json::json!({
-                                "key": item.get("key").and_then(|x| x.as_str()).unwrap_or(""),
-                                "value": item.get("value").and_then(|x| x.as_str()).unwrap_or(""),
-                                "description": item.get("description").and_then(|x| x.as_str()).unwrap_or(""),
-                            })
-                        })
-                        .collect();
-                    let _ = eval.send(serde_json::json!({ "variables": vars }));
-                }
-
+                // Listen FIRST — awaiting /api/variables before recv drops `__bf_monaco_ready__`
+                // (JS already sent it and is blocked on dioxus.recv), leaving the textarea cover forever.
+                let mut seeded_vars = false;
                 while let Ok(next) = eval.recv::<String>().await {
                     if next == "__bf_monaco_missing_host__" || next == "__bf_monaco_load_failed__" {
                         let current = value();
@@ -468,9 +470,28 @@ pub fn MonacoEditor(
                         break;
                     }
                     if next == "__bf_monaco_ready__" {
-                        // Re-push latest prop in case bootstrap captured a stale empty string.
                         let current = value();
                         let _ = eval.send(serde_json::json!({ "value": current }));
+                        if !seeded_vars {
+                            seeded_vars = true;
+                            if let Ok(v) = crate::api::get_json("/api/variables").await {
+                                let vars: Vec<serde_json::Value> = v
+                                    .get("variables")
+                                    .and_then(|x| x.as_array())
+                                    .cloned()
+                                    .unwrap_or_default()
+                                    .into_iter()
+                                    .map(|item| {
+                                        serde_json::json!({
+                                            "key": item.get("key").and_then(|x| x.as_str()).unwrap_or(""),
+                                            "value": item.get("value").and_then(|x| x.as_str()).unwrap_or(""),
+                                            "description": item.get("description").and_then(|x| x.as_str()).unwrap_or(""),
+                                        })
+                                    })
+                                    .collect();
+                                let _ = eval.send(serde_json::json!({ "variables": vars }));
+                            }
+                        }
                         monaco_ready.set(true);
                         fallback.set(false);
                         ignore_empty_echo.set(false);

@@ -304,8 +304,8 @@ pub fn ResizableHandle(
             "h-8 w-1 rounded-full bg-muted-foreground/50 group-hover:bg-[var(--brand)]",
         ),
         ResizableOrientation::Vertical => (
-            "group relative z-20 flex h-2 shrink-0 cursor-row-resize items-center justify-center bg-border/60 hover:bg-[var(--brand)]/50 active:bg-[var(--brand)]/70",
-            "h-1 w-8 rounded-full bg-muted-foreground/50 group-hover:bg-[var(--brand)]",
+            "group relative z-30 -my-0.5 flex h-3 shrink-0 cursor-row-resize items-center justify-center bg-border hover:bg-[var(--brand)]/50 active:bg-[var(--brand)]/70",
+            "h-1 w-12 rounded-full bg-muted-foreground/70 group-hover:bg-[var(--brand)]",
         ),
     };
 

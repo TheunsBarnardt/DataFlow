@@ -695,8 +695,9 @@ async fn validate_workflow(
 
 #[derive(Deserialize)]
 struct RunBody {
+    /// Missing / null → `{}` so triggers are not fed `[null]`.
     #[serde(default)]
-    input: Value,
+    input: Option<Value>,
 }
 
 async fn run_workflow(
@@ -705,7 +706,13 @@ async fn run_workflow(
     Path(id): Path<String>,
     body: Option<Json<RunBody>>,
 ) -> Response {
-    let input = body.map(|b| b.0.input).unwrap_or(json!({ "from": "api" }));
+    let input = match body {
+        None => json!({ "from": "api" }),
+        Some(Json(b)) => match b.input {
+            None | Some(Value::Null) => json!({}),
+            Some(v) => v,
+        },
+    };
     match state.app.run_workflow(&id, input).await {
         Ok(run) => Json(json!({ "run": run.to_ui_json() })).into_response(),
         Err(e) => error_response(e),

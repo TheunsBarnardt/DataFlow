@@ -55,6 +55,24 @@ fn as_items(data: &Value) -> Vec<Value> {
     }
 }
 
+/// True when data is null, empty, or only null items — not useful for NDV mapping.
+fn is_nullish_io(data: &Value) -> bool {
+    match normalize_io_data(data) {
+        Value::Null => true,
+        Value::Array(arr) => arr.is_empty() || arr.iter().all(|v| v.is_null()),
+        _ => false,
+    }
+}
+
+fn usable_io(data: &Value) -> Option<Value> {
+    let normalized = normalize_io_data(data);
+    if is_nullish_io(&normalized) {
+        None
+    } else {
+        Some(normalized)
+    }
+}
+
 fn log_for_node<'a>(node_id: &str, run_logs: &'a [Value]) -> Option<&'a Value> {
     run_logs
         .iter()
@@ -69,15 +87,18 @@ fn output_for_node(
     sample_output: &Option<Value>,
 ) -> Option<Value> {
     if let Some(s) = sample_output {
-        return Some(normalize_io_data(s));
+        if let Some(v) = usable_io(s) {
+            return Some(v);
+        }
     }
     if let Some(s) = node_samples.get(node_id) {
-        return Some(normalize_io_data(s));
+        if let Some(v) = usable_io(s) {
+            return Some(v);
+        }
     }
     log_for_node(node_id, run_logs)
         .and_then(|l| l.get("output"))
-        .map(normalize_io_data)
-        .filter(|v| !v.is_null())
+        .and_then(usable_io)
 }
 
 /// React `detailsInputSample` parity: log.input → upstream output/sample → apiEndpoint schema.
@@ -91,8 +112,8 @@ fn input_for_node(
     doc_edges: &[Value],
 ) -> Option<Value> {
     if let Some(input) = log_for_node(node_id, run_logs).and_then(|l| l.get("input")) {
-        if !input.is_null() {
-            return Some(normalize_io_data(input));
+        if let Some(v) = usable_io(input) {
+            return Some(v);
         }
     }
 
@@ -106,12 +127,14 @@ fn input_for_node(
 
     if let Some(source_id) = upstream {
         if let Some(out) = log_for_node(&source_id, run_logs).and_then(|l| l.get("output")) {
-            if !out.is_null() {
-                return Some(normalize_io_data(out));
+            if let Some(v) = usable_io(out) {
+                return Some(v);
             }
         }
         if let Some(s) = node_samples.get(&source_id) {
-            return Some(normalize_io_data(s));
+            if let Some(v) = usable_io(s) {
+                return Some(v);
+            }
         }
         if let Some(up) = doc_nodes.iter().find(|n| {
             n.get("id").and_then(|v| v.as_str()) == Some(source_id.as_str())
@@ -160,6 +183,23 @@ fn emit_parameters_update(
         id,
         name: None,
         parameters: Some(parameters),
+        parameter_patch: None,
+        settings: None,
+        delete: false,
+    });
+}
+
+fn emit_parameter_patch(
+    id: String,
+    key: String,
+    value: Value,
+    on_update: EventHandler<NodeUpdate>,
+) {
+    on_update.call(NodeUpdate {
+        id,
+        name: None,
+        parameters: None,
+        parameter_patch: Some((key, value)),
         settings: None,
         delete: false,
     });
@@ -179,6 +219,7 @@ fn patch_settings(
         id,
         name: None,
         parameters: None,
+        parameter_patch: None,
         settings: Some(settings),
         delete: false,
     });
@@ -188,7 +229,10 @@ fn patch_settings(
 pub struct NodeUpdate {
     pub id: String,
     pub name: Option<String>,
+    /// Full parameters replace (avoid for single-field edits — races wipe sibling keys).
     pub parameters: Option<Value>,
+    /// Atomic single-key update merged into the node's current parameters.
+    pub parameter_patch: Option<(String, Value)>,
     pub settings: Option<Value>,
     pub delete: bool,
 }
@@ -619,6 +663,7 @@ pub fn NodeDetailsPanel(
                                                     id: id.clone(),
                                                     name: Some(e.value()),
                                                     parameters: None,
+                                                    parameter_patch: None,
                                                     settings: None,
                                                     delete: false,
                                                 });
@@ -907,6 +952,7 @@ pub fn NodeDetailsPanel(
                                     id: del_id_confirm.clone(),
                                     name: None,
                                     parameters: None,
+                                    parameter_patch: None,
                                     settings: None,
                                     delete: true,
                                 });
@@ -933,22 +979,51 @@ fn SchemaFieldEditor(
     let key = field.key.clone();
     let value = parameters.get(&key).cloned().unwrap_or(Value::Null);
     let show_label = field.kind != "boolean";
+    // Retained for call-site compatibility / future per-type sanitize on patch.
+    let _ = node_type;
 
     let commit = {
         let id = id.clone();
         let key = key.clone();
-        let node_type = node_type.clone();
-        let parameters = parameters.clone();
+        let field_kind = field.kind.clone();
+        let field_label = field.label.clone();
         move |next: Value| {
-            let mut params = parameters.clone();
-            if let Some(obj) = params.as_object_mut() {
-                if next.is_null() {
-                    obj.remove(&key);
-                } else {
-                    obj.insert(key.clone(), next);
+            // Validate JSON/number fields before patching so we don't store bad values.
+            if field_kind == "json" || field_kind == "jsonSchema" {
+                if let Value::String(s) = &next {
+                    let raw = s.trim();
+                    if !raw.is_empty() {
+                        if serde_json::from_str::<Value>(raw).is_err() {
+                            if let Some(handler) = on_param_error {
+                                handler.call(format!("Invalid JSON in {field_label}"));
+                            }
+                            return;
+                        }
+                    }
                 }
             }
-            emit_parameters_update(id.clone(), &node_type, params, on_update, on_param_error);
+            if field_kind == "number" {
+                match &next {
+                    Value::Null | Value::Number(_) => {}
+                    Value::String(s) if s.trim().is_empty() => {}
+                    Value::String(s) => {
+                        if s.trim().parse::<f64>().ok().filter(|n| n.is_finite()).is_none() {
+                            if let Some(handler) = on_param_error {
+                                handler.call(format!("{field_label} must be a number"));
+                            }
+                            return;
+                        }
+                    }
+                    _ => {
+                        if let Some(handler) = on_param_error {
+                            handler.call(format!("{field_label} must be a number"));
+                        }
+                        return;
+                    }
+                }
+            }
+            // Patch one key into the live node doc so Query/Monaco edits can't wipe credentialId.
+            emit_parameter_patch(id.clone(), key.clone(), next, on_update);
         }
     };
 
@@ -1003,8 +1078,6 @@ fn GenericParamsEditor(
         for (key, value) in entries.into_iter() {
             {
                 let id = id.clone();
-                let node_type_row = node_type.clone();
-                let parameters = parameters.clone();
                 let key_label = key.clone();
                 let param_key = key.clone();
                 let text = value_as_editable_text(&value);
@@ -1018,16 +1091,11 @@ fn GenericParamsEditor(
                                 let text = e.value();
                                 let next_val = serde_json::from_str::<Value>(&text)
                                     .unwrap_or(Value::String(text));
-                                let mut params = parameters.clone();
-                                if let Some(obj) = params.as_object_mut() {
-                                    obj.insert(param_key.clone(), next_val);
-                                }
-                                emit_parameters_update(
+                                emit_parameter_patch(
                                     id.clone(),
-                                    &node_type_row,
-                                    params,
+                                    param_key.clone(),
+                                    next_val,
                                     on_update,
-                                    on_param_error,
                                 );
                             },
                         }

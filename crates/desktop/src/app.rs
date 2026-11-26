@@ -8,13 +8,45 @@ use crate::components::flow::{
 use crate::components::layout::{MainSidebar, NavSection, WorkflowEditor};
 use crate::components::node_schemas::{get_schema, sanitize_parameters};
 use crate::components::panels::{
-    ApiProjectsPanel, AuditPanel, CredentialsPanel, DashboardPanel, InsightsPanel, LoginPage,
-    NodeCatalogItem, NodeDetailsPanel, NodeUpdate, NodesPanel, RunsPanel, VariablesPanel,
-    WorkflowList,
+    sample_from_api_endpoint_parameters, ApiProjectsPanel, AuditPanel, CredentialsPanel,
+    DashboardPanel, InsightsPanel, LoginPage, NodeCatalogItem, NodeDetailsPanel, NodeUpdate,
+    NodesPanel, RunsPanel, VariablesPanel, WorkflowList,
 };
 use crate::components::settings::{SettingsPageId, SettingsPanel, SettingsSidebar};
-use crate::components::ui::PageLoader;
+use crate::components::icons::{CircleAlert, CircleCheck};
+use crate::components::ui::{Alert, AlertDescription, AlertTitle, AlertVariant, PageLoader};
 use crate::theme::Theme;
+
+fn toast_variant(msg: &str) -> AlertVariant {
+    let lower = msg.to_ascii_lowercase();
+    if lower.contains("fail")
+        || lower.contains("error")
+        || lower.contains("denied")
+        || lower.contains("invalid")
+        || lower.contains("unable")
+        || lower.contains("not found")
+    {
+        AlertVariant::Destructive
+    } else if lower.contains("complet")
+        || lower.contains("saved")
+        || lower.contains("created")
+        || lower.contains("added")
+        || lower.contains("started")
+        || lower.contains("executed")
+    {
+        AlertVariant::Success
+    } else {
+        AlertVariant::Default
+    }
+}
+
+fn toast_title(variant: AlertVariant) -> &'static str {
+    match variant {
+        AlertVariant::Destructive => "Something went wrong",
+        AlertVariant::Success => "Success",
+        AlertVariant::Default => "Notice",
+    }
+}
 
 #[derive(Clone)]
 struct SessionUser {
@@ -136,6 +168,16 @@ pub fn App() -> Element {
                document.body.style.margin='0';"#,
             class == "dark"
         ));
+    });
+
+    use_effect(move || {
+        let Some(msg) = toast() else { return };
+        spawn(async move {
+            tokio::time::sleep(std::time::Duration::from_secs(4)).await;
+            if toast.peek().as_ref() == Some(&msg) {
+                toast.set(None);
+            }
+        });
     });
 
     if auth_loading() {
@@ -359,36 +401,67 @@ pub fn App() -> Element {
                                     )
                                     .await
                                     {
-                                        Ok(_) => {
+                                        Ok(started) => {
                                             refresh_key.with_mut(|k| *k += 1);
                                             toast.set(Some("Run started".into()));
-                                            // Pull latest run logs for canvas status/edge overlays.
-                                            if let Ok(list) = crate::api::get_json(&format!(
-                                                "/api/runs?workflowId={id}&limit=1"
-                                            ))
-                                            .await
+                                            // /run returns immediately (queued). Poll until the
+                                            // scheduler finishes so canvas overlays don't stick on "…".
+                                            let run_id = started
+                                                .get("run")
+                                                .and_then(|r| r.get("_id").or_else(|| r.get("id")))
+                                                .and_then(|v| v.as_str())
+                                                .map(str::to_string);
+                                            if let Some(logs) = started
+                                                .get("run")
+                                                .and_then(|r| r.get("logs"))
+                                                .and_then(|l| l.as_array())
+                                                .cloned()
                                             {
-                                                if let Some(run_id) = list
-                                                    .get("runs")
-                                                    .and_then(|r| r.as_array())
-                                                    .and_then(|a| a.first())
-                                                    .and_then(|r| {
-                                                        r.get("_id").or_else(|| r.get("id"))
-                                                    })
-                                                    .and_then(|v| v.as_str())
-                                                {
-                                                    if let Ok(detail) = crate::api::get_json(
+                                                run_logs.set(logs);
+                                            }
+                                            if let Some(run_id) = run_id {
+                                                for _ in 0..60 {
+                                                    tokio::time::sleep(
+                                                        std::time::Duration::from_millis(250),
+                                                    )
+                                                    .await;
+                                                    let Ok(detail) = crate::api::get_json(
                                                         &format!("/api/runs/{run_id}"),
                                                     )
                                                     .await
+                                                    else {
+                                                        continue;
+                                                    };
+                                                    let run = detail.get("run").unwrap_or(&detail);
+                                                    if let Some(logs) = run
+                                                        .get("logs")
+                                                        .and_then(|l| l.as_array())
+                                                        .cloned()
                                                     {
-                                                        let logs = detail
-                                                            .get("run")
-                                                            .and_then(|r| r.get("logs"))
-                                                            .and_then(|l| l.as_array())
-                                                            .cloned()
-                                                            .unwrap_or_default();
                                                         run_logs.set(logs);
+                                                    }
+                                                    let status = run
+                                                        .get("status")
+                                                        .and_then(|s| s.as_str())
+                                                        .unwrap_or("");
+                                                    if matches!(
+                                                        status,
+                                                        "completed"
+                                                            | "failed"
+                                                            | "cancelled"
+                                                            | "canceled"
+                                                    ) {
+                                                        refresh_key.with_mut(|k| *k += 1);
+                                                        if status == "failed" {
+                                                            let err = run
+                                                                .get("error")
+                                                                .and_then(|e| e.as_str())
+                                                                .unwrap_or("Run failed");
+                                                            toast.set(Some(err.to_string()));
+                                                        } else if status == "completed" {
+                                                            toast.set(Some("Run completed".into()));
+                                                        }
+                                                        break;
                                                     }
                                                 }
                                             }
@@ -539,13 +612,26 @@ pub fn App() -> Element {
                                                 }
                                             });
                                         }
+                                        let step_input = if node_type.as_deref() == Some("apiEndpoint") {
+                                            sanitized
+                                                .as_ref()
+                                                .and_then(sample_from_api_endpoint_parameters)
+                                        } else {
+                                            None
+                                        };
                                         spawn(async move {
+                                            let mut body = serde_json::json!({
+                                                "nodeId": node_id,
+                                                "parameters": sanitized,
+                                            });
+                                            if let Some(input) = step_input {
+                                                if let Some(obj) = body.as_object_mut() {
+                                                    obj.insert("input".into(), input);
+                                                }
+                                            }
                                             match crate::api::post_json(
                                                 &format!("/api/workflows/{wid}/execute-node"),
-                                                serde_json::json!({
-                                                    "nodeId": node_id,
-                                                    "parameters": sanitized,
-                                                }),
+                                                body,
                                             )
                                             .await
                                             {
@@ -628,13 +714,26 @@ pub fn App() -> Element {
                                                 }
                                             });
                                         }
+                                        let step_input = if node_type.as_deref() == Some("apiEndpoint") {
+                                            sanitized
+                                                .as_ref()
+                                                .and_then(sample_from_api_endpoint_parameters)
+                                        } else {
+                                            None
+                                        };
                                         spawn(async move {
+                                            let mut body = serde_json::json!({
+                                                "nodeId": node_id,
+                                                "parameters": sanitized,
+                                            });
+                                            if let Some(input) = step_input {
+                                                if let Some(obj) = body.as_object_mut() {
+                                                    obj.insert("input".into(), input);
+                                                }
+                                            }
                                             match crate::api::post_json(
                                                 &format!("/api/workflows/{wid}/execute-node"),
-                                                serde_json::json!({
-                                                    "nodeId": node_id,
-                                                    "parameters": sanitized,
-                                                }),
+                                                body,
                                             )
                                             .await
                                             {
@@ -692,6 +791,32 @@ pub fn App() -> Element {
                                                             "name".into(),
                                                             serde_json::Value::String(name),
                                                         );
+                                                    }
+                                                }
+                                            });
+                                        }
+                                        if let Some((key, value)) = &upd.parameter_patch {
+                                            let id = upd.id.clone();
+                                            let key = key.clone();
+                                            let value = value.clone();
+                                            doc_nodes.with_mut(|nodes| {
+                                                if let Some(n) = nodes.iter_mut().find(|n| {
+                                                    n.get("id").and_then(|v| v.as_str())
+                                                        == Some(id.as_str())
+                                                }) {
+                                                    if let Some(obj) = n.as_object_mut() {
+                                                        let params = obj
+                                                            .entry("parameters".to_string())
+                                                            .or_insert_with(|| {
+                                                                serde_json::json!({})
+                                                            });
+                                                        if let Some(p) = params.as_object_mut() {
+                                                            if value.is_null() {
+                                                                p.remove(&key);
+                                                            } else {
+                                                                p.insert(key, value);
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             });
@@ -868,10 +993,26 @@ pub fn App() -> Element {
             }
 
             if let Some(msg) = toast() {
-                div {
-                    class: "fixed bottom-4 right-4 z-[80] rounded-lg border bg-card px-4 py-2 text-sm shadow-2xl",
-                    onclick: move |_| toast.set(None),
-                    "{msg}"
+                {
+                    let variant = toast_variant(&msg);
+                    let title = toast_title(variant);
+                    rsx! {
+                        div {
+                            class: "fixed bottom-4 right-4 z-[80] w-[min(100vw-2rem,22rem)] shadow-2xl",
+                            onclick: move |_| toast.set(None),
+                            Alert {
+                                variant,
+                                class: Some("bg-card cursor-pointer".into()),
+                                if variant == AlertVariant::Destructive {
+                                    CircleAlert { class: Some("size-4".into()) }
+                                } else if variant == AlertVariant::Success {
+                                    CircleCheck { class: Some("size-4".into()) }
+                                }
+                                AlertTitle { "{title}" }
+                                AlertDescription { "{msg}" }
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -37,6 +37,7 @@ pub use nodes::{NodeCatalogItem, NodesPanel, NodesPanelVariant};
 pub use runs::RunsPanel;
 pub use variables::VariablesPanel;
 pub use workflow_list::WorkflowList;
+pub use json_schema_sample::sample_from_api_endpoint_parameters;
 pub use webhook_listen_panel::{webhook_sample_from_value, WebhookListenPanel, WebhookSample};
 
 pub(crate) fn json_string(v: &serde_json::Value) -> String {
@@ -60,4 +61,44 @@ pub(crate) fn json_bool(v: &serde_json::Value, key: &str, default: bool) -> bool
     v.get(key)
         .and_then(|x| x.as_bool())
         .unwrap_or(default)
+}
+
+/// Parse an API ISO timestamp (UTC) into the system local timezone.
+pub(crate) fn parse_local_datetime(raw: &str) -> Option<chrono::DateTime<chrono::Local>> {
+    let raw = raw.trim();
+    if raw.is_empty() {
+        return None;
+    }
+    if let Ok(dt) = chrono::DateTime::parse_from_rfc3339(raw) {
+        return Some(dt.with_timezone(&chrono::Local));
+    }
+    for fmt in [
+        "%Y-%m-%dT%H:%M:%S%.fZ",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%d %H:%M:%S%.f",
+        "%Y-%m-%d %H:%M:%S",
+    ] {
+        if let Ok(ndt) = chrono::NaiveDateTime::parse_from_str(raw, fmt) {
+            return Some(ndt.and_utc().with_timezone(&chrono::Local));
+        }
+    }
+    None
+}
+
+/// Human-readable local datetime, e.g. `2026-11-26 12:28:04`.
+pub(crate) fn format_local_datetime(raw: &str) -> String {
+    match parse_local_datetime(raw) {
+        Some(dt) => dt.format("%Y-%m-%d %H:%M:%S").to_string(),
+        None if raw.is_empty() => String::new(),
+        None => raw.replace('T', " ").trim_end_matches('Z').to_string(),
+    }
+}
+
+/// Short local datetime, e.g. `Nov 26, 2026 12:28`.
+pub(crate) fn format_local_datetime_short(raw: &str) -> String {
+    match parse_local_datetime(raw) {
+        Some(dt) => dt.format("%b %d, %Y %H:%M").to_string(),
+        None if raw.is_empty() => String::new(),
+        None => raw.to_string(),
+    }
 }

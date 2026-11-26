@@ -381,6 +381,10 @@ fn gather_inputs(
         .collect();
     if parents.is_empty() {
         return match root_input {
+            Value::Null => vec![json!({})],
+            Value::Array(a) if a.is_empty() || a.iter().all(|v| v.is_null()) => {
+                vec![json!({})]
+            }
             Value::Array(a) => a.clone(),
             other => vec![other.clone()],
         };

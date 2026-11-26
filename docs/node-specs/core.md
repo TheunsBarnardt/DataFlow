@@ -15,7 +15,7 @@
 
 | Type | Notes |
 |------|-------|
-| mssql | `query`, `server`/`MSSQL_SERVER`, `database`; uses `sqlcmd` |
+| mssql | `query`, `server`/`MSSQL_SERVER`, `database`; Tiberius pooled TCP |
 | postgres | `query`, `connectionString`/`POSTGRES_URL` |
 | sendEmail | `to`, `subject`, `text`, SMTP env |
 | readFile / writeFile | `path` under `BOTFLOW_FILE_ROOT` |

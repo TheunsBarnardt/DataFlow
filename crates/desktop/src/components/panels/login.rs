@@ -1,5 +1,10 @@
 use dioxus::prelude::*;
 
+use crate::components::ui::{
+    Alert, AlertDescription, Button, Card, CardContent, CardDescription, CardFooter, CardHeader,
+    CardTitle, Input, Label,
+};
+
 #[component]
 pub fn LoginPage(on_logged_in: EventHandler<()>) -> Element {
     let mut email = use_signal(|| "admin".to_string());
@@ -8,16 +13,26 @@ pub fn LoginPage(on_logged_in: EventHandler<()>) -> Element {
     let mut err = use_signal(|| None::<String>);
 
     rsx! {
-        div { class: "flex min-h-full items-center justify-center bg-background px-4",
-            div { class: "w-full max-w-sm space-y-6",
-                div { class: "space-y-1 text-center",
-                    h1 { class: "text-2xl font-semibold tracking-tight", "DataFlow" }
-                    p { class: "text-sm text-muted-foreground",
-                        "Sign in with your username and password"
+        div {
+            class: "relative flex min-h-full items-center justify-center overflow-hidden bg-background px-4",
+            div {
+                class: "pointer-events-none absolute inset-0 opacity-70",
+                style: "background:
+                    radial-gradient(ellipse 80% 50% at 50% -20%, color-mix(in oklch, var(--brand) 22%, transparent), transparent),
+                    radial-gradient(ellipse 60% 40% at 100% 100%, color-mix(in oklch, var(--brand) 10%, transparent), transparent);",
+            }
+            Card { class: Some("relative z-10 w-full max-w-sm shadow-md".into()),
+                CardHeader { class: Some("items-center text-center".into()),
+                    div {
+                        class: "mb-2 flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold text-white",
+                        style: "background: var(--brand)",
+                        "DF"
                     }
+                    CardTitle { class: Some("text-xl tracking-tight".into()), "DataFlow" }
+                    CardDescription { "Sign in with your username and password" }
                 }
                 form {
-                    class: "space-y-3 rounded-lg border p-5",
+                    class: "flex flex-col gap-4",
                     onsubmit: move |_| {
                         busy.set(true);
                         let em = email().trim().to_string();
@@ -37,36 +52,50 @@ pub fn LoginPage(on_logged_in: EventHandler<()>) -> Element {
                             busy.set(false);
                         });
                     },
-                    div { class: "flex flex-col gap-1.5",
-                        label { class: "text-xs text-muted-foreground", r#for: "login-username", "Username" }
-                        input {
-                            id: "login-username",
-                            class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                            autocomplete: "username",
-                            value: "{email()}",
-                            oninput: move |e| email.set(e.value()),
-                            required: true,
+                    CardContent { class: Some("space-y-4".into()),
+                        div { class: "flex flex-col gap-2",
+                            Label {
+                                r#for: Some("login-username".into()),
+                                class: Some("text-muted-foreground".into()),
+                                "Username"
+                            }
+                            Input {
+                                id: Some("login-username".into()),
+                                autocomplete: Some("username".into()),
+                                value: email(),
+                                required: true,
+                                oninput: move |e: FormEvent| email.set(e.value()),
+                            }
+                        }
+                        div { class: "flex flex-col gap-2",
+                            Label {
+                                r#for: Some("login-password".into()),
+                                class: Some("text-muted-foreground".into()),
+                                "Password"
+                            }
+                            Input {
+                                id: Some("login-password".into()),
+                                r#type: Some("password".into()),
+                                autocomplete: Some("current-password".into()),
+                                value: password(),
+                                required: true,
+                                oninput: move |e: FormEvent| password.set(e.value()),
+                            }
+                        }
+                        if let Some(message) = err() {
+                            Alert {
+                                variant: crate::components::ui::AlertVariant::Destructive,
+                                AlertDescription { "{message}" }
+                            }
                         }
                     }
-                    div { class: "flex flex-col gap-1.5",
-                        label { class: "text-xs text-muted-foreground", "Password" }
-                        input {
-                            class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                            r#type: "password",
-                            autocomplete: "current-password",
-                            value: "{password()}",
-                            oninput: move |e| password.set(e.value()),
-                            required: true,
+                    CardFooter {
+                        Button {
+                            class: Some("w-full".into()),
+                            r#type: Some("submit".into()),
+                            disabled: busy(),
+                            if busy() { "Signing in…" } else { "Sign in" }
                         }
-                    }
-                    if let Some(message) = err() {
-                        div { class: "text-sm text-destructive", "{message}" }
-                    }
-                    button {
-                        class: "inline-flex h-9 w-full items-center justify-center rounded-md bg-primary text-sm font-medium text-primary-foreground disabled:opacity-50",
-                        r#type: "submit",
-                        disabled: busy(),
-                        if busy() { "Signing in…" } else { "Sign in" }
                     }
                 }
             }

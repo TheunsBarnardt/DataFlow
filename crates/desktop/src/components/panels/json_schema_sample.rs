@@ -253,6 +253,8 @@ pub fn sample_value_from_schema(schema: &Value) -> Value {
 }
 
 /// n8n-style sample item for an apiEndpoint trigger from request schemas.
+/// Always returns a request-shaped item so `$json.method` / `$json.query` are
+/// mappable even before Query Params / Body fields are defined.
 pub fn sample_from_api_endpoint_parameters(parameters: &Value) -> Option<Value> {
     let query_schema = parameters.get("requestQuerySchema");
     let body_schema = parameters.get("requestBodySchema");
@@ -277,24 +279,6 @@ pub fn sample_from_api_endpoint_parameters(parameters: &Value) -> Option<Value> 
                     || s.get("type").and_then(|v| v.as_str()) == Some("array")
             })
             .unwrap_or(false);
-    if !has_query && !has_body {
-        return None;
-    }
-    let query = if has_query {
-        sample_value_from_schema(query_schema.unwrap_or(&json!({})))
-    } else {
-        json!({})
-    };
-    let query = if query.is_object() {
-        query
-    } else {
-        json!({})
-    };
-    let body = if has_body {
-        Some(sample_value_from_schema(body_schema.unwrap_or(&json!({}))))
-    } else {
-        None
-    };
     let method = parameters
         .get("method")
         .and_then(|v| v.as_str())
@@ -303,6 +287,26 @@ pub fn sample_from_api_endpoint_parameters(parameters: &Value) -> Option<Value> 
         .get("path")
         .and_then(|v| v.as_str())
         .unwrap_or("");
+    let query = if has_query {
+        let q = sample_value_from_schema(query_schema.unwrap_or(&json!({})));
+        if q.is_object() {
+            q
+        } else {
+            json!({})
+        }
+    } else {
+        json!({})
+    };
+    let body = if has_body {
+        sample_value_from_schema(body_schema.unwrap_or(&json!({})))
+    } else if matches!(
+        method.to_ascii_uppercase().as_str(),
+        "POST" | "PUT" | "PATCH"
+    ) {
+        json!({})
+    } else {
+        Value::Null
+    };
     Some(json!([{
         "method": method,
         "path": path,

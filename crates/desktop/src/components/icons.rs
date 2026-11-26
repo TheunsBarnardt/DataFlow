@@ -361,6 +361,39 @@ pub fn X(#[props(default)] class: Option<String>) -> Element {
 }
 
 #[component]
+pub fn CircleCheck(#[props(default)] class: Option<String>) -> Element {
+    rsx! {
+        svg {
+            xmlns: "http://www.w3.org/2000/svg",
+            view_box: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            stroke_width: "1.75",
+            class: class.clone().unwrap_or_else(|| "h-4 w-4".into()),
+            circle { cx: "12", cy: "12", r: "10" }
+            path { d: "m9 12 2 2 4-4" }
+        }
+    }
+}
+
+#[component]
+pub fn CircleAlert(#[props(default)] class: Option<String>) -> Element {
+    rsx! {
+        svg {
+            xmlns: "http://www.w3.org/2000/svg",
+            view_box: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            stroke_width: "1.75",
+            class: class.clone().unwrap_or_else(|| "h-4 w-4".into()),
+            circle { cx: "12", cy: "12", r: "10" }
+            line { x1: "12", y1: "8", x2: "12", y2: "12" }
+            line { x1: "12", y1: "16", x2: "12.01", y2: "16" }
+        }
+    }
+}
+
+#[component]
 pub fn Zap(#[props(default)] class: Option<String>) -> Element {
     rsx! {
         svg {

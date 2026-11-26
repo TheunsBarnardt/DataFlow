@@ -136,7 +136,7 @@ fn history_group_label(iso: Option<&str>) -> &'static str {
     let Some(ts) = parse_iso(iso) else {
         return "Earlier";
     };
-    let date = ts.date_naive();
+    let date = ts.with_timezone(&chrono::Local).date_naive();
     let today = chrono::Local::now().date_naive();
     let yesterday = today - chrono::Days::new(1);
     if date == today {

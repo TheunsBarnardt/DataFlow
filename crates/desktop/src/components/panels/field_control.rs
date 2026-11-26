@@ -77,11 +77,16 @@ pub fn FieldControl(
         return rsx! {
             select {
                 id: "{id}",
+                key: "{id}-{current}",
                 class: "bf-select flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground",
                 value: "{current}",
                 onchange: move |e| on_change.call(Value::String(e.value())),
                 for opt in options {
-                    option { value: "{opt.value}", "{opt.label}" }
+                    option {
+                        value: "{opt.value}",
+                        selected: current == opt.value,
+                        "{opt.label}"
+                    }
                 }
             }
         };
@@ -142,9 +147,14 @@ pub fn FieldControl(
         } else {
             120
         };
+        // Keep a signal so Monaco can re-sync when SQL loads after mount.
+        let mut code_value = use_signal(|| text.clone());
+        if code_value.peek().as_str() != text.as_str() {
+            code_value.set(text);
+        }
         return rsx! {
             MonacoEditor {
-                value: text,
+                value: code_value,
                 language,
                 language_hint: field.language.clone(),
                 height_px: min_h,
@@ -152,7 +162,10 @@ pub fn FieldControl(
                 id: Some(id.clone()),
                 expr_bus,
                 active_field,
-                on_change: move |next: String| on_change.call(Value::String(next)),
+                on_change: move |next: String| {
+                    code_value.set(next.clone());
+                    on_change.call(Value::String(next));
+                },
             }
         };
     }
@@ -173,9 +186,13 @@ pub fn FieldControl(
             Value::Null => String::new(),
             other => serde_json::to_string_pretty(other).unwrap_or_else(|_| other.to_string()),
         };
+        let mut json_value = use_signal(|| text.clone());
+        if json_value.peek().as_str() != text.as_str() {
+            json_value.set(text);
+        }
         return rsx! {
             MonacoEditor {
-                value: text,
+                value: json_value,
                 language: CodeLanguage::Json,
                 height_px: 120,
                 placeholder: Some(field.placeholder.clone().unwrap_or_else(|| "{ }".into())),
@@ -183,6 +200,7 @@ pub fn FieldControl(
                 expr_bus,
                 active_field,
                 on_change: move |next: String| {
+                    json_value.set(next.clone());
                     let raw = next.trim();
                     if raw.is_empty() {
                         on_change.call(Value::Null);
