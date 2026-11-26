@@ -41,54 +41,43 @@ pub fn CredentialsPicker(
     #[props(default)] credential_type: Option<String>,
     #[props(default)] id: Option<String>,
 ) -> Element {
-    let cached = read_cache().unwrap_or_default();
-    let mut items = use_signal(|| cached.clone());
-    let mut loading = use_signal(|| cached.is_empty());
-    let mut load_error = use_signal(|| None::<String>);
     let mut reload_tick = use_signal(|| 0u32);
     let mut dialog_open = use_signal(|| false);
 
-    use_effect(move || {
-        let _ = reload_tick();
-        // Warm cache hits skip the loading flash on NDV remounts.
-        if let Some(cached) = read_cache() {
-            if reload_tick() == 0 {
-                items.set(cached);
-                loading.set(false);
-                return;
+    let creds = use_resource(move || {
+        let tick = reload_tick();
+        async move {
+            // Prefer warm cache on first mount to avoid a loading flash.
+            if tick == 0 {
+                if let Some(cached) = read_cache() {
+                    return Ok(cached);
+                }
             }
+            let v = crate::api::get_json("/api/credentials").await?;
+            let list = v
+                .get("credentials")
+                .and_then(|c| c.as_array())
+                .cloned()
+                .unwrap_or_default();
+            write_cache(list.clone());
+            Ok::<Vec<serde_json::Value>, String>(list)
         }
-        spawn(async move {
-            loading.set(true);
-            load_error.set(None);
-            match crate::api::get_json("/api/credentials").await {
-                Ok(v) => {
-                    let list = v
-                        .get("credentials")
-                        .and_then(|c| c.as_array())
-                        .cloned()
-                        .unwrap_or_default();
-                    write_cache(list.clone());
-                    items.set(list);
-                }
-                Err(e) => {
-                    items.set(Vec::new());
-                    load_error.set(Some(e));
-                }
-            }
-            loading.set(false);
-        });
     });
 
     let type_filter = credential_type.clone().unwrap_or_default();
-    let all_items = items();
+    let (all_items, loading, load_error) = match &*creds.read() {
+        Some(Ok(list)) => (list.clone(), false, None),
+        Some(Err(e)) => (Vec::new(), false, Some(e.clone())),
+        None => (read_cache().unwrap_or_default(), true, None),
+    };
+
     let filtered: Vec<serde_json::Value> = all_items
         .iter()
         .filter(|c| credential_matches_type(c, &type_filter))
         .cloned()
         .collect();
     let options = if filtered.is_empty() {
-        all_items
+        all_items.clone()
     } else {
         filtered
     };
@@ -98,11 +87,18 @@ pub fn CredentialsPicker(
         .map(|t| credential_display_name(t))
         .unwrap_or_else(|| credential_type.clone().unwrap_or_else(|| "credential".into()));
 
-    let waiting = loading() && items().is_empty();
+    let selected_missing = !value.is_empty()
+        && !loading
+        && load_error.is_none()
+        && !options.iter().any(|c| json_id(c) == value);
+
+    let waiting = loading && options.is_empty();
     let placeholder = if waiting {
         "Loading credentials…".to_string()
-    } else if let Some(err) = load_error() {
+    } else if let Some(err) = &load_error {
         format!("Failed to load ({err})")
+    } else if selected_missing {
+        "Saved credential missing — create or reselect…".to_string()
     } else if options.is_empty() {
         "No credentials yet".to_string()
     } else {

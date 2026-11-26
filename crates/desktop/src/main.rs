@@ -36,6 +36,9 @@ fn main() -> Result<()> {
         .enable_all()
         .build()?;
 
+    // UI futures hop onto this handle for reqwest (Dioxus runtime ≠ engine runtime).
+    api::set_runtime_handle(rt.handle().clone());
+
     let (addr, _handle) = rt.block_on(async {
         let (addr, handle) = botflow_app::spawn_server().await?;
         Ok::<_, anyhow::Error>((addr, handle))

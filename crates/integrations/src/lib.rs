@@ -10,7 +10,7 @@ use std::sync::Arc;
 pub use email::SendEmailNode;
 pub use files::{ReadFileNode, WriteFileNode};
 pub use llm::{ApprovalNode, LlmNode};
-pub use mssql::MssqlNode;
+pub use mssql::{test_mssql_connection, MssqlNode, MssqlTestResult};
 pub use postgres::PostgresNode;
 
 pub fn register_integration_nodes(registry: &mut NodeRegistry) {

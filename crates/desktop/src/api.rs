@@ -3,6 +3,8 @@ use std::sync::{OnceLock, RwLock};
 
 static BASE_URL: OnceLock<RwLock<String>> = OnceLock::new();
 static AUTH_TOKEN: OnceLock<RwLock<Option<String>>> = OnceLock::new();
+/// Engine Tokio runtime — UI futures (Dioxus) must hop here for reqwest.
+static TOKIO_HANDLE: OnceLock<tokio::runtime::Handle> = OnceLock::new();
 
 fn base() -> String {
     BASE_URL
@@ -30,9 +32,13 @@ pub fn set_auth_token(token: Option<String>) {
         .unwrap() = token;
 }
 
+pub fn set_runtime_handle(handle: tokio::runtime::Handle) {
+    let _ = TOKIO_HANDLE.set(handle);
+}
+
 fn client() -> reqwest::Client {
     reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(60))
+        .timeout(std::time::Duration::from_secs(15))
         .build()
         .expect("http client")
 }
@@ -78,22 +84,41 @@ async fn send(method: reqwest::Method, path: &str, body: Option<Value>) -> Resul
     serde_json::from_str(&text).map_err(|e| e.to_string())
 }
 
+async fn on_engine_runtime<F, T>(fut: F) -> Result<T, String>
+where
+    F: std::future::Future<Output = Result<T, String>> + Send + 'static,
+    T: Send + 'static,
+{
+    match TOKIO_HANDLE.get() {
+        Some(handle) => handle
+            .spawn(fut)
+            .await
+            .map_err(|e| format!("engine task failed: {e}"))?,
+        None => fut.await,
+    }
+}
+
 pub async fn get_json(path: &str) -> Result<Value, String> {
-    send(reqwest::Method::GET, path, None).await
+    let path = path.to_string();
+    on_engine_runtime(async move { send(reqwest::Method::GET, &path, None).await }).await
 }
 
 pub async fn post_json(path: &str, body: Value) -> Result<Value, String> {
-    send(reqwest::Method::POST, path, Some(body)).await
+    let path = path.to_string();
+    on_engine_runtime(async move { send(reqwest::Method::POST, &path, Some(body)).await }).await
 }
 
 pub async fn put_json(path: &str, body: Value) -> Result<Value, String> {
-    send(reqwest::Method::PUT, path, Some(body)).await
+    let path = path.to_string();
+    on_engine_runtime(async move { send(reqwest::Method::PUT, &path, Some(body)).await }).await
 }
 
 pub async fn patch_json(path: &str, body: Value) -> Result<Value, String> {
-    send(reqwest::Method::PATCH, path, Some(body)).await
+    let path = path.to_string();
+    on_engine_runtime(async move { send(reqwest::Method::PATCH, &path, Some(body)).await }).await
 }
 
 pub async fn delete_json(path: &str) -> Result<Value, String> {
-    send(reqwest::Method::DELETE, path, None).await
+    let path = path.to_string();
+    on_engine_runtime(async move { send(reqwest::Method::DELETE, &path, None).await }).await
 }

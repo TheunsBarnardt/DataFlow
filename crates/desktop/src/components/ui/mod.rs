@@ -11,6 +11,7 @@ mod switch;
 
 pub use badge::{Badge, BadgeVariant};
 pub use button::{Button, ButtonSize, ButtonVariant};
+pub use code_textarea::CodeTextarea;
 pub use confirm_delete_dialog::ConfirmDeleteDialog;
 pub use monaco_editor::MonacoEditor;
 pub use input::Input;

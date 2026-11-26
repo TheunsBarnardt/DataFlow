@@ -18,4 +18,4 @@ cd crates\desktop
 dx serve --desktop -p botflow-desktop
 ```
 
-Or: `.\scripts\run-desktop.ps1` (RSX hot reload via `dx serve`; set `BOTFLOW_HOT_PATCH=1` for Rust hot-patch)
+Or: `.\scripts\run-desktop.ps1` (auto-restarts on every save; set `BOTFLOW_HOT_RELOAD=1` for RSX hot reload, or `BOTFLOW_HOT_PATCH=1` for Rust hot-patch)

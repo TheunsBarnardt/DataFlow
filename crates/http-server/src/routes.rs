@@ -73,6 +73,14 @@ pub fn router(app: AppState, cfg: crate::HttpConfig) -> Router {
         .route("/api/credentials", get(list_credentials).post(create_credential))
         .route("/api/v1/credentials", get(list_credentials).post(create_credential))
         .route(
+            "/api/credentials/test",
+            post(test_credential_connection),
+        )
+        .route(
+            "/api/v1/credentials/test",
+            post(test_credential_connection),
+        )
+        .route(
             "/api/credentials/{id}",
             get(get_credential)
                 .put(update_credential)
@@ -879,6 +887,37 @@ fn credential_public_json(c: &botflow_storage::CredentialDoc) -> Value {
         "name": c.name,
         "type": c.cred_type,
     })
+}
+
+#[derive(Deserialize)]
+struct CredTestBody {
+    #[serde(rename = "type")]
+    cred_type: String,
+    data: Value,
+}
+
+async fn test_credential_connection(
+    _user: AuthUser,
+    Json(body): Json<CredTestBody>,
+) -> Response {
+    let ty = body.cred_type.trim().to_lowercase();
+    if ty == "microsoftsql" || ty == "mssql" {
+        let result = botflow_integrations::test_mssql_connection(&body.data).await;
+        return Json(json!({
+            "ok": result.ok,
+            "message": result.message,
+            "databases": result.databases,
+        }))
+        .into_response();
+    }
+    (
+        StatusCode::BAD_REQUEST,
+        Json(json!({
+            "ok": false,
+            "error": format!("connection test not supported for credential type '{}'", body.cred_type),
+        })),
+    )
+        .into_response()
 }
 
 async fn list_credentials(State(state): State<HttpState>, _user: AuthUser) -> Response {

@@ -12,7 +12,7 @@ cd crates\desktop
 dx serve --desktop -p botflow-desktop
 ```
 
-Or: `.\scripts\run-desktop.ps1` (installs `dx` if missing). RSX hot-reloads on save. For experimental Rust logic hot-patching: `$env:BOTFLOW_HOT_PATCH='1'` (needs MSVC lib paths on Windows). Press `r` in the `dx` TUI for a full rebuild.
+Or: `.\scripts\run-desktop.ps1` (installs `dx` if missing). **Auto-restarts the app on every save** by default. For RSX-only hot reload: `$env:BOTFLOW_HOT_RELOAD='1'`. For experimental Rust hot-patching: `$env:BOTFLOW_HOT_PATCH='1'` (needs MSVC lib paths on Windows). Press `r` in the `dx` TUI for a manual rebuild.
 
 Headless API server:
 

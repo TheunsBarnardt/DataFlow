@@ -1113,6 +1113,27 @@ fn map_truthy(values: &serde_json::Map<String, serde_json::Value>, key: &str, de
     }
 }
 
+fn mask_mssql_connection_string(cs: &str) -> String {
+    cs.split(';')
+        .map(|part| {
+            let part = part.trim();
+            if part.is_empty() {
+                return String::new();
+            }
+            let Some((k, _)) = part.split_once('=') else {
+                return part.to_string();
+            };
+            if k.trim().eq_ignore_ascii_case("Password") || k.trim().eq_ignore_ascii_case("PWD") {
+                format!("{}=••••••••", k.trim())
+            } else {
+                part.to_string()
+            }
+        })
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(";")
+}
+
 fn build_mssql_connection_string(values: &serde_json::Map<String, serde_json::Value>) -> String {
     let auth = map_str(values, "authentication").to_lowercase();
     let plain = map_str(values, "connectionString").trim().to_string();
@@ -1395,6 +1416,10 @@ pub fn CredentialDialog(
     let mut busy = use_signal(|| false);
     let mut form_err = use_signal(|| None::<String>);
     let mut editing_id = use_signal(|| boot_edit.clone().unwrap_or_default());
+    let mut test_busy = use_signal(|| false);
+    let mut test_ok = use_signal(|| None::<bool>);
+    let mut test_msg = use_signal(|| None::<String>);
+    let mut mssql_databases = use_signal(Vec::<String>::new);
 
     // Load decrypted fields when editing (dialog is remounted per open).
     use_effect(move || {
@@ -1439,6 +1464,10 @@ pub fn CredentialDialog(
             step.set("form".to_string());
             sidebar.set("connection".to_string());
             form_err.set(None);
+            test_busy.set(false);
+            test_ok.set(None);
+            test_msg.set(None);
+            mssql_databases.set(Vec::new());
         }
     };
 
@@ -1490,6 +1519,69 @@ pub fn CredentialDialog(
                     on_open_change.call(false);
                 }
                 Err(e) => form_err.set(Some(e)),
+            }
+        });
+    });
+
+    let on_test_mssql = EventHandler::new(move |_| {
+        let Some(idx) = selected_idx() else {
+            return;
+        };
+        let Some(def) = CREDENTIAL_TYPES.get(idx) else {
+            return;
+        };
+        if def.type_name != "microsoftSql" {
+            return;
+        }
+        if let Some(msg) = validate_required(def, &field_values()) {
+            test_ok.set(Some(false));
+            test_msg.set(Some(msg));
+            return;
+        }
+        test_busy.set(true);
+        test_ok.set(None);
+        test_msg.set(Some("Testing connection…".into()));
+        let data = values_to_data(*def, &field_values());
+        let body = serde_json::json!({
+            "type": def.type_name,
+            "data": data,
+        });
+        spawn(async move {
+            let res = crate::api::post_json("/api/credentials/test", body).await;
+            test_busy.set(false);
+            match res {
+                Ok(v) => {
+                    let ok = v.get("ok").and_then(|x| x.as_bool()).unwrap_or(false);
+                    let message = v
+                        .get("message")
+                        .map(json_string)
+                        .filter(|s| !s.is_empty())
+                        .unwrap_or_else(|| {
+                            if ok {
+                                "Connection succeeded".into()
+                            } else {
+                                "Connection failed".into()
+                            }
+                        });
+                    let dbs = v
+                        .get("databases")
+                        .and_then(|x| x.as_array())
+                        .map(|arr| {
+                            arr.iter()
+                                .filter_map(|x| x.as_str().map(|s| s.to_string()))
+                                .collect::<Vec<_>>()
+                        })
+                        .unwrap_or_default();
+                    if !dbs.is_empty() {
+                        mssql_databases.set(dbs);
+                    }
+                    test_ok.set(Some(ok));
+                    test_msg.set(Some(message));
+                }
+                Err(e) => {
+                    test_ok.set(Some(false));
+                    test_msg.set(Some(e));
+                }
             }
         });
     });
@@ -1657,6 +1749,10 @@ pub fn CredentialDialog(
                                                     .get(fkey)
                                                     .map(json_string)
                                                     .unwrap_or_default();
+                                                let db_list = mssql_databases();
+                                                let use_db_datalist = def.type_name == "microsoftSql"
+                                                    && fkey == "database"
+                                                    && !db_list.is_empty();
                                                 rsx! {
                                                     div { class: "flex flex-col gap-2",
                                                         key: "{fkey}",
@@ -1727,12 +1823,18 @@ pub fn CredentialDialog(
                                                                 } else {
                                                                     "text"
                                                                 };
+                                                                let list_id = if use_db_datalist {
+                                                                    "mssql-db-list"
+                                                                } else {
+                                                                    ""
+                                                                };
                                                                 rsx! {
                                                                     input {
                                                                         class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
                                                                         r#type: "{input_ty}",
                                                                         placeholder: "{f.placeholder}",
                                                                         value: "{current}",
+                                                                        list: "{list_id}",
                                                                         oninput: move |e: Event<FormData>| {
                                                                             let val = e.value();
                                                                             field_values.with_mut(|m| {
@@ -1743,8 +1845,70 @@ pub fn CredentialDialog(
                                                                             });
                                                                         },
                                                                     }
+                                                                    if use_db_datalist {
+                                                                        datalist { id: "mssql-db-list",
+                                                                            for db in db_list.iter() {
+                                                                                option { key: "{db}", value: "{db}" }
+                                                                            }
+                                                                        }
+                                                                    }
                                                                 }
                                                             }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if def.type_name == "microsoftSql" {
+                                        {
+                                            let live_cs = build_mssql_connection_string(&field_values());
+                                            let masked = mask_mssql_connection_string(&live_cs);
+                                            rsx! {
+                                                div { class: "mt-2 flex flex-col gap-3 rounded-md border bg-muted/30 p-3",
+                                                    div { class: "flex flex-col gap-1.5",
+                                                        Label { "Connection string" }
+                                                        p { class: "text-xs text-muted-foreground",
+                                                            "Updates as you change the fields above (password masked)"
+                                                        }
+                                                        pre { class: "max-h-28 overflow-auto whitespace-pre-wrap break-all rounded-md border bg-background px-3 py-2 font-mono text-[11px] leading-relaxed text-foreground",
+                                                            "{masked}"
+                                                        }
+                                                    }
+                                                    div { class: "flex flex-wrap items-center gap-2",
+                                                        Button {
+                                                            size: ButtonSize::Sm,
+                                                            variant: ButtonVariant::Secondary,
+                                                            disabled: test_busy() || busy(),
+                                                            onclick: move |_| on_test_mssql.call(()),
+                                                            if test_busy() { "Testing…" } else { "Test connection" }
+                                                        }
+                                                        if let Some(ok) = test_ok() {
+                                                            span {
+                                                                class: if ok {
+                                                                    "text-xs font-medium text-emerald-600 dark:text-emerald-400"
+                                                                } else {
+                                                                    "text-xs font-medium text-destructive"
+                                                                },
+                                                                if ok { "Connected" } else { "Failed" }
+                                                            }
+                                                        }
+                                                    }
+                                                    if let Some(msg) = test_msg() {
+                                                        p {
+                                                            class: if test_ok() == Some(true) {
+                                                                "text-xs text-muted-foreground"
+                                                            } else if test_ok() == Some(false) {
+                                                                "text-xs text-destructive"
+                                                            } else {
+                                                                "text-xs text-muted-foreground"
+                                                            },
+                                                            "{msg}"
+                                                        }
+                                                    }
+                                                    if !mssql_databases().is_empty() {
+                                                        p { class: "text-xs text-muted-foreground",
+                                                            "Database list loaded — use the Connect to database field suggestions above."
                                                         }
                                                     }
                                                 }

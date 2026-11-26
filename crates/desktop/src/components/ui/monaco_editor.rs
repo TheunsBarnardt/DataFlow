@@ -27,7 +27,8 @@ fn monaco_lang(language: CodeLanguage, hint: Option<&str>) -> &'static str {
 
 #[component]
 pub fn MonacoEditor(
-    value: String,
+    /// Reactive so prop updates (e.g. SQL loaded after mount) re-sync into the editor.
+    value: ReadSignal<String>,
     on_change: EventHandler<String>,
     #[props(default)] language: CodeLanguage,
     #[props(default = 140)] height_px: u32,
@@ -47,14 +48,16 @@ pub fn MonacoEditor(
     let lang = monaco_lang(language, language_hint.as_deref());
     let host_id = editor_id.clone();
     let can_format = show_format && language.supports_format() && !read_only;
-    let format_src = value.clone();
     let mut drag_over = use_signal(|| false);
     // Create the Monaco host once per component instance. Re-running create was
     // disposing the editor and echoing an empty model back into parameters.
     let mut bootstrapped = use_signal(|| false);
-    // When CDN/host bootstrap fails, fall back to a plain textarea so Query etc. stay editable.
-    let mut fallback = use_signal(|| false);
-    let mut fallback_text = use_signal(|| value.clone());
+    // Show a plain textarea until Monaco paints (or permanently if CDN/host fails).
+    let mut fallback = use_signal(|| true);
+    let mut monaco_ready = use_signal(|| false);
+    let mut fallback_text = use_signal(|| value());
+    // Ignore empty model echoes briefly after create — they wipe Query/SQL params.
+    let mut ignore_empty_echo = use_signal(|| false);
 
     let field_id_effect = editor_id.clone();
     use_effect(move || {
@@ -75,17 +78,28 @@ pub fn MonacoEditor(
 
     use_effect({
         let editor_id = editor_id.clone();
-        let value = value.clone();
         move || {
             if bootstrapped() {
                 return;
             }
             bootstrapped.set(true);
+            ignore_empty_echo.set(true);
             let editor_id = editor_id.clone();
-            let initial = value.clone();
+            // Capture at create time; reactive sync below keeps the model current.
+            let initial = value();
             let lang = lang.to_string();
             let read_only = read_only;
+            // Safety: always lift the empty-echo guard even if ready never arrives.
             spawn(async move {
+                tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
+                ignore_empty_echo.set(false);
+            });
+            spawn(async move {
+                // Expose API base so Monaco loads from the local engine, not the CDN.
+                let _ = document::eval(&format!(
+                    "window.__bfApiBase = {};",
+                    serde_json::to_string(&crate::api::base_url()).unwrap_or_else(|_| "\"\"".into()),
+                ));
                 let script = format!(
                     r#"
 (async () => {{
@@ -112,20 +126,35 @@ pub fn MonacoEditor(
   function ensureLoader() {{
     return new Promise((resolve, reject) => {{
       if (window.monaco) {{ resolve(window.monaco); return; }}
-      if (window.require && window.require.config) {{
-        window.require(['vs/editor/editor.main'], () => resolve(window.monaco));
-        return;
-      }}
-      const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js';
-      s.onload = () => {{
-        window.require.config({{
-          paths: {{ vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' }}
-        }});
-        window.require(['vs/editor/editor.main'], () => resolve(window.monaco));
+      // Prefer local engine copy (CDN is often blocked in the desktop webview).
+      const base = (window.__bfApiBase || '').replace(/\/$/, '');
+      const localVs = base + '/vendor/monaco/vs';
+      const cdnVs = 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs';
+      const tryLoad = (vsPath, onFail) => {{
+        const existing = document.querySelector('script[data-bf-monaco-loader]');
+        const start = () => {{
+          try {{
+            window.require.config({{ paths: {{ vs: vsPath }} }});
+            window.require(['vs/editor/editor.main'], () => {{
+              if (window.monaco) resolve(window.monaco);
+              else onFail(new Error('monaco missing after load'));
+            }}, onFail);
+          }} catch (e) {{ onFail(e); }}
+        }};
+        if (window.require && window.require.config) {{ start(); return; }}
+        if (existing) {{
+          existing.addEventListener('load', start);
+          existing.addEventListener('error', () => onFail(new Error('loader script failed')));
+          return;
+        }}
+        const s = document.createElement('script');
+        s.src = vsPath + '/loader.js';
+        s.dataset.bfMonacoLoader = '1';
+        s.onload = start;
+        s.onerror = () => onFail(new Error('failed to fetch ' + s.src));
+        document.head.appendChild(s);
       }};
-      s.onerror = reject;
-      document.head.appendChild(s);
+      tryLoad(localVs, () => tryLoad(cdnVs, reject));
     }});
   }}
 
@@ -183,6 +212,17 @@ pub fn MonacoEditor(
     try {{ window.__bfMonaco[id].editor.dispose(); }} catch (_) {{}}
     delete window.__bfMonaco[id];
   }}
+
+  // Desktop webview: avoid cross-origin worker failures that leave the host blank.
+  const vsBase = ((window.__bfApiBase || '').replace(/\/$/, '') + '/vendor/monaco/vs');
+  window.MonacoEnvironment = {{
+    getWorkerUrl: function (_moduleId, _label) {{
+      const body =
+        "self.MonacoEnvironment = {{ baseUrl: '" + vsBase + "/' }};" +
+        "importScripts('" + vsBase + "/base/worker/workerMain.js');";
+      return URL.createObjectURL(new Blob([body], {{ type: 'text/javascript' }}));
+    }},
+  }};
 
   const dark = document.documentElement.classList.contains('dark');
   monaco.editor.setTheme(dark ? 'vs-dark' : 'vs');
@@ -339,12 +379,17 @@ pub fn MonacoEditor(
     }};
   }}
 
+  dioxus.send('__bf_monaco_ready__');
+
   while (true) {{
     const msg = await dioxus.recv();
     if (msg && typeof msg === 'object') {{
       if (typeof msg.value === 'string' && msg.value !== editor.getValue()) {{
         const slot = window.__bfMonaco[id];
-        if (slot) slot.suppress = true;
+        if (slot) {{
+          slot.suppress = true;
+          slot.lastSent = msg.value;
+        }}
         try {{
           const pos = editor.getPosition();
           editor.setValue(msg.value);
@@ -362,6 +407,8 @@ pub fn MonacoEditor(
         decorationIds = applyVarDecorations(editor, monaco, decorationIds);
       }}
       if (typeof msg.insert === 'string' && msg.insert) {{
+        const slot = window.__bfMonaco[id];
+        if (slot) slot.lastSent = msg.insert;
         const sel = editor.getSelection();
         if (sel) {{
           editor.executeEdits('bf-insert', [{{
@@ -413,9 +460,29 @@ pub fn MonacoEditor(
 
                 while let Ok(next) = eval.recv::<String>().await {
                     if next == "__bf_monaco_missing_host__" || next == "__bf_monaco_load_failed__" {
-                        fallback_text.set(initial.clone());
+                        let current = value();
+                        fallback_text.set(current);
                         fallback.set(true);
+                        monaco_ready.set(false);
+                        ignore_empty_echo.set(false);
                         break;
+                    }
+                    if next == "__bf_monaco_ready__" {
+                        // Re-push latest prop in case bootstrap captured a stale empty string.
+                        let current = value();
+                        let _ = eval.send(serde_json::json!({ "value": current }));
+                        monaco_ready.set(true);
+                        fallback.set(false);
+                        ignore_empty_echo.set(false);
+                        continue;
+                    }
+                    // Drop empty echoes only during bootstrap — otherwise intentional clears break.
+                    if next.is_empty() && ignore_empty_echo() {
+                        let current = value();
+                        if !current.is_empty() {
+                            let _ = eval.send(serde_json::json!({ "value": current }));
+                        }
+                        continue;
                     }
                     on_change.call(next);
                 }
@@ -423,13 +490,16 @@ pub fn MonacoEditor(
         }
     });
 
-    // Push external value changes into Monaco
+    // Push external value changes into Monaco (ReadSignal makes this reactive).
     use_effect({
         let editor_id = editor_id.clone();
-        let value = value.clone();
         move || {
+            let next = value();
+            fallback_text.set(next.clone());
+            if !monaco_ready() {
+                return;
+            }
             let editor_id = editor_id.clone();
-            let value = value.clone();
             spawn(async move {
                 let _ = document::eval(&format!(
                     r#"(function(){{
@@ -451,7 +521,7 @@ pub fn MonacoEditor(
   }}
 }})()"#,
                     id = serde_json::to_string(&editor_id).unwrap_or_else(|_| "\"\"".into()),
-                    value = serde_json::to_string(&value).unwrap_or_else(|_| "\"\"".into()),
+                    value = serde_json::to_string(&next).unwrap_or_else(|_| "\"\"".into()),
                 ));
             });
         }
@@ -490,7 +560,7 @@ pub fn MonacoEditor(
                         class: "rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted",
                         title: "Format",
                         onclick: move |_| {
-                            let result = format_code(&format_src, language);
+                            let result = format_code(&value(), language);
                             if result.ok {
                                 on_change.call(result.text);
                             }
@@ -499,21 +569,25 @@ pub fn MonacoEditor(
                     }
                 }
             }
-            if fallback() {
-                textarea {
-                    id: "{host_id}",
-                    class: "w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs text-foreground",
-                    style: "{height}",
-                    value: "{fallback_text}",
-                    placeholder: "{ph}",
-                    readonly: read_only,
-                    oninput: move |e| {
-                        let next = e.value();
-                        fallback_text.set(next.clone());
-                        on_change.call(next);
-                    },
+            // Keep the Monaco host mounted (needed for create) and overlay a textarea
+            // until syntax highlighting is ready — Query never goes blank.
+            div {
+                class: "relative w-full",
+                style: "{height}",
+                if fallback() || !monaco_ready() {
+                    textarea {
+                        class: "absolute inset-0 z-10 w-full resize-none rounded-md border border-input bg-background px-3 py-2 font-mono text-xs text-foreground",
+                        value: "{fallback_text}",
+                        placeholder: "{ph}",
+                        readonly: read_only,
+                        spellcheck: false,
+                        oninput: move |e| {
+                            let next = e.value();
+                            fallback_text.set(next.clone());
+                            on_change.call(next);
+                        },
+                    }
                 }
-            } else {
                 div {
                     class: "{host_class}",
                     "data-bf-monaco": "1",

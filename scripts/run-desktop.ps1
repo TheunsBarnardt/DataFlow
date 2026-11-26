@@ -8,6 +8,9 @@ if (-not $env:MONGODB_URI) { $env:MONGODB_URI = "mongodb://127.0.0.1:27017/botfl
 
 $root = Split-Path -Parent $PSScriptRoot
 $useHotPatch = $env:BOTFLOW_HOT_PATCH -eq "1"
+# Default: full app restart on every change (so version bumps / Rust edits are visible).
+# Set BOTFLOW_HOT_RELOAD=1 to keep RSX-only hot reload instead.
+$useHotReload = $env:BOTFLOW_HOT_RELOAD -eq "1"
 
 Write-Host "Building Tailwind for Dioxus studio..."
 Push-Location $root
@@ -24,10 +27,14 @@ if ($useHotPatch) {
     Write-Host "Starting BotFlow desktop with RSX + Rust hot-patch (dx serve --desktop --hot-patch)..."
     Write-Host "Note: --hot-patch needs MSVC lib paths (run from 'x64 Native Tools' if link fails)."
     dx serve --desktop --hot-patch -p botflow-desktop
-} else {
+} elseif ($useHotReload) {
     Write-Host "Starting BotFlow desktop with RSX hot reload (dx serve --desktop)..."
-    Write-Host "Tip: set BOTFLOW_HOT_PATCH=1 for experimental Rust logic hot-patching."
+    Write-Host "Tip: omit BOTFLOW_HOT_RELOAD for full auto-restart on every change."
     dx serve --desktop -p botflow-desktop
+} else {
+    Write-Host "Starting BotFlow desktop with auto-restart on every change (dx serve --desktop --hot-reload false)..."
+    Write-Host "Tip: set BOTFLOW_HOT_RELOAD=1 for RSX-only hot reload, or BOTFLOW_HOT_PATCH=1 for Rust hot-patch."
+    dx serve --desktop --hot-reload false -p botflow-desktop
 }
 Pop-Location
 Pop-Location

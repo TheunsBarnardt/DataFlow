@@ -73,6 +73,12 @@ pub fn build_router(state: AppState, cfg: &HttpConfig) -> Router {
             auth_disabled: cfg.auth_disabled,
         }));
 
+    // Local Monaco (desktop Query/SQL highlighting) — avoids blocked CDN in webview.
+    if let Some(monaco_dir) = monaco_static_dir() {
+        info!(path = %monaco_dir.display(), "serving local Monaco at /vendor/monaco");
+        app = app.nest_service("/vendor/monaco", ServeDir::new(monaco_dir));
+    }
+
     // Optional static fallback (WEB_DIST). Primary studio is the Dioxus desktop app.
     let dist = std::env::var("WEB_DIST").unwrap_or_else(|_| "web/dist".into());
     let dist_path = PathBuf::from(&dist);
@@ -84,6 +90,15 @@ pub fn build_router(state: AppState, cfg: &HttpConfig) -> Router {
     }
 
     app.layer(cors).layer(TraceLayer::new_for_http())
+}
+
+fn monaco_static_dir() -> Option<PathBuf> {
+    let candidates = [
+        PathBuf::from("assets/monaco"),
+        PathBuf::from("crates/desktop/assets/monaco"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../desktop/assets/monaco"),
+    ];
+    candidates.into_iter().find(|p| p.join("vs/loader.js").is_file())
 }
 
 pub async fn serve(state: AppState, cfg: HttpConfig) -> Result<()> {

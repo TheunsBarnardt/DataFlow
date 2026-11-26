@@ -246,6 +246,7 @@ pub fn MainSidebar(
                         div { class: "min-w-0",
                             div { class: "truncate text-[13px] font-medium", "{actor_name}" }
                             div { class: "text-[10px] text-muted-foreground", "{display_role}" }
+                            div { class: "text-[10px] text-muted-foreground/80", "v{env!(\"CARGO_PKG_VERSION\")}" }
                         }
                     }
                 }

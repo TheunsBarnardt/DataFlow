@@ -22,3 +22,4 @@ botflow-events = { workspace = true }
 botflow-security = { workspace = true }
 botflow-workflow-model = { workspace = true }
 botflow-storage = { workspace = true }
+botflow-integrations = { workspace = true }
