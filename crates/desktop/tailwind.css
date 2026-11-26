@@ -1,0 +1,165 @@
+@import "tailwindcss";
+@source "./src/**/*.{rs,html,css}";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-canvas: var(--canvas);
+  --color-sidebar: var(--sidebar);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+}
+
+/* DataFlow / n8n-aligned tokens — matches web/src/index.css */
+:root {
+  --radius: 0.5rem;
+  --brand: oklch(68.78% 0.142 155.66);
+  --brand-hover: oklch(61.32% 0.126 155.82);
+  --background: oklch(98.51% 0 89.88);
+  --foreground: oklch(26.86% 0 89.88);
+  --card: oklch(100% 0 89.88);
+  --card-foreground: oklch(26.86% 0 89.88);
+  --primary: oklch(68.78% 0.142 155.66);
+  --primary-foreground: oklch(100% 0 89.88);
+  --secondary: oklch(97.02% 0 89.88);
+  --secondary-foreground: oklch(38.67% 0 89.88);
+  --muted: oklch(95.51% 0 89.88);
+  --muted-foreground: oklch(55.55% 0 89.88);
+  --accent: oklch(95.06% 0.0256 155.66);
+  --accent-foreground: oklch(26.86% 0 89.88);
+  --destructive: oklch(55.42% 0.1922 35.48);
+  --border: oklch(90.67% 0 89.88);
+  --input: oklch(90.67% 0 89.88);
+  --ring: oklch(68.78% 0.142 155.66);
+  --popover: oklch(100% 0 89.88);
+  --popover-foreground: oklch(26.86% 0 89.88);
+  --canvas: oklch(97.02% 0 89.88);
+  --canvas-dot: oklch(82% 0 89.88);
+  --canvas-edge: oklch(72% 0 89.88);
+  --canvas-node-border: color-mix(in oklch, var(--foreground) 10%, transparent);
+  --canvas-node-selected: color-mix(in oklch, var(--brand) 28%, transparent);
+  --sidebar: oklch(100% 0 89.88);
+}
+
+.dark {
+  --brand: oklch(68.78% 0.142 155.66);
+  --brand-hover: oklch(75.2% 0.12 155.66);
+  --background: oklch(20.46% 0 89.88);
+  --foreground: oklch(95.51% 0 89.88);
+  --card: oklch(26.86% 0 89.88);
+  --card-foreground: oklch(95.51% 0 89.88);
+  --primary: oklch(68.78% 0.142 155.66);
+  --primary-foreground: oklch(100% 0 89.88);
+  --secondary: oklch(31.71% 0 89.88);
+  --secondary-foreground: oklch(95.51% 0 89.88);
+  --muted: oklch(31.71% 0 89.88);
+  --muted-foreground: oklch(68.3% 0 89.88);
+  --accent: oklch(31.71% 0 89.88);
+  --accent-foreground: oklch(95.51% 0 89.88);
+  --destructive: oklch(64.71% 0.2173 36.85);
+  --border: oklch(38.67% 0 89.88);
+  --input: oklch(38.67% 0 89.88);
+  --ring: oklch(68.78% 0.142 155.66);
+  --popover: oklch(26.86% 0 89.88);
+  --popover-foreground: oklch(95.51% 0 89.88);
+  --canvas: oklch(22% 0 89.88);
+  --canvas-dot: oklch(32% 0 89.88);
+  --canvas-edge: oklch(48% 0 89.88);
+  --canvas-node-border: color-mix(in oklch, var(--foreground) 15%, transparent);
+  --canvas-node-selected: color-mix(in oklch, var(--brand) 32%, transparent);
+  --sidebar: oklch(24% 0 89.88);
+}
+
+/* Must stay in @layer base so Tailwind utilities win (unlayered resets break the UI). */
+@layer base {
+  *,
+  ::after,
+  ::before {
+    border-color: var(--border);
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #main {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: "Segoe UI Variable", "Segoe UI", ui-sans-serif, system-ui, -apple-system,
+      BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 450;
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  svg {
+    display: block;
+    flex-shrink: 0;
+  }
+}
+
+/* See also assets/studio_extras.css (concatenated at runtime). */
+html.dark {
+  color-scheme: dark;
+}
+
+select,
+select.bf-select {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+select option,
+select.bf-select option {
+  background-color: var(--card);
+  color: var(--foreground);
+}
+
+.bf-monaco-resolvable {
+  color: oklch(35% 0.1 155) !important;
+  background: oklch(92% 0.05 155);
+  border-radius: 3px;
+}
+
+.dark .bf-monaco-resolvable {
+  color: oklch(82% 0.12 155) !important;
+  background: oklch(35% 0.06 155 / 0.55);
+}

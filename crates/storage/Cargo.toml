@@ -1,0 +1,16 @@
+[package]
+name = "botflow-storage"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+chrono = { workspace = true }
+futures = { workspace = true }
+mongodb = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+botflow-workflow-model = { workspace = true }
+sha2 = { workspace = true }

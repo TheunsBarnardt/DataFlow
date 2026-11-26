@@ -1,0 +1,10 @@
+[application]
+name = "BotFlow"
+default_platform = "desktop"
+
+[web.app]
+title = "BotFlow"
+
+[bundle]
+identifier = "com.botflow.app"
+publisher = "BotFlow"

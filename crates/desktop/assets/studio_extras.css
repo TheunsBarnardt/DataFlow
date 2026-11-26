@@ -1,0 +1,83 @@
+/* Desktop WebView extras — not covered by Tailwind utilities alone. */
+
+html.dark {
+  color-scheme: dark;
+}
+
+html:not(.dark) {
+  color-scheme: light;
+}
+
+/* Native <select> — WebView2 defaults to a white popup without color-scheme. */
+select.bf-select,
+select {
+  background-color: var(--background);
+  color: var(--foreground);
+  border-color: var(--input);
+}
+
+select.bf-select option,
+select option {
+  background-color: var(--card);
+  color: var(--foreground);
+}
+
+.dark select.bf-select,
+.dark select {
+  background-color: var(--card);
+  color: var(--foreground);
+}
+
+/* Monaco: n8n-style $vars.KEY chips */
+.bf-monaco-resolvable {
+  color: oklch(35% 0.1 155) !important;
+  background: oklch(92% 0.05 155);
+  border-radius: 3px;
+}
+
+.dark .bf-monaco-resolvable {
+  color: oklch(82% 0.12 155) !important;
+  background: oklch(35% 0.06 155 / 0.55);
+}
+
+/* dioxus-flow selection should use brand, never a pale/white halo */
+.dioxus-flow {
+  --df-accent: var(--brand);
+  --df-edge: var(--canvas-edge);
+}
+
+.df-node:focus-visible {
+  outline-color: var(--brand) !important;
+}
+
+/* WebView2: CSS translate/scale on the viewport softens text and SVG.
+   Keep compositing crisp; drop will-change (known Chrome/WV2 blur trigger). */
+.dioxus-flow .df-viewport,
+.dioxus-flow .df-world-layer {
+  will-change: auto;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+.dioxus-flow .df-node {
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+.dioxus-flow .df-node svg {
+  shape-rendering: geometricPrecision;
+}
+
+/* WebView2: content-visibility on edge tiles clips curves after layout
+   changes (opening NDV / resize). Always paint full edge paths. */
+.df-edge-tile {
+  content-visibility: visible !important;
+  overflow: visible !important;
+}
+
+.df-edge-path {
+  stroke: var(--canvas-edge, var(--df-edge));
+  stroke-width: 1.75;
+}

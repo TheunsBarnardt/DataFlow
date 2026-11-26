@@ -1,0 +1,106 @@
+/* DataFlow / n8n-aligned tokens — matches web/src/index.css */
+:root {
+  --radius: 0.5rem;
+  --brand: oklch(68.78% 0.142 155.66);
+  --brand-hover: oklch(61.32% 0.126 155.82);
+  --background: oklch(98.51% 0 89.88);
+  --foreground: oklch(26.86% 0 89.88);
+  --card: oklch(100% 0 89.88);
+  --card-foreground: oklch(26.86% 0 89.88);
+  --primary: oklch(68.78% 0.142 155.66);
+  --primary-foreground: oklch(100% 0 89.88);
+  --secondary: oklch(97.02% 0 89.88);
+  --secondary-foreground: oklch(38.67% 0 89.88);
+  --muted: oklch(95.51% 0 89.88);
+  --muted-foreground: oklch(55.55% 0 89.88);
+  --accent: oklch(95.06% 0.0256 155.66);
+  --accent-foreground: oklch(26.86% 0 89.88);
+  --destructive: oklch(55.42% 0.1922 35.48);
+  --border: oklch(90.67% 0 89.88);
+  --input: oklch(90.67% 0 89.88);
+  --ring: oklch(68.78% 0.142 155.66);
+  --popover: oklch(100% 0 89.88);
+  --popover-foreground: oklch(26.86% 0 89.88);
+  --canvas: oklch(97.02% 0 89.88);
+  --canvas-dot: oklch(82% 0 89.88);
+  --canvas-edge: oklch(72% 0 89.88);
+  --canvas-node-border: color-mix(in oklch, var(--foreground) 10%, transparent);
+  --canvas-node-selected: color-mix(in oklch, var(--brand) 28%, transparent);
+  --sidebar: oklch(100% 0 89.88);
+}
+
+.dark {
+  --brand: oklch(68.78% 0.142 155.66);
+  --brand-hover: oklch(75.2% 0.12 155.66);
+  --background: oklch(20.46% 0 89.88);
+  --foreground: oklch(95.51% 0 89.88);
+  --card: oklch(26.86% 0 89.88);
+  --card-foreground: oklch(95.51% 0 89.88);
+  --primary: oklch(68.78% 0.142 155.66);
+  --primary-foreground: oklch(100% 0 89.88);
+  --secondary: oklch(31.71% 0 89.88);
+  --secondary-foreground: oklch(95.51% 0 89.88);
+  --muted: oklch(31.71% 0 89.88);
+  --muted-foreground: oklch(68.3% 0 89.88);
+  --accent: oklch(31.71% 0 89.88);
+  --accent-foreground: oklch(95.51% 0 89.88);
+  --destructive: oklch(64.71% 0.2173 36.85);
+  --border: oklch(38.67% 0 89.88);
+  --input: oklch(38.67% 0 89.88);
+  --ring: oklch(68.78% 0.142 155.66);
+  --popover: oklch(26.86% 0 89.88);
+  --popover-foreground: oklch(95.51% 0 89.88);
+  --canvas: oklch(22% 0 89.88);
+  --canvas-dot: oklch(32% 0 89.88);
+  --canvas-edge: oklch(48% 0 89.88);
+  --canvas-node-border: color-mix(in oklch, var(--foreground) 15%, transparent);
+  --canvas-node-selected: color-mix(in oklch, var(--brand) 32%, transparent);
+  --sidebar: oklch(24% 0 89.88);
+}
+
+* {
+  border-color: var(--border);
+  box-sizing: border-box;
+}
+
+html,
+body,
+#main {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Geist Variable", Geist, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  font-weight: 450;
+  font-size: 1rem;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* WebView2: content-visibility on edge tiles clips curves after layout
+   changes (e.g. opening the NDV). Keep tiles always painted. */
+.df-edge-tile {
+  content-visibility: visible !important;
+  overflow: visible !important;
+}
+
+.df-edge-path {
+  stroke: var(--canvas-edge, var(--df-edge));
+  stroke-width: 1.75;
+}

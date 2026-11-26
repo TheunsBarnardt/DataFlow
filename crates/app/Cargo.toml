@@ -1,0 +1,26 @@
+[package]
+name = "botflow-app"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "botflow_app"
+path = "src/lib.rs"
+
+[[bin]]
+name = "botflow-server"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+botflow-http-server = { workspace = true }
+botflow-application-services = { workspace = true }
+botflow-node-api = { workspace = true }
+botflow-nodes-core = { workspace = true }
+botflow-integrations = { workspace = true }
+botflow-runtime-core = { workspace = true }
+botflow-storage = { workspace = true }
+botflow-security = { workspace = true }

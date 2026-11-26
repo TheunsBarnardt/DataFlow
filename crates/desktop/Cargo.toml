@@ -1,0 +1,27 @@
+[package]
+name = "botflow-desktop"
+version.workspace = true
+edition.workspace = true
+description = "BotFlow desktop — Rust engine + Dioxus studio (shadcn-style)"
+default-run = "botflow"
+
+[[bin]]
+name = "botflow"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+botflow-app = { workspace = true }
+botflow-application-services = { workspace = true }
+botflow-node-api = { workspace = true }
+botflow-workflow-model = { workspace = true }
+chrono = { workspace = true }
+dioxus = { version = "0.7", features = ["desktop"] }
+dioxus-flow = "0.1.3"
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }

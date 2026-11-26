@@ -1,0 +1,72 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/app",
+    "crates/desktop",
+    "crates/http-server",
+    "crates/workflow-model",
+    "crates/workflow-validation",
+    "crates/application-services",
+    "crates/runtime-core",
+    "crates/runtime-scheduler",
+    "crates/node-api",
+    "crates/nodes-core",
+    "crates/storage",
+    "crates/events",
+    "crates/security",
+    "crates/integrations",
+    "crates/worker",
+]
+default-members = ["crates/desktop", "crates/app"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "UNLICENSED"
+authors = ["BotFlow"]
+
+[workspace.dependencies]
+anyhow = "1"
+async-trait = "0.1"
+axum = { version = "0.8", features = ["macros"] }
+base64 = "0.22"
+chrono = { version = "0.4", features = ["serde"] }
+futures = "0.3"
+hex = "0.4"
+hmac = "0.12"
+jsonwebtoken = "9"
+maud = { version = "0.26", features = ["axum"] }
+mongodb = "3"
+rand = "0.8"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+tokio-util = { version = "0.7", features = ["rt"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace", "fs"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+aes-gcm = "0.10"
+lettre = { version = "0.11", default-features = false, features = ["tokio1", "tokio1-rustls-tls", "smtp-transport", "builder"] }
+tokio-postgres = { version = "0.7", features = ["with-serde_json-1", "with-chrono-0_4"] }
+
+# Workspace crates
+botflow-app = { path = "crates/app" }
+botflow-http-server = { path = "crates/http-server" }
+botflow-workflow-model = { path = "crates/workflow-model" }
+botflow-workflow-validation = { path = "crates/workflow-validation" }
+botflow-application-services = { path = "crates/application-services" }
+botflow-runtime-core = { path = "crates/runtime-core" }
+botflow-runtime-scheduler = { path = "crates/runtime-scheduler" }
+botflow-node-api = { path = "crates/node-api" }
+botflow-nodes-core = { path = "crates/nodes-core" }
+botflow-storage = { path = "crates/storage" }
+botflow-events = { path = "crates/events" }
+botflow-security = { path = "crates/security" }
+botflow-integrations = { path = "crates/integrations" }
+botflow-worker = { path = "crates/worker" }

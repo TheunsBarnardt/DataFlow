@@ -1,0 +1,27 @@
+[package]
+name = "botflow-worker"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "botflow-worker"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+chrono = { workspace = true }
+futures = { workspace = true }
+mongodb = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+uuid = { workspace = true }
+botflow-storage = { workspace = true }
+botflow-application-services = { workspace = true }
+botflow-node-api = { workspace = true }
+botflow-nodes-core = { workspace = true }
+botflow-integrations = { workspace = true }
+botflow-runtime-core = { workspace = true }
+botflow-security = { workspace = true }

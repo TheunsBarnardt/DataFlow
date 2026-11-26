@@ -1,0 +1,22 @@
+[package]
+name = "botflow-runtime-scheduler"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+chrono = { workspace = true }
+futures = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tokio-util = { workspace = true }
+tracing = { workspace = true }
+uuid = { workspace = true }
+botflow-workflow-model = { workspace = true }
+botflow-workflow-validation = { workspace = true }
+botflow-node-api = { workspace = true }
+botflow-runtime-core = { workspace = true }
+botflow-events = { workspace = true }
+
+[dev-dependencies]
+botflow-nodes-core = { workspace = true }

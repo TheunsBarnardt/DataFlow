@@ -1,11 +1,21 @@
-node_modules/
-dist/
-web/dist/
-server/dist/
-shared/dist/
+# Local env / secrets
 .env
 *.log
 .DS_Store
-reference/
+
+# Node leftovers (not part of this branch)
+node_modules/
+dist/
+
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock.bak
+
+# Python
 __pycache__/
 *.pyc
+
+# Test / compare artifacts
+.compare/
+web/test-results/

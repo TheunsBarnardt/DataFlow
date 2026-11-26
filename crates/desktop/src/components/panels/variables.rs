@@ -1,0 +1,336 @@
+use dioxus::prelude::*;
+
+use crate::components::panels::{json_id, json_string};
+use crate::components::ui::{ConfirmDeleteDialog, PageLoader};
+
+#[component]
+pub fn VariablesPanel() -> Element {
+    let mut items = use_signal(Vec::<serde_json::Value>::new);
+    let mut query = use_signal(String::new);
+    let mut err = use_signal(|| None::<String>);
+    let mut editing_id = use_signal(|| None::<String>);
+    let mut draft_key = use_signal(String::new);
+    let mut draft_value = use_signal(String::new);
+    let mut busy = use_signal(|| false);
+    let mut loading = use_signal(|| true);
+    let mut confirm_delete = use_signal(|| None::<(String, String)>);
+
+    let reload = move || {
+        spawn(async move {
+            match crate::api::get_json("/api/variables").await {
+                Ok(v) => {
+                    items.set(
+                        v.get("variables")
+                            .and_then(|x| x.as_array())
+                            .cloned()
+                            .unwrap_or_default(),
+                    );
+                    err.set(None);
+                }
+                Err(e) => err.set(Some(e)),
+            }
+            loading.set(false);
+        });
+    };
+
+    use_effect(move || {
+        reload();
+    });
+
+    let q = query().trim().to_lowercase();
+    let filtered: Vec<serde_json::Value> = items()
+        .into_iter()
+        .filter(|v| {
+            if q.is_empty() {
+                return true;
+            }
+            let key = v.get("key").map(json_string).unwrap_or_default();
+            let val = v.get("value").map(json_string).unwrap_or_default();
+            let desc = v.get("description").map(json_string).unwrap_or_default();
+            format!("{key} {val} {desc}").to_lowercase().contains(&q)
+        })
+        .collect();
+
+    let cancel_edit = move |_| {
+        editing_id.set(None);
+        draft_key.set(String::new());
+        draft_value.set(String::new());
+    };
+
+    let save = move |_| {
+        let key = draft_key().trim().to_string();
+        if key.is_empty() {
+            err.set(Some("Key is required".into()));
+            return;
+        }
+        let value = draft_value();
+        let mode = editing_id();
+        busy.set(true);
+        spawn(async move {
+            let result = match mode.as_deref() {
+                Some("new") => {
+                    crate::api::post_json(
+                        "/api/variables",
+                        serde_json::json!({
+                            "key": key,
+                            "value": value,
+                            "type": "string"
+                        }),
+                    )
+                    .await
+                }
+                Some(id) => {
+                    crate::api::put_json(
+                        &format!("/api/variables/{id}"),
+                        serde_json::json!({
+                            "key": key,
+                            "value": value,
+                            "type": "string"
+                        }),
+                    )
+                    .await
+                }
+                None => Ok(serde_json::Value::Null),
+            };
+            match result {
+                Ok(_) => {
+                    editing_id.set(None);
+                    draft_key.set(String::new());
+                    draft_value.set(String::new());
+                    if let Ok(v) = crate::api::get_json("/api/variables").await {
+                        items.set(
+                            v.get("variables")
+                                .and_then(|x| x.as_array())
+                                .cloned()
+                                .unwrap_or_default(),
+                        );
+                    }
+                    err.set(None);
+                }
+                Err(e) => err.set(Some(e)),
+            }
+            busy.set(false);
+        });
+    };
+
+    rsx! {
+        div { class: "flex h-full flex-col",
+            div { class: "flex flex-wrap items-end justify-between gap-3 border-b px-6 py-5",
+                div {
+                    h1 { class: "text-2xl font-semibold tracking-tight", "Variables" }
+                    p { class: "mt-1 text-sm text-muted-foreground",
+                        "Project variables usable in expressions as "
+                        code { class: "rounded bg-muted px-1.5 py-0.5 text-xs", "$vars.KEY" }
+                    }
+                }
+                div { class: "flex flex-wrap items-center gap-2",
+                    input {
+                        class: "flex h-9 w-56 rounded-md border border-input bg-transparent px-3 text-sm",
+                        placeholder: "Search variables...",
+                        value: "{query()}",
+                        oninput: move |e| query.set(e.value()),
+                    }
+                    button {
+                        r#type: "button",
+                        class: "inline-flex h-9 items-center rounded-md bg-primary px-4 text-sm text-primary-foreground disabled:opacity-50",
+                        disabled: editing_id().as_deref() == Some("new"),
+                        onclick: move |_| {
+                            editing_id.set(Some("new".into()));
+                            draft_key.set(String::new());
+                            draft_value.set(String::new());
+                        },
+                        "Add variable"
+                    }
+                }
+            }
+
+            if let Some(message) = err() {
+                div { class: "border-b bg-destructive/10 px-6 py-2 text-sm text-destructive", "{message}" }
+            }
+
+            if loading() {
+                PageLoader { label: "Loading variables…" }
+            } else {
+            div { class: "min-h-0 flex-1 overflow-y-auto",
+                div { class: "p-6",
+                    div { class: "overflow-hidden rounded-lg border bg-card",
+                        div { class: "grid grid-cols-[1.2fr_1.4fr_1.2fr_auto] gap-3 border-b bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground",
+                            div { "Key" }
+                            div { "Value" }
+                            div { "Usage syntax" }
+                            div { class: "text-right", "Actions" }
+                        }
+
+                        if editing_id().as_deref() == Some("new") {
+                            div { class: "grid grid-cols-[1.2fr_1.4fr_1.2fr_auto] items-center gap-3 border-b px-4 py-3",
+                                input {
+                                    class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
+                                    placeholder: "Key",
+                                    value: "{draft_key()}",
+                                    oninput: move |e| draft_key.set(e.value()),
+                                }
+                                input {
+                                    class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
+                                    placeholder: "Value",
+                                    value: "{draft_value()}",
+                                    oninput: move |e| draft_value.set(e.value()),
+                                }
+                                code { class: "truncate text-sm text-muted-foreground",
+                                    {
+                                        let key = draft_key();
+                                        let key = key.trim();
+                                        let shown = if key.is_empty() { "..." } else { key };
+                                        format!("$vars.{shown}")
+                                    }
+                                }
+                                div { class: "flex justify-end gap-2",
+                                    button {
+                                        r#type: "button",
+                                        class: "inline-flex h-8 items-center rounded-md px-3 text-xs text-muted-foreground hover:bg-muted",
+                                        onclick: cancel_edit,
+                                        "Cancel"
+                                    }
+                                    button {
+                                        r#type: "button",
+                                        class: "inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs text-primary-foreground disabled:opacity-50",
+                                        disabled: busy(),
+                                        onclick: save,
+                                        "Save"
+                                    }
+                                }
+                            }
+                        }
+
+                        for item in filtered.iter().cloned() {
+                            {
+                                let id = json_id(&item);
+                                let key = item.get("key").map(json_string).unwrap_or_default();
+                                let value = item.get("value").map(json_string).unwrap_or_default();
+                                let is_editing = editing_id().as_deref() == Some(id.as_str());
+                                let del_id = id.clone();
+                                let del_key = key.clone();
+                                let edit_id = id.clone();
+                                let edit_key = key.clone();
+                                let edit_value = value.clone();
+                                rsx! {
+                                    div {
+                                        key: "{id}",
+                                        class: "grid grid-cols-[1.2fr_1.4fr_1.2fr_auto] items-center gap-3 border-b px-4 py-3 last:border-b-0",
+                                        if is_editing {
+                                            input {
+                                                class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
+                                                value: "{draft_key()}",
+                                                oninput: move |e| draft_key.set(e.value()),
+                                            }
+                                            input {
+                                                class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
+                                                value: "{draft_value()}",
+                                                oninput: move |e| draft_value.set(e.value()),
+                                            }
+                                            code { class: "truncate text-sm text-muted-foreground",
+                                                {
+                                                    let key = draft_key();
+                                                    let key = key.trim();
+                                                    let shown = if key.is_empty() { "..." } else { key };
+                                                    format!("$vars.{shown}")
+                                                }
+                                            }
+                                            div { class: "flex justify-end gap-2",
+                                                button {
+                                                    r#type: "button",
+                                                    class: "inline-flex h-8 items-center rounded-md px-3 text-xs text-muted-foreground hover:bg-muted",
+                                                    onclick: cancel_edit,
+                                                    "Cancel"
+                                                }
+                                                button {
+                                                    r#type: "button",
+                                                    class: "inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs text-primary-foreground disabled:opacity-50",
+                                                    disabled: busy(),
+                                                    onclick: save,
+                                                    "Save"
+                                                }
+                                            }
+                                        } else {
+                                            div { class: "truncate text-sm font-medium", "{key}" }
+                                            div { class: "truncate text-sm text-muted-foreground", "{value}" }
+                                            code { class: "truncate text-sm text-muted-foreground", "$vars.{key}" }
+                                            div { class: "flex justify-end gap-2",
+                                                button {
+                                                    r#type: "button",
+                                                    class: "inline-flex h-8 items-center rounded-md border px-3 text-xs hover:bg-muted",
+                                                    onclick: move |_| {
+                                                        editing_id.set(Some(edit_id.clone()));
+                                                        draft_key.set(edit_key.clone());
+                                                        draft_value.set(edit_value.clone());
+                                                    },
+                                                    "Edit"
+                                                }
+                                                button {
+                                                    r#type: "button",
+                                                    class: "inline-flex h-8 items-center rounded-md px-3 text-xs text-muted-foreground hover:bg-muted",
+                                                    onclick: move |_| {
+                                                        confirm_delete.set(Some((del_id.clone(), del_key.clone())));
+                                                    },
+                                                    "Delete"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if filtered.is_empty() && editing_id().as_deref() != Some("new") {
+                            div { class: "px-4 py-10 text-center text-sm text-muted-foreground",
+                                "No variables yet. Click Add variable to create one."
+                            }
+                        }
+                    }
+                }
+            }
+            }
+
+            if let Some((del_id, del_key)) = confirm_delete() {
+                {
+                    let del_id_confirm = del_id.clone();
+                    let description = format!(
+                        "This will permanently remove $vars.{del_key}. This action cannot be undone."
+                    );
+                    rsx! {
+                        ConfirmDeleteDialog {
+                            title: "Delete variable?".to_string(),
+                            description,
+                            busy: busy(),
+                            on_cancel: move |_| confirm_delete.set(None),
+                            on_confirm: move |_| {
+                                let check_id = del_id_confirm.clone();
+                                let path = format!("/api/variables/{check_id}");
+                                busy.set(true);
+                                spawn(async move {
+                                    match crate::api::delete_json(&path).await {
+                                        Ok(_) => {
+                                            if editing_id().as_deref() == Some(check_id.as_str()) {
+                                                editing_id.set(None);
+                                            }
+                                            confirm_delete.set(None);
+                                            if let Ok(v) = crate::api::get_json("/api/variables").await {
+                                                items.set(
+                                                    v.get("variables")
+                                                        .and_then(|x| x.as_array())
+                                                        .cloned()
+                                                        .unwrap_or_default(),
+                                                );
+                                            }
+                                            err.set(None);
+                                        }
+                                        Err(e) => err.set(Some(e)),
+                                    }
+                                    busy.set(false);
+                                });
+                            },
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

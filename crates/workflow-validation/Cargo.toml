@@ -1,0 +1,11 @@
+[package]
+name = "botflow-workflow-validation"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+botflow-workflow-model = { workspace = true }
+botflow-node-api = { workspace = true }
