@@ -121,7 +121,7 @@ pub fn ExpressionField(
                 };
                 apply_expr_insert(mode, on_change, &expr);
             },
-            div { class: "flex flex-wrap items-center gap-1",
+            div { class: "flex shrink-0 items-center gap-1",
                 button {
                     r#type: "button",
                     class: if mode() == "fixed" {
@@ -160,30 +160,30 @@ pub fn ExpressionField(
                     },
                     "Expression"
                 }
-                if mode() == "expression" {
-                    div { class: "ml-auto flex flex-wrap gap-0.5",
-                        for s in SUGGESTIONS {
-                            {
-                                let s = (*s).to_string();
-                                let value = value.clone();
-                                rsx! {
-                                    button {
-                                        r#type: "button",
-                                        class: "rounded border px-1 text-[9px] text-muted-foreground hover:bg-muted",
-                                        title: "Insert {s}",
-                                        onclick: move |_| {
-                                            let base = value.trim();
-                                            let next = if base.is_empty() {
-                                                format!("={{ {s} }}")
-                                            } else if base.contains("}}") {
-                                                base.replace("}}", &format!("{s} }}"))
-                                            } else {
-                                                format!("={{ {s} }}")
-                                            };
-                                            on_change.call(next);
-                                        },
-                                        "{s}"
-                                    }
+            }
+            if mode() == "expression" {
+                div { class: "flex flex-wrap gap-0.5",
+                    for s in SUGGESTIONS {
+                        {
+                            let s = (*s).to_string();
+                            let value = value.clone();
+                            rsx! {
+                                button {
+                                    r#type: "button",
+                                    class: "rounded border px-1 text-[9px] text-muted-foreground hover:bg-muted",
+                                    title: "Insert {s}",
+                                    onclick: move |_| {
+                                        let base = value.trim();
+                                        let next = if base.is_empty() {
+                                            format!("={{ {s} }}")
+                                        } else if base.contains("}}") {
+                                            base.replace("}}", &format!("{s} }}"))
+                                        } else {
+                                            format!("={{ {s} }}")
+                                        };
+                                        on_change.call(next);
+                                    },
+                                    "{s}"
                                 }
                             }
                         }

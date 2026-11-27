@@ -144,56 +144,10 @@ impl NodeExecutor for SharepointNode {
     }
 }
 
-pub struct DynamicsNode;
-#[async_trait]
-impl NodeExecutor for DynamicsNode {
-    fn metadata(&self) -> NodeMetadata {
-        meta(
-            "dynamics",
-            "Dataverse",
-            "Query or update Dataverse / Dynamics 365 records",
-        )
-    }
-    async fn execute(&self, ctx: ExecutionContext) -> Result<NodeResult, NodeError> {
-        let base = std::env::var("DYNAMICS_BASE_URL")
-            .or_else(|_| std::env::var("DYNAMICS_API_BASE_URL"))
-            .unwrap_or_default();
-        let entity = ctx
-            .node
-            .parameters
-            .get("entity")
-            .and_then(|v| v.as_str())
-            .unwrap_or("accounts");
-        if base.is_empty() {
-            return Ok(NodeResult::single(vec![json!({
-                "error": "DYNAMICS_BASE_URL not set",
-                "entity": entity,
-                "items": ctx.input_items,
-            })]));
-        }
-        let token = std::env::var("DYNAMICS_TOKEN").unwrap_or_default();
-        let url = format!(
-            "{}/api/data/v9.2/{}",
-            base.trim_end_matches('/'),
-            entity
-        );
-        let mut req = reqwest::Client::new().get(&url);
-        if !token.is_empty() {
-            req = req.bearer_auth(token);
-        }
-        if let Ok(key) = std::env::var("DYNAMICS_API_KEY") {
-            req = req.header("Ocp-Apim-Subscription-Key", key);
-        }
-        let resp = req.send().await.map_err(|e| NodeError::msg(e.to_string()))?;
-        let body: serde_json::Value = resp.json().await.unwrap_or(json!({}));
-        Ok(NodeResult::single(vec![body]))
-    }
-}
-
 pub fn register(registry: &mut NodeRegistry) {
     registry.register(Arc::new(MicrosoftGraphNode));
     registry.register(Arc::new(OutlookNode));
     registry.register(Arc::new(ExcelOnlineNode));
     registry.register(Arc::new(SharepointNode));
-    registry.register(Arc::new(DynamicsNode));
+    registry.register(Arc::new(crate::dataverse::DynamicsNode));
 }

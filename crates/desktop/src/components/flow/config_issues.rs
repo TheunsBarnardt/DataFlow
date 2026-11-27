@@ -51,6 +51,32 @@ pub fn get_node_config_issues(
                 push_empty(&mut issues, "query", "Query");
             }
         }
+        "dynamics" => {
+            let op = parameters
+                .get("operation")
+                .and_then(|v| v.as_str())
+                .unwrap_or("GET");
+            if op.eq_ignore_ascii_case("GET") {
+                let qtype = parameters
+                    .get("type")
+                    .or_else(|| parameters.get("queryType"))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("FETCHXML");
+                let query = parameters
+                    .get("getQuery")
+                    .or_else(|| parameters.get("query"));
+                if qtype.eq_ignore_ascii_case("FETCHXML") && is_blank(query) {
+                    issues.push("FetchXML Query is required".into());
+                } else if qtype.eq_ignore_ascii_case("ODATA") && is_blank(query) {
+                    // Legacy entity-only OData is OK; only flag when neither query nor entity.
+                    if is_blank(parameters.get("entityName"))
+                        && is_blank(parameters.get("entity"))
+                    {
+                        issues.push("OData Query is required".into());
+                    }
+                }
+            }
+        }
         _ => {}
     }
 

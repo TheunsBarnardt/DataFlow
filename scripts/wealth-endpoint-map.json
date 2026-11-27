@@ -1,0 +1,1742 @@
+[
+  {
+    "path": "Auth/ActivateUserAccountAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Activate AspNetUser",
+    "query": "UPDATE AspNetUsers\r\nSET IsActive = 1, EmailConfirmed = 1\r\nWHERE Id = ${q(\"$json.query.userId\")};\r\nSELECT @@ROWCOUNT AS Activated;"
+  },
+  {
+    "path": "Auth/DefaultDynamicsUserIdAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Default Dynamics link",
+    "query": "SELECT TOP 1 CAST(DynamicsUserId AS nvarchar(36)) AS DynamicsUserId\r\nFROM AspNetUserDynamicsLinkedAcc\r\nWHERE AspNetUserId = ${q(\"$json.query.aspUserId\")} AND IsDefault = 1;"
+  },
+  {
+    "path": "Auth/UsersByEMailAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Contacts by email",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid,fullname,emailaddress1&$filter=(emailaddress1 eq '{{ $json.query.email }}')&$top=20",
+    "entityName": "contact"
+  },
+  {
+    "path": "Auth/LinkedAccountNumbersAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Linked Sasfin accounts",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$select=tct_sasfinaccountsid,tct_uniquenumber,tct_pershingnumber,new_pershingnumber,statecode,statuscode&$expand=tct_providerid($select=tct_name),tct_providerproductId($select=tct_name)&$filter=(Microsoft.Dynamics.CRM.In(PropertyName='statecode',PropertyValues=['0','1']) and (_tct_individualid_value eq {{ $json.query.dynamicsUserId }} or _tct_corporateid_value eq {{ $json.query.dynamicsUserId }}))",
+    "entityName": "tct_sasfinaccount"
+  },
+  {
+    "path": "Auth/LinkedAccountNumbersForDocumentsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Linked accounts for docs",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$select=tct_sasfinaccountsid,tct_uniquenumber,statecode,statuscode&$expand=tct_providerid($select=tct_name)&$filter=(_tct_individualid_value eq {{ $json.query.dynamicsUserId }} or _tct_corporateid_value eq {{ $json.query.dynamicsUserId }})",
+    "entityName": "tct_sasfinaccount"
+  },
+  {
+    "path": "Auth/LinkedCrmAccountsAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "AspNet linked CRM profiles",
+    "query": "SELECT CAST(DynamicsUserId AS nvarchar(36)) AS [Value],\r\n       ISNULL(UserName, CAST(DynamicsUserId AS nvarchar(36))) AS [Text],\r\n       IsDefault, IsMainUser\r\nFROM AspNetUserDynamicsLinkedAcc\r\nWHERE AspNetUserId = ${q(\"($json.jwt?.sub || $json.jwt?.nameid || $json.query.aspUserId)\")};"
+  },
+  {
+    "path": "Auth/ElectiveEventAccountsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Elective event connections",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "connections?$select=connectionid,_record1id_value,_record2id_value,name&$filter=(_record1id_value eq {{ $json.query.dynamicsUserId }})&$top=50",
+    "entityName": "connection"
+  },
+  {
+    "path": "Auth/CheckIfCurrentUserIsPrimaryAccountHolderAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Is default linked profile",
+    "query": "SELECT CASE WHEN EXISTS (\r\n  SELECT 1 FROM AspNetUserDynamicsLinkedAcc\r\n  WHERE AspNetUserId = ${q(\"$json.query.aspNetUserId\")}\r\n    AND DynamicsUserId = ${q(\"$json.query.dynamicsUserId\")}\r\n    AND IsDefault = 1\r\n) THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS IsPrimary;"
+  },
+  {
+    "path": "Auth/ChangePasswordAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Change password marker",
+    "query": "SELECT Id, UserName FROM AspNetUsers WHERE Id = ${q(\"$json.query.userId\")};"
+  },
+  {
+    "path": "Auth/ForgotPasswordAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "AspNetUsers lookup",
+    "query": "SELECT TOP 1 Id, UserName, Email FROM AspNetUsers WHERE UserName = ${q(\"$json.query.username\")};"
+  },
+  {
+    "path": "Auth/ResetPasswordAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "AspNetUsers lookup",
+    "query": "SELECT TOP 1 Id, UserName, Email FROM AspNetUsers WHERE UserName = ${q(\"$json.query.username\")};"
+  },
+  {
+    "path": "Auth/ForgotUsernameAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Dynamics contact lookup",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid,fullname,emailaddress1,tct_identitynumber&$filter=(tct_identitynumber eq '{{ $json.query.identityNumber || '' }}' or contactid eq {{ $json.query.dynamicsUserId || '00000000-0000-0000-0000-000000000000' }})&$top=5",
+    "entityName": "contact"
+  },
+  {
+    "path": "Auth/UpdateUserEmailAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Dynamics contact lookup",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid,fullname,emailaddress1,tct_identitynumber&$filter=(tct_identitynumber eq '{{ $json.query.identityNumber || '' }}' or contactid eq {{ $json.query.dynamicsUserId || '00000000-0000-0000-0000-000000000000' }})&$top=5",
+    "entityName": "contact"
+  },
+  {
+    "path": "Auth/RegisterIFARequestAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Dynamics contact lookup",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid,fullname,emailaddress1,tct_identitynumber&$filter=(tct_identitynumber eq '{{ $json.query.identityNumber || '' }}' or contactid eq {{ $json.query.dynamicsUserId || '00000000-0000-0000-0000-000000000000' }})&$top=5",
+    "entityName": "contact"
+  },
+  {
+    "path": "Auth/InvidualRelationsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Dynamics contact lookup",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid,fullname,emailaddress1,tct_identitynumber&$filter=(tct_identitynumber eq '{{ $json.query.identityNumber || '' }}' or contactid eq {{ $json.query.dynamicsUserId || '00000000-0000-0000-0000-000000000000' }})&$top=5",
+    "entityName": "contact"
+  },
+  {
+    "path": "Portfolio/DashboardAsync",
+    "backend": "mssql",
+    "credential": "DM_Wealth",
+    "name": "GetSasfinConsolidatedPreProd",
+    "query": "EXEC GetSasfinConsolidatedPreProd\r\n  @CRMNumber = ${q(\"$json.query.crmNumber\")},\r\n  @Date = {{ \"'\" + (String($json.query.date || '').slice(0,10) || new Date().toISOString().slice(0,10)) + \"'\" }};"
+  },
+  {
+    "path": "Portfolio/GetSasfinLinkedAccountsAsync",
+    "backend": "mssql",
+    "credential": "DM_Wealth",
+    "name": "GetSasfinLinkedAccountsPreProd",
+    "query": "EXEC GetSasfinLinkedAccountsPreProd\r\n  @DynamicsUserId = ${q(\"$json.query.dynamicsUserId\")},\r\n  @CRMNumber = ${q(\"$json.query.crmNumber\")};"
+  },
+  {
+    "path": "Portfolio/IsShowPortfolioTab",
+    "backend": "mssql",
+    "credential": "DM_Wealth",
+    "name": "GetIsShowPortfolio SP",
+    "query": "EXEC GetIsShowPortfolio @CRMNumber = ${q(\"$json.query.crmnumber\")}"
+  },
+  {
+    "path": "Portfolio/GetBankListAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "BankingDetailPreProd list",
+    "query": "SELECT Provider, Currency, BankName, AccountName, AccountNumber, Code, Branch,\r\n       SwiftCode, SortCode, Iban, [Reference], ProductDynamics\r\nFROM BankingDetailPreProd\r\nWHERE Provider = ${q(\"$json.query.provider\")}\r\n  AND Currency = ${q(\"$json.query.currency\")}\r\n  AND Active = 1\r\n  AND ProductDynamics = ${q(\"$json.query.productDynamics\")};"
+  },
+  {
+    "path": "Portfolio/GetBankDetailsAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "BankingDetailPreProd row",
+    "query": "SELECT TOP 1 Provider, Currency, BankName, AccountName, AccountNumber, Code, Branch,\r\n       SwiftCode, SortCode, Iban, [Reference], ProductDynamics\r\nFROM BankingDetailPreProd\r\nWHERE Provider = ${q(\"$json.query.provider\")}\r\n  AND Currency = ${q(\"$json.query.currency\")}\r\n  AND BankName = ${q(\"$json.query.bank\")}\r\n  AND ProductDynamics = ${q(\"$json.query.productDynamics\")}\r\n  AND Active = 1;"
+  },
+  {
+    "path": "Portfolio/DMWealthPortfolioAsync",
+    "backend": "mssql",
+    "credential": "DM_Wealth",
+    "name": "GetSasfinHoldingsPreProd",
+    "query": "EXEC GetSasfinHoldingsPreProd\r\n  @Account = ${q(\"$json.query.account\")},\r\n  @Currency = ${q(\"$json.query.currency\")},\r\n  @ExternalAccount = ${q(\"$json.query.externalAccount\")},\r\n  @Date = ${q(\"$json.query.date\")};"
+  },
+  {
+    "path": "Portfolio/PortfolioAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Transactions via provider setting",
+    "query": "SELECT SettingValue AS PortfolioProvider\r\nFROM API_Settings WHERE SettingName = 'PortfolioProvider';"
+  },
+  {
+    "path": "Portfolio/TransactionAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Transactions via provider setting",
+    "query": "SELECT SettingValue AS PortfolioProvider\r\nFROM API_Settings WHERE SettingName = 'PortfolioProvider';"
+  },
+  {
+    "path": "Portfolio/PortfolioExportAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Provider settings",
+    "query": "SELECT SettingName, SettingValue FROM API_Settings WHERE SettingName IN ('PortfolioProvider','MarketDataProvider');"
+  },
+  {
+    "path": "Portfolio/UpdateInstrumentsReferenceDataAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Provider settings",
+    "query": "SELECT SettingName, SettingValue FROM API_Settings WHERE SettingName IN ('PortfolioProvider','MarketDataProvider');"
+  },
+  {
+    "path": "Market/UserWatchlistsAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "User watchlists",
+    "query": "SELECT Id AS [Value], Description AS [Text]\r\nFROM Watchlist\r\nWHERE AspNetUserId = {{ \"'\" + String($json.jwt?.sub || $json.query.aspUserId || '').replace(/'/g,\"''\") + \"'\" }};"
+  },
+  {
+    "path": "Market/WatchlistSharesAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Watchlist shares",
+    "query": "SELECT ShareTicker AS [Value], ShareTicker AS [Text]\r\nFROM WatchlistShare\r\nWHERE WatchlistId = {{ Number($json.query.watchlistId) || 0 }};"
+  },
+  {
+    "path": "Market/AddWatchlistAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Add watchlist",
+    "query": "INSERT INTO Watchlist (Description, AspNetUserId)\r\nVALUES (${q(\"$json.query.description\")}, ${q(\"$json.query.aspUserId\")});\r\nSELECT SCOPE_IDENTITY() AS Id;"
+  },
+  {
+    "path": "Market/AddWatchlistSharesAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Add watchlist share",
+    "query": "INSERT INTO WatchlistShare (WatchlistId, ShareTicker)\r\nVALUES ({{ Number($json.query.watchListId) || 0 }}, ${q(\"$json.query.instrumentCode\")});"
+  },
+  {
+    "path": "Market/RemoveWatchlistAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Remove watchlist",
+    "query": "DELETE FROM WatchlistShare WHERE WatchlistId = {{ Number($json.query.watchListId) || 0 }};\r\nDELETE FROM Watchlist WHERE Id = {{ Number($json.query.watchListId) || 0 }};"
+  },
+  {
+    "path": "Market/RemoveWatchlistSharesAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Remove watchlist share",
+    "query": "DELETE FROM WatchlistShare\r\nWHERE WatchlistId = {{ Number($json.query.watchListId) || 0 }}\r\n  AND ShareTicker LIKE {{ \"'%' + String($json.query.instrumentCode || '').replace(/'/g, \"''\") + '%'\" }};"
+  },
+  {
+    "path": "Market/InstrumentLookupAsync",
+    "backend": "mssql",
+    "credential": "MarbleMD",
+    "name": "MarbleMD instrument lookup",
+    "query": "SELECT TOP 50 InstrumentCode AS [Value], InstrumentName AS [Text]\r\nFROM DailyInstrumentStatistics\r\nWHERE InstrumentCode LIKE {{ \"'%' + String($json.query.lookup || '').replace(/'/g, \"''\") + '%'\" }}\r\n   OR InstrumentName LIKE {{ \"'%' + String($json.query.lookup || '').replace(/'/g, \"''\") + '%'\" }};"
+  },
+  {
+    "path": "Market/ForexAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "MarketDataProvider setting",
+    "query": "SELECT SettingName, SettingValue FROM API_Settings WHERE SettingName = 'MarketDataProvider';"
+  },
+  {
+    "path": "Market/IndicesAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "MarketDataProvider setting",
+    "query": "SELECT SettingName, SettingValue FROM API_Settings WHERE SettingName = 'MarketDataProvider';"
+  },
+  {
+    "path": "Market/TickerAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "MarketDataProvider setting",
+    "query": "SELECT SettingName, SettingValue FROM API_Settings WHERE SettingName = 'MarketDataProvider';"
+  },
+  {
+    "path": "Crm/ClientDetailAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Individual by CRM no",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid,fullname,firstname,lastname,emailaddress1,tct_identitynumber&$filter=(tct_crmnumber eq '{{ $json.query.crmNo }}')&$top=1",
+    "entityName": "contact"
+  },
+  {
+    "path": "Crm/IndividualByCrmNo",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Individual by CRM no",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid,fullname,firstname,lastname,emailaddress1,tct_identitynumber&$filter=(tct_crmnumber eq '{{ $json.query.crmNo }}')&$top=1",
+    "entityName": "contact"
+  },
+  {
+    "path": "Crm/GetSasfinAccounts",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Get Sasfin accounts",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$select=tct_sasfinaccountsid,tct_uniquenumber,tct_pershingnumber,statecode,statuscode&$filter=(_tct_individualid_value eq {{ $json.query.clientId }})",
+    "entityName": "tct_sasfinaccount"
+  },
+  {
+    "path": "Crm/LoadSasfinSubscription",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Sasfin subscriptions",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "sfn_sasfinsubscriptions?$top=50",
+    "entityName": "sfn_sasfinsubscription"
+  },
+  {
+    "path": "Crm/GetAllSasfinSubscriptionAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Sasfin subscriptions",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "sfn_sasfinsubscriptions?$top=50",
+    "entityName": "sfn_sasfinsubscription"
+  },
+  {
+    "path": "Crm/LinkPortfolioAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Dynamics write path",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid&$top=1",
+    "entityName": "contact"
+  },
+  {
+    "path": "Crm/UpdateClientDetailAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Dynamics write path",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid&$top=1",
+    "entityName": "contact"
+  },
+  {
+    "path": "Crm/UpdateSubscriptionsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Dynamics write path",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid&$top=1",
+    "entityName": "contact"
+  },
+  {
+    "path": "Crm/CreateSasfinSubscriptionAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Dynamics write path",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid&$top=1",
+    "entityName": "contact"
+  },
+  {
+    "path": "Document/GetDynamicsCategories",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "DynamicsDocumentClassificationType",
+    "query": "SELECT CAST(Id AS nvarchar(64)) AS [Value], Name AS [Text]\r\nFROM DynamicsDocumentClassificationType;"
+  },
+  {
+    "path": "Document/GetDocumentFolders",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "DocumentFolders",
+    "query": "SELECT CAST(Id AS nvarchar(64)) AS [Value], Name AS [Text]\r\nFROM DocumentFolders;"
+  },
+  {
+    "path": "Document/GetClientDocumentData",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "DocumentsMetadata",
+    "query": "SELECT TOP 100 *\r\nFROM DocumentsMetadata\r\nWHERE ({{ $json.query.docId ? \"Id = '\" + String($json.query.docId).replace(/'/g, \"''\") + \"'\" : '1=1' }});"
+  },
+  {
+    "path": "Document/GetClientDocumentsByFolder",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "DocumentsMetadata",
+    "query": "SELECT TOP 100 *\r\nFROM DocumentsMetadata\r\nWHERE ({{ $json.query.docId ? \"Id = '\" + String($json.query.docId).replace(/'/g, \"''\") + \"'\" : '1=1' }});"
+  },
+  {
+    "path": "Document/ExportAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "DocumentsMetadata",
+    "query": "SELECT TOP 100 *\r\nFROM DocumentsMetadata\r\nWHERE ({{ $json.query.docId ? \"Id = '\" + String($json.query.docId).replace(/'/g, \"''\") + \"'\" : '1=1' }});"
+  },
+  {
+    "path": "Document/DeleteDocument",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Soft-delete document",
+    "query": "UPDATE DocumentsMetadata SET IsActive = 0\r\nWHERE Id = ${q(\"$json.query.docId\")};\r\nSELECT @@ROWCOUNT AS Deleted;"
+  },
+  {
+    "path": "Document/GetIdorPassportNumberAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Contact ID/passport",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$select=contactid,tct_identitynumber,tct_passportnumber&$filter=(contactid eq {{ $json.query.dynamicUserID }})&$top=1",
+    "entityName": "contact"
+  },
+  {
+    "path": "Document/ClientDocumentsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "tct_sasfindocuments",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfindocuments?$select=tct_sasfindocumentid,tct_name,createdon&$filter=(_tct_individualid_value eq {{ $json.query.dynamicUserID }})&$top=50",
+    "entityName": "tct_sasfindocument"
+  },
+  {
+    "path": "Document/GetGeneralDocumentsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "tct_sasfindocuments",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfindocuments?$select=tct_sasfindocumentid,tct_name,createdon&$filter=(_tct_individualid_value eq {{ $json.query.dynamicUserID }})&$top=50",
+    "entityName": "tct_sasfindocument"
+  },
+  {
+    "path": "Document/UploadClientDocumentAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Documents DB ping",
+    "query": "SELECT TOP 1 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/RegenerateOneTimeInfoslipsURL",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Documents DB ping",
+    "query": "SELECT TOP 1 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/GetSharePointDocumnetAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Documents DB ping",
+    "query": "SELECT TOP 1 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Manage/GetEmailLog",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Notifications email log",
+    "query": "SELECT *\r\nFROM Notifications\r\nWHERE CreatedAt >= {{ \"'\" + String($json.query.startDate || '1900-01-01') + \"'\" }}\r\n  AND CreatedAt <= {{ \"'\" + String($json.query.endDate || '2099-12-31') + \"'\" }}\r\nORDER BY CreatedAt DESC;"
+  },
+  {
+    "path": "Manage/CurrentPortfolioProvider",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "PortfolioProvider setting",
+    "query": "SELECT SettingName, SettingValue FROM API_Settings WHERE SettingName = 'PortfolioProvider';"
+  },
+  {
+    "path": "Manage/CurrentMarketDataProvider",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "MarketDataProvider setting",
+    "query": "SELECT SettingName, SettingValue FROM API_Settings WHERE SettingName = 'MarketDataProvider';"
+  },
+  {
+    "path": "Manage/CheckIfCacheAllDynamics",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "IsCache setting",
+    "query": "SELECT SettingName, SettingValue FROM API_Settings WHERE SettingName = 'IsCache';"
+  },
+  {
+    "path": "ReferenceData/CountryAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "tct_countries",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$select=tct_countryid,tct_name&$top=300",
+    "entityName": "tct_countri"
+  },
+  {
+    "path": "ReferenceData/TitlesAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "tct_titles",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_titles?$select=tct_titleid,tct_name&$top=100",
+    "entityName": "tct_titl"
+  },
+  {
+    "path": "Admin/Faq",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Faq list",
+    "query": "SELECT Id, Company, Question, Answer, Sequence, DateCreated, IsActive, Category, EditorAnswer, LastModifiedBy, LastModifiedDate\r\nFROM Faq\r\nWHERE Company = 'Wealth'\r\nORDER BY Sequence;"
+  },
+  {
+    "path": "Admin/getWebsiteFaqByCategory",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Faq by category",
+    "query": "SELECT Id, Company, Question, Answer, Sequence, DateCreated, IsActive, Category, EditorAnswer, LastModifiedBy, LastModifiedDate\r\nFROM Faq\r\nWHERE Company = 'Wealth' AND IsActive = 1 AND Category = ${q(\"$json.query.category\")}\r\nORDER BY Sequence;"
+  },
+  {
+    "path": "Admin/getAnswerByQuestionId",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Faq by id",
+    "query": "SELECT Id, Company, Question, Answer, Sequence, DateCreated, IsActive, Category, EditorAnswer, LastModifiedBy, LastModifiedDate\r\nFROM Faq\r\nWHERE Company = 'Wealth' AND Id = {{ Number($json.query.questionId) || 0 }}\r\nORDER BY Sequence;"
+  },
+  {
+    "path": "Admin/UpdateFaq",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Update Faq",
+    "query": "UPDATE Faq\r\nSET Question = {{ \"'\" + String($json.body?.Question || '').replace(/'/g,\"''\") + \"'\" }},\r\n    Answer = {{ \"'\" + String($json.body?.Answer || '').replace(/'/g,\"''\") + \"'\" }},\r\n    Category = {{ \"'\" + String($json.body?.Category || '').replace(/'/g,\"''\") + \"'\" }},\r\n    IsActive = {{ $json.body?.IsActive ? 1 : 0 }},\r\n    LastModifiedDate = GETDATE()\r\nWHERE Id = {{ Number($json.body?.Id) || 0 }};\r\nSELECT @@ROWCOUNT AS Updated;"
+  },
+  {
+    "path": "Admin/AddFaq",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Add Faq",
+    "query": "INSERT INTO Faq (Company, Question, Answer, Sequence, DateCreated, IsActive, Category, EditorAnswer)\r\nVALUES (\r\n  'Wealth',\r\n  {{ \"'\" + String($json.body?.Question || '').replace(/'/g,\"''\") + \"'\" }},\r\n  {{ \"'\" + String($json.body?.Answer || '').replace(/'/g,\"''\") + \"'\" }},\r\n  {{ Number($json.body?.Sequence) || 0 }},\r\n  GETDATE(),\r\n  {{ $json.body?.IsActive === false ? 0 : 1 }},\r\n  {{ \"'\" + String($json.body?.Category || '').replace(/'/g,\"''\") + \"'\" }},\r\n  {{ \"'\" + String($json.body?.EditorAnswer || '').replace(/'/g,\"''\") + \"'\" }}\r\n);\r\nSELECT SCOPE_IDENTITY() AS Id;"
+  },
+  {
+    "path": "Admin/Notifications",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "PrePost notifications",
+    "query": "SELECT Id, Description, EditorDescription, MessageType, Priority, IsActive, DateCreated, LastUpdated, LastModifiedBy, LastModifiedDate, Popup\nFROM PrePostNotification\nORDER BY LastModifiedDate;"
+  },
+  {
+    "path": "Admin/PostNotificationsAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "PrePost notifications",
+    "query": "SELECT Id, Description, EditorDescription, MessageType, Priority, IsActive, DateCreated, LastUpdated, LastModifiedBy, LastModifiedDate, Popup\nFROM PrePostNotification\nWHERE IsActive = 1\n  AND ({{ !$json.query.messageType ? '1=1' : \"MessageType = '\" + String($json.query.messageType).replace(/'/g,\"''\") + \"'\" }})\nORDER BY LastModifiedDate;"
+  },
+  {
+    "path": "Admin/AddNotification",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Add notification",
+    "query": "INSERT INTO PrePostNotification (Description, EditorDescription, MessageType, Priority, IsActive, DateCreated, LastModifiedDate, Popup)\r\nVALUES (\r\n  {{ \"'\" + String($json.body?.Description || '').replace(/'/g,\"''\") + \"'\" }},\r\n  {{ \"'\" + String($json.body?.EditorDescription || '').replace(/'/g,\"''\") + \"'\" }},\r\n  {{ \"'\" + String($json.body?.MessageType || '').replace(/'/g,\"''\") + \"'\" }},\r\n  {{ Number($json.body?.Priority) || 0 }},\r\n  1, GETDATE(), GETDATE(),\r\n  {{ $json.body?.Popup ? 1 : 0 }}\r\n);\r\nSELECT SCOPE_IDENTITY() AS Id;"
+  },
+  {
+    "path": "Admin/UpdateNotification",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Update notification",
+    "query": "UPDATE PrePostNotification\r\nSET Description = {{ \"'\" + String($json.body?.Description || '').replace(/'/g,\"''\") + \"'\" }},\r\n    MessageType = {{ \"'\" + String($json.body?.MessageType || '').replace(/'/g,\"''\") + \"'\" }},\r\n    Priority = {{ Number($json.body?.Priority) || 0 }},\r\n    IsActive = {{ $json.body?.IsActive === false ? 0 : 1 }},\r\n    LastModifiedDate = GETDATE()\r\nWHERE Id = {{ Number($json.body?.Id) || 0 }};\r\nSELECT @@ROWCOUNT AS Updated;"
+  },
+  {
+    "path": "Admin/DeleteNotification",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Delete notification",
+    "query": "DELETE FROM PrePostNotification WHERE Id = {{ Number($json.query.id) || 0 }}; SELECT @@ROWCOUNT AS Deleted;"
+  },
+  {
+    "path": "Admin/UserNotification",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "User notifications",
+    "query": "SELECT *\r\nFROM UserNotification\r\nWHERE AspNetUserId = ${q(\"$json.query.AspNetUserId\")};"
+  },
+  {
+    "path": "Admin/UpdateUserNotification",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Update user notification",
+    "query": "UPDATE UserNotification\r\nSET IsRead = {{ $json.body?.IsRead ? 1 : 0 }}\r\nWHERE AspNetUserId = ${q(\"$json.body.AspNetUserId\")}\r\n  AND PrePostId = {{ Number($json.body?.PrePostId) || 0 }};\r\nSELECT @@ROWCOUNT AS Updated;"
+  },
+  {
+    "path": "Admin/UserActivityLogsAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "User activity logs",
+    "query": "SELECT TOP 500 * FROM UserActivityLog ORDER BY 1 DESC;"
+  },
+  {
+    "path": "Admin/InsertUserActivityAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Insert user activity",
+    "query": "INSERT INTO UserActivityLog (AspNetUserId, Activity, CreatedAt)\r\nVALUES (\r\n  ${q(\"$json.body.AspNetUserId || $json.query.aspUserId\")},\r\n  ${q(\"$json.body.Activity || $json.query.activity\")},\r\n  GETDATE()\r\n);\r\nSELECT SCOPE_IDENTITY() AS Id;"
+  },
+  {
+    "path": "Admin/SystemRolesAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "System roles",
+    "query": "SELECT Id, Name FROM AspNetRoles ORDER BY Name;"
+  },
+  {
+    "path": "Admin/SystemUserAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "System users",
+    "query": "SELECT TOP 200 Id, UserName, Email, IsActive, EmailConfirmed\r\nFROM AspNetUsers\r\nWHERE (\r\n  {{ !$json.query.inputSearch\r\n    ? '1=1'\r\n    : \"(UserName LIKE '%\" + String($json.query.inputSearch).replace(/'/g, \"''\") + \"%' OR Email LIKE '%\" + String($json.query.inputSearch).replace(/'/g, \"''\") + \"%')\"\r\n  }}\r\n)\r\nORDER BY UserName;"
+  },
+  {
+    "path": "Admin/SystemUserByEmailAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "User by email",
+    "query": "SELECT TOP 1 Id, UserName, Email, IsActive, EmailConfirmed\r\nFROM AspNetUsers WHERE Email = ${q(\"$json.query.email\")};"
+  },
+  {
+    "path": "Admin/GetUserByID",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "User by id",
+    "query": "SELECT TOP 1 Id, UserName, Email, IsActive, EmailConfirmed\r\nFROM AspNetUsers WHERE Id = ${q(\"$json.query.userID\")};"
+  },
+  {
+    "path": "Admin/CurrentUserRolesList",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "User roles",
+    "query": "SELECT r.Id, r.Name\r\nFROM AspNetUserRoles ur\r\nINNER JOIN AspNetRoles r ON r.Id = ur.RoleId\r\nWHERE ur.UserId = ${q(\"$json.query.userId\")};"
+  },
+  {
+    "path": "Admin/AvailableUserRolesListAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "User roles",
+    "query": "SELECT r.Id, r.Name\r\nFROM AspNetUserRoles ur\r\nINNER JOIN AspNetRoles r ON r.Id = ur.RoleId\r\nWHERE ur.UserId = ${q(\"$json.query.userId\")};"
+  },
+  {
+    "path": "Admin/AddUserRoles",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Add user role",
+    "query": "INSERT INTO AspNetUserRoles (UserId, RoleId)\r\nVALUES (${q(\"$json.body.userId || $json.query.userId\")}, ${q(\"$json.body.roleId || $json.query.roleId\")});"
+  },
+  {
+    "path": "Admin/DeleteUserRoles",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Delete user role",
+    "query": "DELETE FROM AspNetUserRoles\r\nWHERE UserId = ${q(\"$json.body.userId || $json.query.userId\")}\r\n  AND RoleId = ${q(\"$json.body.roleId || $json.query.roleId\")};"
+  },
+  {
+    "path": "Admin/LinkedPortfoliosAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Linked portfolios",
+    "query": "SELECT CAST(DynamicsUserId AS nvarchar(36)) AS [Value],\r\n       ISNULL(UserName, CAST(DynamicsUserId AS nvarchar(36))) AS [Text]\r\nFROM AspNetUserDynamicsLinkedAcc\r\nWHERE AspNetUserId = ${q(\"$json.query.userid\")};"
+  },
+  {
+    "path": "Admin/DelinkProfileAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Delink profile",
+    "query": "DELETE FROM AspNetUserDynamicsLinkedAcc\r\nWHERE AspNetUserId = ${q(\"$json.query.userid || $json.body.userid\")}\r\n  AND DynamicsUserId = ${q(\"$json.query.dynamicsUserId || $json.body.dynamicsUserId\")};\r\nSELECT CAST(${q(\"$json.query.dynamicsUserId || $json.body.dynamicsUserId\")} AS nvarchar(36)) AS DynamicsUserId;"
+  },
+  {
+    "path": "Admin/LinkProfileAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Link profile",
+    "query": "INSERT INTO AspNetUserDynamicsLinkedAcc (AspNetUserId, DynamicsUserId, IsDefault, IsMainUser, UserName, LastModifiedDate)\r\nVALUES (\r\n  ${q(\"$json.body.aspUserId || $json.query.aspUserId\")},\r\n  ${q(\"$json.body.dynamicsUserId || $json.query.dynamicsUserId\")},\r\n  0, 0,\r\n  ${q(\"$json.body.userName || $json.query.userName\")},\r\n  GETDATE()\r\n);\r\nSELECT CAST(${q(\"$json.body.dynamicsUserId || $json.query.dynamicsUserId\")} AS nvarchar(36)) AS DynamicsUserId;"
+  },
+  {
+    "path": "Admin/SetToDefaultProfileAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Set default/main profile",
+    "query": "UPDATE AspNetUserDynamicsLinkedAcc SET IsDefault = 0, IsMainUser = 0\r\nWHERE AspNetUserId = ${q(\"$json.query.userid || $json.body.userid\")};\r\nUPDATE AspNetUserDynamicsLinkedAcc\r\nSET IsDefault = 1, IsMainUser = 1, LastModifiedDate = GETDATE()\r\nWHERE AspNetUserId = ${q(\"$json.query.userid || $json.body.userid\")}\r\n  AND DynamicsUserId = ${q(\"$json.query.dynamicsUserId || $json.body.dynamicsUserId\")};\r\nSELECT CAST(${q(\"$json.query.dynamicsUserId || $json.body.dynamicsUserId\")} AS nvarchar(36)) AS DynamicsUserId;"
+  },
+  {
+    "path": "Admin/SetIsMainUserProfileAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Set default/main profile",
+    "query": "UPDATE AspNetUserDynamicsLinkedAcc SET IsDefault = 0, IsMainUser = 0\r\nWHERE AspNetUserId = ${q(\"$json.query.userid || $json.body.userid\")};\r\nUPDATE AspNetUserDynamicsLinkedAcc\r\nSET IsDefault = 1, IsMainUser = 1, LastModifiedDate = GETDATE()\r\nWHERE AspNetUserId = ${q(\"$json.query.userid || $json.body.userid\")}\r\n  AND DynamicsUserId = ${q(\"$json.query.dynamicsUserId || $json.body.dynamicsUserId\")};\r\nSELECT CAST(${q(\"$json.query.dynamicsUserId || $json.body.dynamicsUserId\")} AS nvarchar(36)) AS DynamicsUserId;"
+  },
+  {
+    "path": "Admin/Edituser",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Edit AspNetUser",
+    "query": "UPDATE AspNetUsers\r\nSET Email = {{ \"'\" + String($json.body?.Email || '').replace(/'/g,\\\"''\\\") + \"'\" }},\r\n    UserName = {{ \"'\" + String($json.body?.UserName || '').replace(/'/g,\\\"''\\\") + \"'\" }},\r\n    IsActive = {{ $json.body?.IsActive === false ? 0 : 1 }}\r\nWHERE Id = ${q(\"$json.body.Id || $json.query.userID\")};"
+  },
+  {
+    "path": "Admin/RegistrationReportAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Registration report SP",
+    "query": "EXEC RegisteredReport @Date = {{ \"'\" + String($json.query.date || new Date().toISOString()) + \"'\" }};"
+  },
+  {
+    "path": "Admin/CheckIfPublicHoliday",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "\r\nSELECT CASE WHEN EXISTS (\r\n  SELECT 1 FROM PublicHoliday\r\n  WHERE CAST([Date] AS date) = CAST({{ \"'\" + String($json.query.dateTime || '').slice(0,10) + \"'\" }} AS date)\r\n    AND IsActive = 1\r\n) THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END AS IsHoliday;\r\n",
+    "entityName": ""
+  },
+  {
+    "path": "Admin/PreNotificationsAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Pre notifications",
+    "query": "SELECT Id, Description, EditorDescription, MessageType, Priority, IsActive, DateCreated, LastUpdated, LastModifiedBy, LastModifiedDate, Popup\nFROM PrePostNotification\nWHERE IsActive = 1\n  AND ({{ !$json.query.messageType ? '1=1' : \"MessageType = '\" + String($json.query.messageType).replace(/'/g,\"''\") + \"'\" }})\nORDER BY LastModifiedDate;"
+  },
+  {
+    "path": "ReferenceData/GenderAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData GenderAsync",
+    "operation": "OPTIONSET",
+    "type": "ODATA",
+    "getQuery": "",
+    "entityName": "contact",
+    "optionsetEntityName": "contact",
+    "optionsetAttributeName": "gendercode"
+  },
+  {
+    "path": "ReferenceData/MaritalStatusAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData MaritalStatusAsync",
+    "operation": "OPTIONSET",
+    "type": "ODATA",
+    "getQuery": "",
+    "entityName": "contact",
+    "optionsetEntityName": "contact",
+    "optionsetAttributeName": "familystatuscode"
+  },
+  {
+    "path": "ReferenceData/LanguagesAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData LanguagesAsync",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"tct_language\">\n    <attribute name=\"tct_languageid\" />\n    <attribute name=\"tct_language\" />\n    <filter type=\"and\">\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n    </filter>\n  </entity>\n</fetch>",
+    "entityName": "tct_language"
+  },
+  {
+    "path": "ReferenceData/BankAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData BankAsync",
+    "operation": "GLOBALOPTIONSET",
+    "type": "ODATA",
+    "getQuery": "",
+    "entityName": "",
+    "globalAttributeName": "tct_banks"
+  },
+  {
+    "path": "ReferenceData/BankingAccountTypeAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData BankingAccountTypeAsync",
+    "operation": "OPTIONSET",
+    "type": "ODATA",
+    "getQuery": "",
+    "entityName": "tct_bankingdetails",
+    "optionsetEntityName": "tct_bankingdetails",
+    "optionsetAttributeName": "tct_accounttype"
+  },
+  {
+    "path": "ReferenceData/BranchCodeAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData BranchCodeAsync",
+    "operation": "GLOBALOPTIONSET",
+    "type": "ODATA",
+    "getQuery": "",
+    "entityName": "",
+    "globalAttributeName": "tct_branchcode"
+  },
+  {
+    "path": "ReferenceData/CurrencyAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData CurrencyAsync",
+    "operation": "OPTIONSET",
+    "type": "ODATA",
+    "getQuery": "",
+    "entityName": "tct_bankingdetails",
+    "optionsetEntityName": "tct_bankingdetails",
+    "optionsetAttributeName": "sfn_international_currency"
+  },
+  {
+    "path": "ReferenceData/ProvinceAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData ProvinceAsync",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"businessunit\">\n    <attribute name=\"businessunitid\" />\n    <attribute name=\"name\" />\n  </entity>\n</fetch>",
+    "entityName": "businessunit"
+  },
+  {
+    "path": "ReferenceData/UserAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData UserAsync",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"systemuser\">\n    <attribute name=\"systemuserid\" />\n    <attribute name=\"fullname\" />\n  </entity>\n</fetch>",
+    "entityName": "systemuser"
+  },
+  {
+    "path": "ReferenceData/ProvidersAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData ProvidersAsync",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"tct_title\">\n    <attribute name=\"tct_titleid\" />\n    <attribute name=\"tct_name\" />\n    <filter type=\"and\">\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n    </filter>\n  </entity>\n</fetch>",
+    "entityName": "tct_title"
+  },
+  {
+    "path": "ReferenceData/ApplicationTypesAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/ApplicationTypesAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/AssetManagerAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/AssetManagerAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/BusinessUnitAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/BusinessUnitAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/CashAccrualsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/CashAccrualsAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/CompanyTypesAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/CompanyTypesAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/ConnectionRoleAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/ConnectionRoleAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/ContractTypeAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/ContractTypeAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/CPAMarketingDistributionAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/CPAMarketingDistributionAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/CustomerTypeAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/CustomerTypeAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/DocumentCategoryAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/DocumentCategoryAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/DocumentCategoryFolderAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/DocumentCategoryFolderAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/DocumentTypeAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/DocumentTypeAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/EntityClassificationAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/EntityClassificationAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/EntityClassificationPleaseSpecifyAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/EntityClassificationPleaseSpecifyAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/EntitysCRSClassificationAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/EntitysCRSClassificationAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/EntitysCrsClassificationPleaseSpecifyAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/EntitysCrsClassificationPleaseSpecifyAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/EntitysFatcaStatusAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/EntitysFatcaStatusAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/EntitysGlobalIntermediaryIdentificationNumberAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/EntitysGlobalIntermediaryIdentificationNumberAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/EthnicGroupsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/EthnicGroupsAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/FinancialYearEndAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/FinancialYearEndAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/ForeignTypeAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/ForeignTypeAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/IndiciaSequenceAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/IndiciaSequenceAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/IndividualTypeAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/IndividualTypeAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/IntendedPurposeOfBusinessRelationshipAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/IntendedPurposeOfBusinessRelationshipAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/MandateTypeAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/MandateTypeAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/MarriageContractAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/MarriageContractAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/NatureOfBusinessAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/NatureOfBusinessAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/ProductCategoryAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/ProductCategoryAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/ReasonForNoGIIN_NumberAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/ReasonForNoGIIN_NumberAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/ReasonForNoTaxNumberForCorporateAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/ReasonForNoTaxNumberForCorporateAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/ReasonForNoTaxNumberForIndividualAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/ReasonForNoTaxNumberForIndividualAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/RegulatoryAssetClassAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/RegulatoryAssetClassAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/RelationshipwithClientAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/RelationshipwithClientAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/ReligionAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/ReligionAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/SourceOfFundAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/SourceOfFundAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/SourceOfFundsIncomeAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "ReferenceData/SourceOfFundsIncomeAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "Admin/SasfinBankingDetail",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Admin/SasfinBankingDetail",
+    "query": "-- Admin/SasfinBankingDetail\nSELECT GETDATE() AS RanAt, N'Admin/SasfinBankingDetail' AS Endpoint;"
+  },
+  {
+    "path": "Admin/UpdateSystemUser",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Admin/UpdateSystemUser",
+    "query": "-- Admin/UpdateSystemUser\nSELECT GETDATE() AS RanAt, N'Admin/UpdateSystemUser' AS Endpoint;"
+  },
+  {
+    "path": "Admin/ResetPasswordTempAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Admin/ResetPasswordTempAsync",
+    "query": "-- Admin/ResetPasswordTempAsync\nSELECT GETDATE() AS RanAt, N'Admin/ResetPasswordTempAsync' AS Endpoint;"
+  },
+  {
+    "path": "Admin/RegistrationAlysisisAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Admin/RegistrationAlysisisAsync",
+    "query": "-- Admin/RegistrationAlysisisAsync\nSELECT GETDATE() AS RanAt, N'Admin/RegistrationAlysisisAsync' AS Endpoint;"
+  },
+  {
+    "path": "Admin/PageVisitAnalysisAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Admin/PageVisitAnalysisAsync",
+    "query": "-- Admin/PageVisitAnalysisAsync\nSELECT GETDATE() AS RanAt, N'Admin/PageVisitAnalysisAsync' AS Endpoint;"
+  },
+  {
+    "path": "Admin/LoginAnalysisAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Admin/LoginAnalysisAsync",
+    "query": "-- Admin/LoginAnalysisAsync\nSELECT GETDATE() AS RanAt, N'Admin/LoginAnalysisAsync' AS Endpoint;"
+  },
+  {
+    "path": "Admin/ListUserAccountExclusionsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Admin/ListUserAccountExclusionsAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "Admin/AddUserAccountExclusionAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Admin/AddUserAccountExclusionAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "Admin/DeleteUserAccountExclusionAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Admin/DeleteUserAccountExclusionAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "Admin/SearchAccountsForExclusionAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Admin/SearchAccountsForExclusionAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "Admin/GetUserLinkedCrmsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Admin/GetUserLinkedCrmsAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "Admin/GetUserVisibleAccountsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Admin/GetUserVisibleAccountsAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "Auth/Authenticate",
+    "backend": "auth",
+    "name": "Auth/Authenticate"
+  },
+  {
+    "path": "Auth/TokenAuthenticate",
+    "backend": "auth",
+    "name": "Auth/TokenAuthenticate"
+  },
+  {
+    "path": "Auth/AuthenticateMobile",
+    "backend": "auth",
+    "name": "Auth/AuthenticateMobile"
+  },
+  {
+    "path": "Auth/ServiceAuthenticate",
+    "backend": "auth",
+    "name": "Auth/ServiceAuthenticate"
+  },
+  {
+    "path": "Auth/RegisterRequestAsync",
+    "backend": "auth",
+    "name": "Auth/RegisterRequestAsync"
+  },
+  {
+    "path": "Auth/DecodeRegisterCodeAsync",
+    "backend": "auth",
+    "name": "Auth/DecodeRegisterCodeAsync"
+  },
+  {
+    "path": "Auth/AllCrmAccountsAsync",
+    "backend": "auth",
+    "name": "Auth/AllCrmAccountsAsync"
+  },
+  {
+    "path": "Auth/AllAspUsersAsync",
+    "backend": "auth",
+    "name": "Auth/AllAspUsersAsync"
+  },
+  {
+    "path": "Auth/CheckIfIsPrimaryAccountHolderAsync",
+    "backend": "auth",
+    "name": "Auth/CheckIfIsPrimaryAccountHolderAsync"
+  },
+  {
+    "path": "Crm/DocumentsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Crm/DocumentsAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$top=20",
+    "entityName": "contact"
+  },
+  {
+    "path": "Crm/LinkedSasfinAccountsAsync",
+    "backend": "dynamics",
+    "credential": "dataverse",
+    "name": "Crm/LinkedSasfinAccountsAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$top=20",
+    "entityName": "contact"
+  },
+  {
+    "path": "Document/ClientAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/ClientAsync",
+    "query": "-- Document/ClientAsync\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/InfoSlipsHistoricalDataAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/InfoSlipsHistoricalDataAsync",
+    "query": "-- Document/InfoSlipsHistoricalDataAsync\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/OffshoreAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/OffshoreAsync",
+    "query": "-- Document/OffshoreAsync\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/ResearchAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/ResearchAsync",
+    "query": "-- Document/ResearchAsync\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/ResearchDocumentsAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/ResearchDocumentsAsync",
+    "query": "-- Document/ResearchDocumentsAsync\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/SensMessagesAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/SensMessagesAsync",
+    "query": "-- Document/SensMessagesAsync\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/SensAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/SensAsync",
+    "query": "-- Document/SensAsync\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/GenerateDynamicDocumentAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/GenerateDynamicDocumentAsync",
+    "query": "-- Document/GenerateDynamicDocumentAsync\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/SaveDocumentData",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/SaveDocumentData",
+    "query": "-- Document/SaveDocumentData\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/SaveDocument",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/SaveDocument",
+    "query": "-- Document/SaveDocument\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/InsertDocumentData",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/InsertDocumentData",
+    "query": "-- Document/InsertDocumentData\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/GetClientDocumentMetaData",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/GetClientDocumentMetaData",
+    "query": "-- Document/GetClientDocumentMetaData\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/EditClientDocumentMetaData",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/EditClientDocumentMetaData",
+    "query": "-- Document/EditClientDocumentMetaData\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/CheckDocRequestExpDT",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/CheckDocRequestExpDT",
+    "query": "-- Document/CheckDocRequestExpDT\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Document/InsertSensAnnouncementAsync",
+    "backend": "mssql",
+    "credential": "Wealth_Documents",
+    "name": "Document/InsertSensAnnouncementAsync",
+    "query": "-- Document/InsertSensAnnouncementAsync\nSELECT TOP 50 * FROM DocumentsMetadata;"
+  },
+  {
+    "path": "Feed/HandleTradeCISAsync",
+    "backend": "http",
+    "name": "Feed/HandleTradeCISAsync",
+    "url": "={{ ($vars.INFRONT_BASE || 'https://mws3.infrontservices.com') + '/' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "identity",
+    "backend": "auth",
+    "name": "identity"
+  },
+  {
+    "path": "Manage/LogErrorAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/LogErrorAsync",
+    "query": "-- Manage/LogErrorAsync\nSELECT GETDATE() AS RanAt, N'Manage/LogErrorAsync' AS Endpoint;"
+  },
+  {
+    "path": "Manage/SetDynamicsCache",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/SetDynamicsCache",
+    "query": "-- Manage/SetDynamicsCache\nSELECT GETDATE() AS RanAt, N'Manage/SetDynamicsCache' AS Endpoint;"
+  },
+  {
+    "path": "Manage/PortfolioProvider",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/PortfolioProvider",
+    "query": "-- Manage/PortfolioProvider\nSELECT GETDATE() AS RanAt, N'Manage/PortfolioProvider' AS Endpoint;"
+  },
+  {
+    "path": "Manage/ResetPortfolioProvider",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/ResetPortfolioProvider",
+    "query": "-- Manage/ResetPortfolioProvider\nSELECT GETDATE() AS RanAt, N'Manage/ResetPortfolioProvider' AS Endpoint;"
+  },
+  {
+    "path": "Manage/MarketDataProviders",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/MarketDataProviders",
+    "query": "-- Manage/MarketDataProviders\nSELECT GETDATE() AS RanAt, N'Manage/MarketDataProviders' AS Endpoint;"
+  },
+  {
+    "path": "Manage/DataValidation",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/DataValidation",
+    "query": "-- Manage/DataValidation\nSELECT GETDATE() AS RanAt, N'Manage/DataValidation' AS Endpoint;"
+  },
+  {
+    "path": "Manage/LogError",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/LogError",
+    "query": "-- Manage/LogError\nSELECT GETDATE() AS RanAt, N'Manage/LogError' AS Endpoint;"
+  },
+  {
+    "path": "Manage/LogInfo",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/LogInfo",
+    "query": "-- Manage/LogInfo\nSELECT GETDATE() AS RanAt, N'Manage/LogInfo' AS Endpoint;"
+  },
+  {
+    "path": "Manage/CacheAllDynamics",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/CacheAllDynamics",
+    "query": "-- Manage/CacheAllDynamics\nSELECT GETDATE() AS RanAt, N'Manage/CacheAllDynamics' AS Endpoint;"
+  },
+  {
+    "path": "Manage/IsUnitTest",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/IsUnitTest",
+    "query": "-- Manage/IsUnitTest\nSELECT GETDATE() AS RanAt, N'Manage/IsUnitTest' AS Endpoint;"
+  },
+  {
+    "path": "Manage/SendMailOnThreadComplete",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/SendMailOnThreadComplete",
+    "query": "-- Manage/SendMailOnThreadComplete\nSELECT GETDATE() AS RanAt, N'Manage/SendMailOnThreadComplete' AS Endpoint;"
+  },
+  {
+    "path": "Manage/SendMailOnProviderChange",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/SendMailOnProviderChange",
+    "query": "-- Manage/SendMailOnProviderChange\nSELECT GETDATE() AS RanAt, N'Manage/SendMailOnProviderChange' AS Endpoint;"
+  },
+  {
+    "path": "Manage/QueueMessageAsync",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage/QueueMessageAsync",
+    "query": "-- Manage/QueueMessageAsync\nSELECT GETDATE() AS RanAt, N'Manage/QueueMessageAsync' AS Endpoint;"
+  },
+  {
+    "path": "Market/CommoditiesAsync",
+    "backend": "http",
+    "name": "Market/CommoditiesAsync",
+    "url": "={{ ($vars.INFRONT_BASE || 'https://mws3.infrontservices.com') + '/' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Market/InstrumentDetailAsync",
+    "backend": "http",
+    "name": "Market/InstrumentDetailAsync",
+    "url": "={{ ($vars.INFRONT_BASE || 'https://mws3.infrontservices.com') + '/' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Market/InstrumentHistoryAsync",
+    "backend": "http",
+    "name": "Market/InstrumentHistoryAsync",
+    "url": "={{ ($vars.INFRONT_BASE || 'https://mws3.infrontservices.com') + '/' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Market/InternationalIndicesAsync",
+    "backend": "http",
+    "name": "Market/InternationalIndicesAsync",
+    "url": "={{ ($vars.INFRONT_BASE || 'https://mws3.infrontservices.com') + '/' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Market/IntradayTradesAsync",
+    "backend": "http",
+    "name": "Market/IntradayTradesAsync",
+    "url": "={{ ($vars.INFRONT_BASE || 'https://mws3.infrontservices.com') + '/' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Market/Top40Async",
+    "backend": "http",
+    "name": "Market/Top40Async",
+    "url": "={{ ($vars.INFRONT_BASE || 'https://mws3.infrontservices.com') + '/' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Market/WatchlistAsync",
+    "backend": "http",
+    "name": "Market/WatchlistAsync",
+    "url": "={{ ($vars.INFRONT_BASE || 'https://mws3.infrontservices.com') + '/' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Portfolio/LastPopulatedDate",
+    "backend": "mssql",
+    "credential": "DM_Wealth",
+    "name": "Portfolio/LastPopulatedDate",
+    "query": "-- Portfolio/LastPopulatedDate (DM_Wealth)\nSELECT TOP 1 GETDATE() AS RanAt;"
+  },
+  {
+    "path": "Portfolio/DashboardMobileAsync",
+    "backend": "mssql",
+    "credential": "DM_Wealth",
+    "name": "Portfolio/DashboardMobileAsync",
+    "query": "-- Portfolio/DashboardMobileAsync (DM_Wealth)\nSELECT TOP 1 GETDATE() AS RanAt;"
+  },
+  {
+    "path": "Portfolio/PortfolioMobileAsync",
+    "backend": "mssql",
+    "credential": "DM_Wealth",
+    "name": "Portfolio/PortfolioMobileAsync",
+    "query": "-- Portfolio/PortfolioMobileAsync (DM_Wealth)\nSELECT TOP 1 GETDATE() AS RanAt;"
+  },
+  {
+    "path": "Portfolio/UpdateCRMMarketValuesAsync",
+    "backend": "mssql",
+    "credential": "DM_Wealth",
+    "name": "Portfolio/UpdateCRMMarketValuesAsync",
+    "query": "-- Portfolio/UpdateCRMMarketValuesAsync (DM_Wealth)\nSELECT TOP 1 GETDATE() AS RanAt;"
+  },
+  {
+    "path": "Portfolio/UpdateCRMMarketValueAsync",
+    "backend": "mssql",
+    "credential": "DM_Wealth",
+    "name": "Portfolio/UpdateCRMMarketValueAsync",
+    "query": "-- Portfolio/UpdateCRMMarketValueAsync (DM_Wealth)\nSELECT TOP 1 GETDATE() AS RanAt;"
+  },
+  {
+    "path": "Portfolio/DMWealthTransactionAsync",
+    "backend": "mssql",
+    "credential": "DM_Wealth",
+    "name": "Portfolio/DMWealthTransactionAsync",
+    "query": "-- Portfolio/DMWealthTransactionAsync (DM_Wealth)\nSELECT TOP 1 GETDATE() AS RanAt;"
+  },
+  {
+    "path": "Portfolio/IsShowShareDetailAsync",
+    "backend": "mssql",
+    "credential": "DM_Wealth",
+    "name": "Portfolio/IsShowShareDetailAsync",
+    "query": "-- Portfolio/IsShowShareDetailAsync (DM_Wealth)\nSELECT TOP 1 GETDATE() AS RanAt;"
+  },
+  {
+    "path": "ThreadManager/GetAllThreadDetailsAsync",
+    "backend": "mssql",
+    "credential": "Wealth_ThreadManager",
+    "name": "ThreadManager/GetAllThreadDetailsAsync",
+    "query": "-- ThreadManager/GetAllThreadDetailsAsync\nSELECT TOP 100 * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "ThreadManager/GetAllThreadParametersAsync",
+    "backend": "mssql",
+    "credential": "Wealth_ThreadManager",
+    "name": "ThreadManager/GetAllThreadParametersAsync",
+    "query": "-- ThreadManager/GetAllThreadParametersAsync\nSELECT TOP 100 * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "ThreadManager/GetCfiCodeByShare",
+    "backend": "mssql",
+    "credential": "Wealth_ThreadManager",
+    "name": "ThreadManager/GetCfiCodeByShare",
+    "query": "-- ThreadManager/GetCfiCodeByShare\nSELECT TOP 100 * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "ThreadManager/GetPreferenceShareList",
+    "backend": "mssql",
+    "credential": "Wealth_ThreadManager",
+    "name": "ThreadManager/GetPreferenceShareList",
+    "query": "-- ThreadManager/GetPreferenceShareList\nSELECT TOP 100 * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "ThreadManager/GetShareListByCfiCode",
+    "backend": "mssql",
+    "credential": "Wealth_ThreadManager",
+    "name": "ThreadManager/GetShareListByCfiCode",
+    "query": "-- ThreadManager/GetShareListByCfiCode\nSELECT TOP 100 * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "ThreadManager/GetShareListForIndices",
+    "backend": "mssql",
+    "credential": "Wealth_ThreadManager",
+    "name": "ThreadManager/GetShareListForIndices",
+    "query": "-- ThreadManager/GetShareListForIndices\nSELECT TOP 100 * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "ThreadManager/GetThreadDetailsByTypeAsync",
+    "backend": "mssql",
+    "credential": "Wealth_ThreadManager",
+    "name": "ThreadManager/GetThreadDetailsByTypeAsync",
+    "query": "-- ThreadManager/GetThreadDetailsByTypeAsync\nSELECT TOP 100 * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "ThreadManager/GetTodaysTrades",
+    "backend": "mssql",
+    "credential": "Wealth_ThreadManager",
+    "name": "ThreadManager/GetTodaysTrades",
+    "query": "-- ThreadManager/GetTodaysTrades\nSELECT TOP 100 * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "ThreadManager/GetTradeCISSubscriptionsCFI",
+    "backend": "mssql",
+    "credential": "Wealth_ThreadManager",
+    "name": "ThreadManager/GetTradeCISSubscriptionsCFI",
+    "query": "-- ThreadManager/GetTradeCISSubscriptionsCFI\nSELECT TOP 100 * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "ThreadManager/UpdateThreadRunDateTimeAsync",
+    "backend": "mssql",
+    "credential": "Wealth_ThreadManager",
+    "name": "ThreadManager/UpdateThreadRunDateTimeAsync",
+    "query": "-- ThreadManager/UpdateThreadRunDateTimeAsync\nSELECT TOP 100 * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "ThreadManager/UpdateThreadRunTimeAsync",
+    "backend": "mssql",
+    "credential": "Wealth_ThreadManager",
+    "name": "ThreadManager/UpdateThreadRunTimeAsync",
+    "query": "-- ThreadManager/UpdateThreadRunTimeAsync\nSELECT TOP 100 * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  }
+]

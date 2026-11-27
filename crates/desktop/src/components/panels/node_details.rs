@@ -980,10 +980,20 @@ fn SchemaFieldEditor(
     active_field: Signal<Option<String>>,
 ) -> Element {
     let key = field.key.clone();
-    let value = parameters.get(&key).cloned().unwrap_or(Value::Null);
+    // Dataverse: UI field is getQuery; older seeded flows stored legacy `query`.
+    let value = parameters
+        .get(&key)
+        .cloned()
+        .or_else(|| {
+            if node_type == "dynamics" && key == "getQuery" {
+                parameters.get("query").cloned()
+            } else {
+                None
+            }
+        })
+        .unwrap_or(Value::Null);
     let show_label = field.kind != "boolean";
-    // Retained for call-site compatibility / future per-type sanitize on patch.
-    let _ = node_type;
+    let _ = &node_type;
 
     let commit = {
         let id = id.clone();

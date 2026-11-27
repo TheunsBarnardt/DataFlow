@@ -1,0 +1,821 @@
+[
+  {
+    "path": "ReferenceData/Bank",
+    "operation": "GLOBALOPTIONSET",
+    "globalAttributeName": "tct_banks"
+  },
+  {
+    "path": "ReferenceData/BankAccountType",
+    "operation": "OPTIONSET",
+    "optionsetEntityName": "tct_bankingdetails",
+    "optionsetAttributeName": "tct_accounttype",
+    "entityName": "tct_bankingdetails"
+  },
+  {
+    "path": "ReferenceData/BankBranch",
+    "operation": "GLOBALOPTIONSET",
+    "globalAttributeName": "tct_branchcode"
+  },
+  {
+    "path": "ReferenceData/Citizenship",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"tct_country\">\n    <attribute name=\"tct_countryid\" />\n    <attribute name=\"tct_name\" />\n    <filter type=\"and\">\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n    </filter>\n  </entity>\n</fetch>",
+    "entityName": "tct_country",
+    "entityIdColumn": "tct_countryid",
+    "entityNameColumn": "tct_name"
+  },
+  {
+    "path": "ReferenceData/Country",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"tct_country\">\n    <attribute name=\"tct_countryid\" />\n    <attribute name=\"tct_name\" />\n    <filter type=\"and\">\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n    </filter>\n  </entity>\n</fetch>",
+    "entityName": "tct_country",
+    "entityIdColumn": "tct_countryid",
+    "entityNameColumn": "tct_name"
+  },
+  {
+    "path": "ReferenceData/InternationalCurrency",
+    "operation": "OPTIONSET",
+    "optionsetEntityName": "tct_bankingdetails",
+    "optionsetAttributeName": "sfn_international_currency",
+    "entityName": "tct_bankingdetails"
+  },
+  {
+    "path": "ReferenceData/Gender",
+    "operation": "OPTIONSET",
+    "optionsetEntityName": "contact",
+    "optionsetAttributeName": "gendercode",
+    "entityName": "contact"
+  },
+  {
+    "path": "ReferenceData/Language",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"tct_language\">\n    <attribute name=\"tct_languageid\" />\n    <attribute name=\"tct_language\" />\n    <filter type=\"and\">\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n    </filter>\n  </entity>\n</fetch>",
+    "entityName": "tct_language",
+    "entityIdColumn": "tct_languageid",
+    "entityNameColumn": "tct_language"
+  },
+  {
+    "path": "ReferenceData/MaritalStatus",
+    "operation": "OPTIONSET",
+    "optionsetEntityName": "contact",
+    "optionsetAttributeName": "familystatuscode",
+    "entityName": "contact"
+  },
+  {
+    "path": "ReferenceData/Representatives",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"systemuser\">\n    <attribute name=\"systemuserid\" />\n    <attribute name=\"fullname\" />\n  </entity>\n</fetch>",
+    "entityName": "systemuser",
+    "entityIdColumn": "systemuserid",
+    "entityNameColumn": "fullname"
+  },
+  {
+    "path": "ReferenceData/Region",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"businessunit\">\n    <attribute name=\"businessunitid\" />\n    <attribute name=\"name\" />\n  </entity>\n</fetch>",
+    "entityName": "businessunit",
+    "entityIdColumn": "businessunitid",
+    "entityNameColumn": "name"
+  },
+  {
+    "path": "ReferenceData/Title",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"tct_title\">\n    <attribute name=\"tct_titleid\" />\n    <attribute name=\"tct_name\" />\n    <filter type=\"and\">\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n    </filter>\n  </entity>\n</fetch>",
+    "entityName": "tct_title",
+    "entityIdColumn": "tct_titleid",
+    "entityNameColumn": "tct_name"
+  },
+  {
+    "path": "ReferenceData/ReasonForNoTaxNumberForIndividual",
+    "operation": "OPTIONSET",
+    "optionsetEntityName": "contact",
+    "optionsetAttributeName": "tct_reasonfornotaxnumber",
+    "entityName": "contact"
+  },
+  {
+    "path": "ReferenceData/RelationshipTeam",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"team\">\n    <attribute name=\"teamid\" />\n    <attribute name=\"name\" />\n  </entity>\n</fetch>",
+    "entityName": "team",
+    "entityIdColumn": "teamid",
+    "entityNameColumn": "name"
+  },
+  {
+    "path": "ReferenceData/ResidenceTypes",
+    "operation": "OPTIONSET",
+    "optionsetEntityName": "contact",
+    "optionsetAttributeName": "tct_applicanttype",
+    "entityName": "contact"
+  },
+  {
+    "path": "ReferenceData/ForeignTypes",
+    "operation": "OPTIONSET",
+    "optionsetEntityName": "contact",
+    "optionsetAttributeName": "tct_foreigntype",
+    "entityName": "contact"
+  },
+  {
+    "path": "ReferenceData/IndustriesOrSectors",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"tct_siccode\">\n    <attribute name=\"tct_siccodeid\" />\n    <attribute name=\"tct_siccodename\" />\n    <filter type=\"and\">\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n    </filter>\n  </entity>\n</fetch>",
+    "entityName": "tct_siccode",
+    "entityIdColumn": "tct_siccodeid",
+    "entityNameColumn": "tct_siccodename"
+  },
+  {
+    "path": "ReferenceData/Provinces",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"tct_province\">\n    <attribute name=\"tct_provinceid\" />\n    <attribute name=\"tct_name\" />\n  </entity>\n</fetch>",
+    "entityName": "tct_province",
+    "entityIdColumn": "tct_provinceid",
+    "entityNameColumn": "tct_name",
+    "notes": "Repository GetProvincesAsync does not filter statecode"
+  },
+  {
+    "path": "ReferenceData/Province/{countryId}",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"tct_province\">\n    <attribute name=\"tct_provinceid\" />\n    <attribute name=\"tct_name\" />\n    <filter type=\"and\">\n      <condition attribute=\"tct_countryid\" operator=\"eq\" value=\"{countryId}\" />\n    </filter>\n  </entity>\n</fetch>",
+    "entityName": "tct_province",
+    "entityIdColumn": "tct_provinceid",
+    "entityNameColumn": "tct_name",
+    "notes": "Repository GetProvincesByCountryIdAsync does not filter statecode"
+  },
+  {
+    "path": "ReferenceData/AssetManagers/{id}/Portfolios",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"tct_providerproduct\">\n    <attribute name=\"tct_providerproductid\" />\n    <attribute name=\"tct_name\" />\n    <order attribute=\"tct_name\" descending=\"false\" />\n    <filter type=\"and\">\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n      <condition attribute=\"tct_providerid\" operator=\"eq\" value=\"{id}\" />\n    </filter>\n  </entity>\n</fetch>",
+    "entityName": "tct_providerproduct",
+    "entityIdColumn": "tct_providerproductid",
+    "entityNameColumn": "tct_name"
+  },
+  {
+    "path": "ReferenceData/Ifa/{id}/Representatives",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"tct_sasfinaccounts\">\n    <attribute name=\"tct_relationshipmanager\" />\n    <filter type=\"and\">\n      <condition attribute=\"tct_ifacompanyid\" operator=\"eq\" value=\"{id}\" />\n      <condition attribute=\"statecode\" operator=\"in\">\n        <value>0</value>\n        <value>1</value>\n      </condition>\n    </filter>\n    <link-entity name=\"systemuser\" from=\"systemuserid\" to=\"tct_relationshipmanager\" link-type=\"inner\" alias=\"systemuser\">\n      <attribute name=\"fullname\" />\n    </link-entity>\n  </entity>\n</fetch>",
+    "entityName": "tct_sasfinaccounts",
+    "entityIdColumn": "tct_relationshipmanager",
+    "entityNameColumn": "systemuser.fullname",
+    "notes": "Distinct by relationship manager; map aliased systemuser.fullname"
+  },
+  {
+    "path": "ReferenceData/PortfolioManagersWithTeams",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"systemuser\">\n    <attribute name=\"systemuserid\" />\n    <attribute name=\"fullname\" />\n    <order attribute=\"fullname\" descending=\"false\" />\n    <filter type=\"and\">\n      <condition attribute=\"islicensed\" operator=\"eq\" value=\"1\" />\n      <condition attribute=\"isdisabled\" operator=\"eq\" value=\"0\" />\n      <condition attribute=\"title\" operator=\"in\">\n        <value>Portfolio Manager</value>\n        <value>Branch Manager</value>\n        <value>Corporate Trader</value>\n        <value>Regional Head: Gqeberha and Plettenberg Bay</value>\n        <value>Regional Head: Stellenbosch</value>\n        <value>Regional Head: Pretoria</value>\n      </condition>\n    </filter>\n    <link-entity name=\"teammembership\" from=\"systemuserid\" to=\"systemuserid\" link-type=\"inner\">\n      <link-entity name=\"team\" from=\"teamid\" to=\"teamid\" link-type=\"inner\" alias=\"team\">\n        <attribute name=\"teamid\" />\n        <attribute name=\"name\" />\n        <filter type=\"and\">\n          <condition attribute=\"isdefault\" operator=\"eq\" value=\"1\" />\n        </filter>\n      </link-entity>\n    </link-entity>\n  </entity>\n</fetch>",
+    "entityName": "systemuser",
+    "entityIdColumn": "systemuserid",
+    "entityNameColumn": "fullname",
+    "notes": "Prod/staging title filter; group by user then team subset. Non-prod adds test titles."
+  },
+  {
+    "path": "ReferenceData/PortfolioManagersWithCustomTeams",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"systemuser\">\n    <attribute name=\"systemuserid\" />\n    <attribute name=\"fullname\" />\n    <order attribute=\"fullname\" descending=\"false\" />\n    <filter type=\"and\">\n      <condition attribute=\"islicensed\" operator=\"eq\" value=\"1\" />\n      <condition attribute=\"isdisabled\" operator=\"eq\" value=\"0\" />\n      <condition attribute=\"title\" operator=\"in\">\n        <value>Portfolio Manager</value>\n        <value>Branch Manager</value>\n        <value>Corporate Trader</value>\n        <value>Regional Head: Gqeberha and Plettenberg Bay</value>\n        <value>Regional Head: Stellenbosch</value>\n        <value>Regional Head: Pretoria</value>\n      </condition>\n    </filter>\n    <link-entity name=\"teammembership\" from=\"systemuserid\" to=\"systemuserid\" link-type=\"inner\">\n      <link-entity name=\"team\" from=\"teamid\" to=\"teamid\" link-type=\"inner\" alias=\"team\">\n        <attribute name=\"teamid\" />\n        <attribute name=\"name\" />\n        <filter type=\"and\">\n          <condition attribute=\"isdefault\" operator=\"eq\" value=\"0\" />\n        </filter>\n      </link-entity>\n    </link-entity>\n  </entity>\n</fetch>",
+    "entityName": "systemuser",
+    "entityIdColumn": "systemuserid",
+    "entityNameColumn": "fullname",
+    "notes": "isDefault=false on team link; same title filter caveats as PortfolioManagersWithTeams"
+  },
+  {
+    "path": "ReferenceData/CompaniesByIfa/{ifaContactId}",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"connection\">\n    <attribute name=\"record1id\" />\n    <filter type=\"and\">\n      <condition attribute=\"record2id\" operator=\"eq\" value=\"{ifaContactId}\" />\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n      <condition attribute=\"statuscode\" operator=\"eq\" value=\"1\" />\n    </filter>\n    <link-entity name=\"connectionrole\" from=\"connectionroleid\" to=\"record2roleid\" link-type=\"inner\" alias=\"role\">\n      <attribute name=\"name\" />\n      <filter type=\"and\">\n        <condition attribute=\"name\" operator=\"in\">\n          <value>IFA Member</value>\n          <value>Independent Financial Advisor</value>\n        </condition>\n      </filter>\n    </link-entity>\n    <link-entity name=\"account\" from=\"accountid\" to=\"record1id\" link-type=\"inner\" alias=\"company\">\n      <attribute name=\"accountid\" />\n      <attribute name=\"name\" />\n    </link-entity>\n  </entity>\n</fetch>",
+    "entityName": "connection",
+    "entityIdColumn": "company.accountid",
+    "entityNameColumn": "company.name"
+  },
+  {
+    "path": "ReferenceData/IFAsByCompany/{companyId}",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"connection\">\n    <attribute name=\"record2id\" />\n    <filter type=\"and\">\n      <condition attribute=\"record1id\" operator=\"eq\" value=\"{companyId}\" />\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n      <condition attribute=\"statuscode\" operator=\"eq\" value=\"1\" />\n    </filter>\n    <link-entity name=\"connectionrole\" from=\"connectionroleid\" to=\"record2roleid\" link-type=\"inner\" alias=\"role\">\n      <attribute name=\"name\" />\n      <filter type=\"and\">\n        <condition attribute=\"name\" operator=\"eq\" value=\"Independent Financial Advisor\" />\n      </filter>\n    </link-entity>\n    <link-entity name=\"contact\" from=\"contactid\" to=\"record2id\" link-type=\"inner\" alias=\"ifaContact\">\n      <attribute name=\"contactid\" />\n      <attribute name=\"fullname\" />\n      <attribute name=\"tct_crmnumber\" />\n    </link-entity>\n  </entity>\n</fetch>",
+    "entityName": "connection",
+    "entityIdColumn": "ifaContact.contactid",
+    "entityNameColumn": "ifaContact.fullname"
+  },
+  {
+    "path": "ReferenceData/LinkedAdvisors/{contactId}",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"connection\">\n    <attribute name=\"record1id\" />\n    <filter type=\"and\">\n      <condition attribute=\"record2id\" operator=\"eq\" value=\"{contactId}\" />\n      <condition attribute=\"record1id\" operator=\"not-null\" />\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n      <condition attribute=\"statuscode\" operator=\"eq\" value=\"1\" />\n    </filter>\n    <link-entity name=\"connectionrole\" from=\"connectionroleid\" to=\"record2roleid\" link-type=\"inner\">\n      <filter type=\"and\">\n        <condition attribute=\"name\" operator=\"eq\" value=\"IFA Assistant\" />\n      </filter>\n    </link-entity>\n  </entity>\n</fetch>",
+    "entityName": "connection",
+    "entityIdColumn": "record1id",
+    "notes": "Returns Guid list of contact advisors; empty if contact is Independent Financial Advisor"
+  },
+  {
+    "path": "ReferenceData/LinkedAdvisorCompanies/{contactId}",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"connection\">\n    <attribute name=\"record1id\" />\n    <filter type=\"and\">\n      <condition attribute=\"record2id\" operator=\"eq\" value=\"{contactId}\" />\n      <condition attribute=\"record1id\" operator=\"not-null\" />\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n      <condition attribute=\"statuscode\" operator=\"eq\" value=\"1\" />\n    </filter>\n    <link-entity name=\"connectionrole\" from=\"connectionroleid\" to=\"record2roleid\" link-type=\"inner\">\n      <filter type=\"and\">\n        <condition attribute=\"name\" operator=\"eq\" value=\"IFA Member\" />\n      </filter>\n    </link-entity>\n  </entity>\n</fetch>",
+    "entityName": "connection",
+    "entityIdColumn": "record1id",
+    "notes": "Filter results to account logical names; empty if contact is Independent Financial Advisor"
+  },
+  {
+    "path": "ReferenceData/IFAClients/{ifaContactId}",
+    "operation": "GET",
+    "type": "FETCHXML",
+    "getQuery": "<fetch>\n  <entity name=\"connection\">\n    <attribute name=\"record2objecttypecode\" />\n    <filter type=\"and\">\n      <condition attribute=\"record1id\" operator=\"eq\" value=\"{ifaContactId}\" />\n      <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n      <condition attribute=\"statuscode\" operator=\"eq\" value=\"1\" />\n    </filter>\n    <link-entity name=\"connectionrole\" from=\"connectionroleid\" to=\"record2roleid\" link-type=\"inner\" alias=\"role\">\n      <attribute name=\"name\" />\n      <filter type=\"and\">\n        <condition attribute=\"name\" operator=\"in\">\n          <value>IFA Member</value>\n          <value>Independent Financial Advisor</value>\n        </condition>\n        <condition attribute=\"name\" operator=\"not-in\">\n          <value>Website Access</value>\n          <value>Elective Events</value>\n          <value>IFA Commission Access</value>\n        </condition>\n      </filter>\n    </link-entity>\n    <link-entity name=\"contact\" from=\"contactid\" to=\"record2id\" link-type=\"outer\" alias=\"contact\">\n      <attribute name=\"contactid\" />\n      <attribute name=\"fullname\" />\n      <attribute name=\"tct_crmnumber\" />\n      <attribute name=\"tct_accountnumber\" />\n      <filter type=\"and\">\n        <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n        <condition attribute=\"statuscode\" operator=\"in\">\n          <value>1</value>\n          <value>229670000</value>\n        </condition>\n        <condition attribute=\"tct_deceased\" operator=\"eq\" value=\"0\" />\n      </filter>\n    </link-entity>\n    <link-entity name=\"account\" from=\"accountid\" to=\"record2id\" link-type=\"outer\" alias=\"account\">\n      <attribute name=\"accountid\" />\n      <attribute name=\"name\" />\n      <attribute name=\"tct_crmnumber\" />\n      <filter type=\"and\">\n        <condition attribute=\"statecode\" operator=\"eq\" value=\"0\" />\n        <condition attribute=\"statuscode\" operator=\"in\">\n          <value>1</value>\n          <value>229670000</value>\n        </condition>\n      </filter>\n    </link-entity>\n  </entity>\n</fetch>",
+    "entityName": "connection",
+    "notes": "Partial map: service also unions tct_sasfinaccounts linked individuals/corporates by tct_IFA"
+  },
+  {
+    "path": "ReferenceData/RegionBySystemUser/{systemUserId}",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "systemusers({systemUserId})?$select=businessunitid&$expand=businessunitid($select=businessunitid,name)",
+    "entityName": "systemuser",
+    "notes": "Multi-step in repo: resolve BU name then match businessunit.tct_defaultteamidname and parent region"
+  },
+  {
+    "path": "Client",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$filter=statuscode eq 1 and tct_deceased ne true and (tct_identitynumber eq '{identityNumber}' or tct_passportnumber eq '{passportNumber}')&$select=contactid,fullname,firstname,lastname,tct_crmnumber,tct_identitynumber,tct_passportnumber,tct_southafricanid,emailaddress1,tct_ifaid,ownerid,statuscode",
+    "entityName": "contact",
+    "notes": "Client/SearchByIdentityOrPassport — approximate OData; ColumnSet is large in ContactRepository"
+  },
+  {
+    "path": "Client/{contactId}",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts({contactId})?$select=contactid,fullname,firstname,lastname,middlename,tct_crmnumber,tct_titleid,tct_initials,familystatuscode,tct_southafricanid,tct_identitynumber,tct_passportnumber,tct_saresident,gendercode,birthdate,emailaddress1,tct_ifaid,tct_relationshipmanagerid,tct_investmentmanagerid,sfn_relationshipteam,statuscode,tct_deceased,tct_individualtype,tct_applicanttype,tct_foreigntype,ownerid",
+    "entityName": "contact",
+    "notes": "Client/GetById — subset of ContactRepository._clientFields"
+  },
+  {
+    "path": "Opportunity/{id}",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "opportunities({id})?$select=opportunityid,name,customerid,ownerid,statecode,statuscode",
+    "entityName": "opportunity",
+    "notes": "OpportunityController only exposes Won/Lost/Expire POSTs; this is a practical read mapping"
+  },
+  {
+    "path": "Annotation/UpdateAsync",
+    "operation": "POST",
+    "entityName": "annotation"
+  },
+  {
+    "path": "BankingDetails/UpdateAsync",
+    "operation": "POST",
+    "entityName": "bankingdetail"
+  },
+  {
+    "path": "Client/UpdateAsync",
+    "operation": "POST",
+    "entityName": "client"
+  },
+  {
+    "path": "Client/DeactivateClientAsync",
+    "operation": "POST",
+    "entityName": "client"
+  },
+  {
+    "path": "CommunicationDistribution/UpdateAsync",
+    "operation": "POST",
+    "entityName": "communicationdistribution"
+  },
+  {
+    "path": "Document/DownloadAsync/{documentId:guid}",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "documents?$top=50",
+    "entityName": "document"
+  },
+  {
+    "path": "Document/SetDocumentAvailableToClientAsync",
+    "operation": "POST",
+    "entityName": "document"
+  },
+  {
+    "path": "Document/DeleteAsync",
+    "operation": "POST",
+    "entityName": "document"
+  },
+  {
+    "path": "Incident/UpdateAsync",
+    "operation": "POST",
+    "entityName": "incident"
+  },
+  {
+    "path": "Lead/DisqualifyAsync",
+    "operation": "POST",
+    "entityName": "lead"
+  },
+  {
+    "path": "Opportunity/{id}/Won",
+    "operation": "POST",
+    "entityName": "opportunity"
+  },
+  {
+    "path": "Opportunity/{id}/Lost",
+    "operation": "POST",
+    "entityName": "opportunity"
+  },
+  {
+    "path": "Opportunity/{id}/Expire",
+    "operation": "POST",
+    "entityName": "opportunity"
+  },
+  {
+    "path": "ResidentCountry/Update",
+    "operation": "POST",
+    "entityName": "residentcountry"
+  },
+  {
+    "path": "ResidentCountry/UpdateBatch",
+    "operation": "POST",
+    "entityName": "residentcountry"
+  },
+  {
+    "path": "ResidentCountry/Delete",
+    "operation": "POST",
+    "entityName": "residentcountry"
+  },
+  {
+    "path": "ResidentCountry/DeleteBatch",
+    "operation": "POST",
+    "entityName": "residentcountry"
+  },
+  {
+    "path": "RiskAssessment/UpdateRangeAsync",
+    "operation": "POST",
+    "entityName": "riskassessment"
+  },
+  {
+    "path": "SasfinAccount/UpdateAsync",
+    "operation": "POST",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "Annotation/GetByIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "annotations?$top=50",
+    "entityName": "annotation"
+  },
+  {
+    "path": "Annotation/GetByIncidentIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "annotations?$top=50",
+    "entityName": "annotation"
+  },
+  {
+    "path": "Annotation/CreateAsync",
+    "operation": "POST",
+    "entityName": "annotation"
+  },
+  {
+    "path": "BankingDetails/GetByIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_bankingdetailses?$top=50",
+    "entityName": "tct_bankingdetailse"
+  },
+  {
+    "path": "BankingDetails/CreateAsync",
+    "operation": "POST",
+    "entityName": "tct_bankingdetailse"
+  },
+  {
+    "path": "Client/SearchByIdentityOrPassportAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$top=50",
+    "entityName": "contact"
+  },
+  {
+    "path": "Client/SearchIfaClientsByIdentityOrPassportAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$top=50",
+    "entityName": "contact"
+  },
+  {
+    "path": "Client/GetByIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "contacts?$top=50",
+    "entityName": "contact"
+  },
+  {
+    "path": "Client/GetByIdsAsync",
+    "operation": "POST",
+    "entityName": "contact"
+  },
+  {
+    "path": "Client/CreateAsync",
+    "operation": "POST",
+    "entityName": "contact"
+  },
+  {
+    "path": "Client/CreateCrmTaskAsync",
+    "operation": "POST",
+    "entityName": "contact"
+  },
+  {
+    "path": "CommunicationDistribution/GetLatestBySasfinAccountIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "sfn_communicationdistributions?$top=50",
+    "entityName": "sfn_communicationdistribution"
+  },
+  {
+    "path": "Connection/ConnectPowerOfAttorneyAsync",
+    "operation": "POST",
+    "entityName": "connection"
+  },
+  {
+    "path": "Document/UploadAsync",
+    "operation": "POST",
+    "entityName": "tct_sasfindocument"
+  },
+  {
+    "path": "Document/GetDocumentInfoAsync/{documentId:guid}",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfindocuments?$top=50",
+    "entityName": "tct_sasfindocument"
+  },
+  {
+    "path": "Incident/GetByIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "incidents?$top=50",
+    "entityName": "incident"
+  },
+  {
+    "path": "Incident/GetAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "incidents?$top=50",
+    "entityName": "incident"
+  },
+  {
+    "path": "Incident/CreateAsync",
+    "operation": "POST",
+    "entityName": "incident"
+  },
+  {
+    "path": "InvestmentStrategy/GetInvestmentStrategyByNameAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "sfn_investmentstrategies?$top=50",
+    "entityName": "sfn_investmentstrategy"
+  },
+  {
+    "path": "Lead/CreateAsync",
+    "operation": "POST",
+    "entityName": "lead"
+  },
+  {
+    "path": "Lead/CreateOpportunityAsync",
+    "operation": "POST",
+    "entityName": "lead"
+  },
+  {
+    "path": "Lead/QualifyAndCreateContactAsync",
+    "operation": "POST",
+    "entityName": "lead"
+  },
+  {
+    "path": "Proposal/CreateAsync",
+    "operation": "POST",
+    "entityName": "sfn_proposal"
+  },
+  {
+    "path": "Provider/GetProviderByNameAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_providers?$top=50",
+    "entityName": "tct_provider"
+  },
+  {
+    "path": "Provider/GetProviderProductAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_providers?$top=50",
+    "entityName": "tct_provider"
+  },
+  {
+    "path": "ReferenceData/{referenceType}s",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/AssetManagers",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/Ifas",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/Products",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/IdentificationTypes",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ReferenceData/ClientHasIfa/{contactId}/{ifaContactId}",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ResidentCountry/Contact/{contactId}",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ResidentCountry/{id:guid}",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "ResidentCountry",
+    "operation": "POST",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "RiskAssessment/GetByIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "sfn_riskassessments?$top=50",
+    "entityName": "sfn_riskassessment"
+  },
+  {
+    "path": "RiskAssessment/GetByContactIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "sfn_riskassessments?$top=50",
+    "entityName": "sfn_riskassessment"
+  },
+  {
+    "path": "RiskAssessment/GetAnswersForQuestionAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "sfn_riskassessments?$top=50",
+    "entityName": "sfn_riskassessment"
+  },
+  {
+    "path": "RiskAssessment/GetAnswersByTextAsync",
+    "operation": "POST",
+    "entityName": "sfn_riskassessment"
+  },
+  {
+    "path": "RiskAssessment/FindAnsversByTextAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "sfn_riskassessments?$top=50",
+    "entityName": "sfn_riskassessment"
+  },
+  {
+    "path": "SasfinAccount/GetByIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "SasfinAccount/CreateAsync",
+    "operation": "POST",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "SasfinAccount/FindExistingByContactIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "SasfinAccount/GetByContactIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "SasfinAccount/SearchByUniqueNumberAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "SasfinAccount/HasNoActiveOrNewAccountAsync/{contactId:guid}",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "SasfinAccount/HasNoActiveProductAsync/{contactId:guid}",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_sasfinaccountses?$top=50",
+    "entityName": "tct_sasfinaccounts"
+  },
+  {
+    "path": "SystemUser/GetByIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "systemusers?$top=50",
+    "entityName": "systemuser"
+  },
+  {
+    "path": "SystemUser/GetByIdsAsync",
+    "operation": "POST",
+    "entityName": "systemuser"
+  },
+  {
+    "path": "SystemUser/GetByContactIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "systemusers?$top=50",
+    "entityName": "systemuser"
+  },
+  {
+    "path": "SystemUser/GetByContactIdsAsync",
+    "operation": "POST",
+    "entityName": "systemuser"
+  },
+  {
+    "path": "SystemUser/GetSystemUserTeamByContactIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "systemusers?$top=50",
+    "entityName": "systemuser"
+  },
+  {
+    "path": "SystemUser/GetSystemUsersByTeamIdAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "systemusers?$top=50",
+    "entityName": "systemuser"
+  },
+  {
+    "path": "SystemUser/GetSystemUsersByTeamNameAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "systemusers?$top=50",
+    "entityName": "systemuser"
+  },
+  {
+    "path": "SystemUser/GetSystemUsersByFullNameAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "systemusers?$top=50",
+    "entityName": "systemuser"
+  },
+  {
+    "path": "[area]/Lookup/GetTitles",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "[area]/Lookup/GetCountries",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "[area]/Lookup/GetBanks",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "[area]/Lookup/GetAssetManager",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "[area]/Lookup/GetProducts",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "[area]/Lookup/GetPortfolioManagers",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "[area]/Lookup/GetPortfolios",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?$top=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "[area]/Quotation/GetByIdentificationNumberAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "sfn_quotations?$top=50",
+    "entityName": "sfn_quotation"
+  },
+  {
+    "path": "Swip/Lookup/GetTitles",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "Swip/Lookup/GetCountries",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "Swip/Lookup/GetBanks",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "Swip/Lookup/GetAssetManager",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "Swip/Lookup/GetProducts",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "Swip/Lookup/GetPortfolioManagers",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "Swip/Lookup/GetPortfolios",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "tct_countries?=50",
+    "entityName": "tct_country"
+  },
+  {
+    "path": "Swip/Quotation/GetByIdentificationNumberAsync",
+    "operation": "GET",
+    "type": "ODATA",
+    "getQuery": "sfn_quotations?=20",
+    "entityName": "sfn_quotation"
+  }
+]

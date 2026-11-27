@@ -7,6 +7,7 @@ edition.workspace = true
 async-trait = { workspace = true }
 chrono = { workspace = true }
 hex = { workspace = true }
+regex = "1"
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -14,5 +15,6 @@ sha2 = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
 url = "2"
+urlencoding = "2"
 botflow-node-api = { workspace = true }
 botflow-security = { workspace = true }

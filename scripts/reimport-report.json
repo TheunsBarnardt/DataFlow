@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-26T18:10:05.411Z",
+  "api": "mongodb://127.0.0.1:27017/botflow?replicaSet=rs0",
+  "mode": "mongo",
+  "maps": {
+    "dynamics": 121,
+    "wealth": 217,
+    "online": 211
+  },
+  "credentials": {
+    "count": 9,
+    "dataverse": {
+      "id": "6b0815b76f6d84270c4bda12",
+      "name": "UAT Dataverse"
+    },
+    "wealthWebsite": "6b07e403f3f4f18fc2ae3d6f",
+    "dmWealth": "6b087098b583944b451c832c"
+  },
+  "summary": [
+    {
+      "slug": "dynamics",
+      "endpoints": 110,
+      "projectId": "6b0875ee1289c0d840010d98",
+      "withFetch": 19,
+      "withOption": 9,
+      "mapped": 110,
+      "stub": 0,
+      "credentialAttached": 110,
+      "unmappedPaths": []
+    },
+    {
+      "slug": "wealth",
+      "endpoints": 217,
+      "projectId": "6b0875f01289c0d840010e07",
+      "withFetch": 0,
+      "withOption": 0,
+      "mapped": 217,
+      "stub": 12,
+      "credentialAttached": 197,
+      "unmappedPaths": []
+    },
+    {
+      "slug": "wealth-online",
+      "endpoints": 212,
+      "projectId": "6b0875f31289c0d840010ee1",
+      "withFetch": 0,
+      "withOption": 0,
+      "mapped": 212,
+      "stub": 5,
+      "credentialAttached": 42,
+      "unmappedPaths": []
+    }
+  ]
+}

@@ -1,0 +1,1904 @@
+[
+  {
+    "path": "Admin/FeeOverrideReport/GenerateAndSendAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "FeeOverrideReport.GenerateAndSendAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Admin/FeeOverrideReport/GenerateAndSendAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Admin/Manage/GetNotificationsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage.GetNotificationsAsync",
+    "query": "SELECT TOP 200 *\nFROM Notifications\nWHERE ({{ !$json.query.Type ? '1=1' : \"Type = '\" + String($json.query.Type).replace(/'/g,\"''\") + \"'\" }})\nORDER BY 1 DESC;"
+  },
+  {
+    "path": "Admin/Manage/GetNotificationContentAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage.GetNotificationContentAsync",
+    "query": "SELECT TOP 1 *\nFROM NotificationContent\nWHERE CAST(Id AS nvarchar(64)) = {{ \"'\" + String($json.query.id || '').replace(/'/g,\"''\") + \"'\" }};"
+  },
+  {
+    "path": "Admin/PageContent/{page}",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Manage.GetNotificationContentAsync",
+    "query": "SELECT TOP 1 *\nFROM NotificationContent\nWHERE CAST(Id AS nvarchar(64)) = {{ \"'\" + String($json.query.id || '').replace(/'/g,\"''\") + \"'\" }};"
+  },
+  {
+    "path": "Admin/PageContent/{page}/{key}",
+    "method": "GET",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "PageContent.GetPage",
+    "query": "SELECT TOP 200 *\nFROM PageContent\nWHERE ({{ !$json.query.page && !$json.query.Page ? '1=1' : \"Page = '\" + String($json.query.page || $json.query.Page || '').replace(/'/g,\"''\") + \"'\" }})\nORDER BY 1;"
+  },
+  {
+    "path": "Admin/PageContent",
+    "method": "GET",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "PageContent.GetContent",
+    "query": "SELECT TOP 200 *\nFROM PageContent\nWHERE ({{ !$json.query.page && !$json.query.Page ? '1=1' : \"Page = '\" + String($json.query.page || $json.query.Page || '').replace(/'/g,\"''\") + \"'\" }})\nORDER BY 1;"
+  },
+  {
+    "path": "Admin/PageContent/pages",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "PageContent.GetAll",
+    "query": "SELECT TOP 200 *\nFROM PageContent\nWHERE ({{ !$json.query.page && !$json.query.Page ? '1=1' : \"Page = '\" + String($json.query.page || $json.query.Page || '').replace(/'/g,\"''\") + \"'\" }})\nORDER BY 1;"
+  },
+  {
+    "path": "Admin/PageContent/{page}/{key}/delete",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "PageContent.GetPages",
+    "query": "SELECT TOP 200 *\nFROM PageContent\nWHERE ({{ !$json.query.page && !$json.query.Page ? '1=1' : \"Page = '\" + String($json.query.page || $json.query.Page || '').replace(/'/g,\"''\") + \"'\" }})\nORDER BY 1;"
+  },
+  {
+    "path": "Admin/PageContent/{page}/{key}",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "PageContent.Delete",
+    "query": "SELECT TOP 200 *\nFROM PageContent\nWHERE ({{ !$json.query.page && !$json.query.Page ? '1=1' : \"Page = '\" + String($json.query.page || $json.query.Page || '').replace(/'/g,\"''\") + \"'\" }})\nORDER BY 1;"
+  },
+  {
+    "path": "Admin/UserManagement/GetUsersAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "UserManagement.GetUsersAsync",
+    "query": "-- Online UserManagement.GetUsersAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Admin/UserManagement/GetUserByIdAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "UserManagement.GetUserByIdAsync",
+    "query": "-- Online UserManagement.GetUserByIdAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Admin/UserManagement/GetAvailableRolesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "UserManagement.GetUserByIdAsync",
+    "query": "-- Online UserManagement.GetUserByIdAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Admin/UserManagement/UpdateUserRolesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "UserManagement.GetAvailableRolesAsync",
+    "query": "-- Online UserManagement.GetAvailableRolesAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/LoginAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "UserManagement.UpdateUserRolesAsync",
+    "query": "-- Online UserManagement.UpdateUserRolesAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/RefreshAsync",
+    "method": "POST",
+    "auth": "none",
+    "backend": "auth",
+    "name": "Account.LoginAsync"
+  },
+  {
+    "path": "Auth/Account/Verify",
+    "method": "POST",
+    "auth": "none",
+    "backend": "auth",
+    "name": "Account.RefreshAsync"
+  },
+  {
+    "path": "Auth/Account/GetUserInformation",
+    "method": "GET",
+    "auth": "none",
+    "backend": "auth",
+    "name": "Account.Verify"
+  },
+  {
+    "path": "Auth/Account/GetRoles",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.GetUserInformation",
+    "query": "-- Online Account.GetUserInformation\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/LogoutAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.GetRoles",
+    "query": "-- Online Account.GetRoles\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/ForgotUsernameWealthAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.LogoutAsync",
+    "query": "-- Online Account.LogoutAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/ResendForgotUsernameWealthAsync",
+    "method": "POST",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.ResendForgotUsernameWealthAsync",
+    "query": "-- Online Account.ResendForgotUsernameWealthAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/ForgotPasswordWealthAsync",
+    "method": "POST",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.ForgotPasswordWealthAsync",
+    "query": "-- Online Account.ForgotPasswordWealthAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/GetResetPasswordTokenAsync",
+    "method": "POST",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.GetResetPasswordTokenAsync",
+    "query": "-- Online Account.GetResetPasswordTokenAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/ResetPasswordWealthAsync",
+    "method": "POST",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.ResetPasswordWealthAsync",
+    "query": "-- Online Account.ResetPasswordWealthAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/ResendOtpSmsAsync",
+    "method": "POST",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.ResendOtpSmsAsync",
+    "query": "-- Online Account.ResendOtpSmsAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/ConfirmPersonalDetailsAsync",
+    "method": "POST",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.ResendOtpSmsAsync",
+    "query": "-- Online Account.ResendOtpSmsAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/GetOtpDeliveryChannelAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.GetOtpDeliveryChannelAsync",
+    "query": "-- Online Account.GetOtpDeliveryChannelAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/UpdateOtpDeliveryChannelAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.GetOtpDeliveryChannelAsync",
+    "query": "-- Online Account.GetOtpDeliveryChannelAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Account/SendTestOtpAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.UpdateOtpDeliveryChannelAsync",
+    "query": "-- Online Account.UpdateOtpDeliveryChannelAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/HubTicket/CreateAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Account.SendTestOtpAsync",
+    "query": "-- Online Account.SendTestOtpAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Register/RegisterAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "HubTicket.CreateAsync",
+    "query": "-- Online HubTicket.CreateAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Register/UsernameExistAsync",
+    "method": "GET",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Register.UsernameExistAsync",
+    "query": "-- Online Register.UsernameExistAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Register/ConfirmEmailAsync",
+    "method": "GET",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Register.UsernameExistAsync",
+    "query": "-- Online Register.UsernameExistAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Register/ConfirmPhoneAsync",
+    "method": "POST",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Register.ConfirmPhoneAsync",
+    "query": "-- Online Register.ConfirmPhoneAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Register/SendConfirmSmsAsync",
+    "method": "POST",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Register.SendConfirmSmsAsync",
+    "query": "-- Online Register.SendConfirmSmsAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Register/ResendEmailConfirmationAsync",
+    "method": "POST",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Register.ResendEmailConfirmationAsync",
+    "query": "-- Online Register.ResendEmailConfirmationAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Auth/Register/GetUserStatusAsync",
+    "method": "GET",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Register.GetUserStatusAsync",
+    "query": "-- Online Register.GetUserStatusAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetGeneralDetailsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "AccountOnboarding.GetGeneralDetailsAsync",
+    "query": "-- Online AccountOnboarding.GetGeneralDetailsAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdateGeneralDetailsAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdateGeneralDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdateGeneralDetailsAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetBankingDetailsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.GetBankingDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/GetBankingDetailsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdateBankingDetailsAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdateBankingDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdateBankingDetailsAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetIntroducerDetailsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.GetIntroducerDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/GetIntroducerDetailsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdateIntroducerDetailsAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdateIntroducerDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdateIntroducerDetailsAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetFatcaDetailsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.GetFatcaDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/GetFatcaDetailsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdateFatcaDetailsAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdateFatcaDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdateFatcaDetailsAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetFinancialPlannerDetailsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.GetFinancialPlannerDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/GetFinancialPlannerDetailsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdateFinancialPlannerDetailsAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdateFinancialPlannerDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdateFinancialPlannerDetailsAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetSourceOfFundsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.GetSourceOfFundsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/GetSourceOfFundsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdateSourceOfFundsAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdateSourceOfFundsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdateSourceOfFundsAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetSourceOfIncomeAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.GetSourceOfIncomeAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/GetSourceOfIncomeAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdateSourceOfIncomeAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdateSourceOfIncomeAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdateSourceOfIncomeAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetCsdpDetailsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.GetCsdpDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/GetCsdpDetailsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdateCsdpDetailsAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdateCsdpDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdateCsdpDetailsAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetFinancialProfileAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.GetFinancialProfileAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/GetFinancialProfileAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdateFinancialProfileAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdateFinancialProfileAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdateFinancialProfileAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetPowerOfAttorneyAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.GetPowerOfAttorneyAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/GetPowerOfAttorneyAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdatePowerOfAttorneyAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdatePowerOfAttorneyAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdatePowerOfAttorneyAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetInvestmentSummaryAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.GetInvestmentSummaryAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/GetInvestmentSummaryAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdateFeeManagedAccountAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdateFeeManagedAccountAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdateFeeManagedAccountAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/ConfirmDataProcessingConsentAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.ConfirmDataProcessingConsentAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/ConfirmDataProcessingConsentAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/UpdateOnboardingProgressAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.UpdateOnboardingProgressAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/UpdateOnboardingProgressAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/NotifyClientOnboardingReadyAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.NotifyClientOnboardingReadyAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/NotifyClientOnboardingReadyAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/GetOnboardingMetadataAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.GetOnboardingMetadataAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/GetOnboardingMetadataAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AccountOnboarding/SearchSasfinAccountByUniqueNumberAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AccountOnboarding.SearchSasfinAccountByUniqueNumberAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AccountOnboarding/SearchSasfinAccountByUniqueNumberAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/CreateOnboardingAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.CreateOnboardingAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/CreateOnboardingAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/GetOnboardingByIdAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.GetOnboardingByIdAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/GetOnboardingByIdAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/UpdateOnboardingAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.UpdateOnboardingAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/UpdateOnboardingAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/CancelOnboardingAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.CancelOnboardingAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/CancelOnboardingAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/GetCreatorOnboardingsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.GetCreatorOnboardingsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/GetCreatorOnboardingsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/GetOnboardingsForReviewAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.GetOnboardingsForReviewAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/GetOnboardingsForReviewAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/SendOnboardingToApprovalAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.SendOnboardingToApprovalAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/SendOnboardingToApprovalAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/ApproveOnboardingAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.ApproveOnboardingAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/ApproveOnboardingAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/ReturnForCorrectionAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.ReturnForCorrectionAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/ReturnForCorrectionAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/LockOnboardingReviewAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.LockOnboardingReviewAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/LockOnboardingReviewAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/UnlockOnboardingReviewAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.UnlockOnboardingReviewAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/UnlockOnboardingReviewAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/RequestUnlockOnboardingReviewAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.RequestUnlockOnboardingReviewAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/RequestUnlockOnboardingReviewAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/GetOnboardingReviewersAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.GetOnboardingReviewersAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/GetOnboardingReviewersAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/ReassignOnboardingReviewAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.ReassignOnboardingReviewAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/ReassignOnboardingReviewAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/ForceUnlockOnboardingReviewAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.ForceUnlockOnboardingReviewAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/ForceUnlockOnboardingReviewAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/CompleteOnboadingAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.CompleteOnboadingAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/CompleteOnboadingAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/HandleMandateSignedAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.HandleMandateSignedAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/HandleMandateSignedAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/AdvisorOnboarding/GetChangeHistoryAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "AdvisorOnboarding.GetChangeHistoryAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/AdvisorOnboarding/GetChangeHistoryAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/StartClientOnboardingAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.StartClientOnboardingAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/StartClientOnboardingAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/CompleteClientOnboardingAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.CompleteClientOnboardingAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/CompleteClientOnboardingAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/StartAccountOnboardingAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.StartAccountOnboardingAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/StartAccountOnboardingAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/GetPersonalDetailsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.GetPersonalDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/GetPersonalDetailsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/GetContactDetailsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.GetContactDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/GetContactDetailsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/GetAddressDetailsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.GetAddressDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/GetAddressDetailsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/GetEmploymentDetailsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.GetEmploymentDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/GetEmploymentDetailsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/UpdatePersonalDetailsAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.UpdatePersonalDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/UpdatePersonalDetailsAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/UpdateContactDetailsAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.UpdateContactDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/UpdateContactDetailsAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/UpdateAddressDetailsAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.UpdateAddressDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/UpdateAddressDetailsAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/UpdateEmploymentDetailsAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.UpdateEmploymentDetailsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/UpdateEmploymentDetailsAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/UpdateOnboardingProgressAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.UpdateOnboardingProgressAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/UpdateOnboardingProgressAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/NotifyClientOnboardingReadyAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.NotifyClientOnboardingReadyAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/NotifyClientOnboardingReadyAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/ClientOnboarding/GetOnboardingMetadataAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "ClientOnboarding.GetOnboardingMetadataAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/ClientOnboarding/GetOnboardingMetadataAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/IfaClients/ListAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "IfaClients.ListAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/IfaClients/ListAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/IfaClients/GetByIdAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "IfaClients.GetByIdAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/IfaClients/GetByIdAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/IfaDashboard/GetAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "IfaClients.GetByIdAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/IfaDashboard/GetAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/GetCurrentProposalIdAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "IfaDashboard.GetAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/GetCurrentProposalIdAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/GetCurrentOnboardingsInfoAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Proposal.GetCurrentProposalIdAsync",
+    "query": "-- Online Proposal.GetCurrentProposalIdAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Onboarding/Proposal/GetProposalsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.GetCurrentOnboardingsInfoAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/GetProposalsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/GetProposalsForReviewAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.GetProposalsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/GetProposalsForReviewAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/GetProposalWithDocumentByIdAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.GetProposalsForReviewAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/GetProposalWithDocumentByIdAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/AcceptProposalAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.AcceptProposalAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/AcceptProposalAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/AcceptWithRequestProposalAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.AcceptWithRequestProposalAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/AcceptWithRequestProposalAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/DeclineWithRequestProposalAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.DeclineWithRequestProposalAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/DeclineWithRequestProposalAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/DeclineProposalAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.DeclineProposalAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/DeclineProposalAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/CompleteOnboadingAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.CompleteOnboadingAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/CompleteOnboadingAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/HandleMandateSignedAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.HandleMandateSignedAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/HandleMandateSignedAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/GetCreatorProposalsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.GetCreatorProposalsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/GetCreatorProposalsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/GetProposalByIdAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.GetProposalByIdAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/GetProposalByIdAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/UpdateProposalAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.GetProposalByIdAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/UpdateProposalAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/ResendProposalAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.ResendProposalAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/ResendProposalAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/CreateProposalAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.ResendProposalAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/CreateProposalAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/CreateDirectOnboardingAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.CreateDirectOnboardingAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/CreateDirectOnboardingAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/CreateDirectOnboardingSendEmailAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.CreateDirectOnboardingSendEmailAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/CreateDirectOnboardingSendEmailAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/StartOnboardingForProposalAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.StartOnboardingForProposalAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/StartOnboardingForProposalAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/StartOnboardingForProposalSendEmailAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.StartOnboardingForProposalSendEmailAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/StartOnboardingForProposalSendEmailAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/Proposal/GetCreatorOnboardingsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.GetCreatorOnboardingsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/GetCreatorOnboardingsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/GetOnboardingByIdAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.GetOnboardingByIdAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/GetOnboardingByIdAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/UpdateOnboardingAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.GetOnboardingByIdAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/UpdateOnboardingAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/HasInProgressOnboardingsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.HasInProgressOnboardingsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/HasInProgressOnboardingsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/HasInProgressProposalsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.HasInProgressProposalsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/HasInProgressProposalsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/DownloadSignedMandateAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.DownloadSignedMandateAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/DownloadSignedMandateAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/Proposal/GenerateMandatePdfAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Proposal.GenerateMandatePdfAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/Proposal/GenerateMandatePdfAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/SasfinDocument/UploadAccountOnboardingDocumentAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasfinDocument.UploadAccountOnboardingDocumentAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/SasfinDocument/UploadAccountOnboardingDocumentAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/SasfinDocument/UpdateProposalDocumentAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasfinDocument.UpdateProposalDocumentAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/SasfinDocument/UpdateProposalDocumentAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Onboarding/SasfinDocument/DownloadDocumentAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasfinDocument.DownloadDocumentAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/SasfinDocument/DownloadDocumentAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/SasfinDocument/GetDocumentInfoAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasfinDocument.GetDocumentInfoAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/SasfinDocument/GetDocumentInfoAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/SasSecForm/GetItemContentAsync/{key}",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasSecForm.GetItemContentAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/SasSecForm/GetItemContentAsync/{key}' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Onboarding/SasSecForm/GetItemContentsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "SasSecForm.GetItemContentsAsync",
+    "query": "-- Online SasSecForm.GetItemContentsAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Onboarding/SasSecForm/SetApplicabilityAsync/{onboardingFormId}",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "SasSecForm.SetApplicabilityAsync",
+    "query": "-- Online SasSecForm.SetApplicabilityAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Onboarding/SasSecForm/GetClientSasSecFormItemsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "SasSecForm.GetClientSasSecFormItemsAsync",
+    "query": "-- Online SasSecForm.GetClientSasSecFormItemsAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Onboarding/UserDetails/SearchByIdentityOrPassportAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "UserDetails.SearchByIdentityOrPassportAsync",
+    "query": "-- Online UserDetails.SearchByIdentityOrPassportAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Onboarding/UserDetails/SearchIfaClientsByIdentityOrPassportAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "UserDetails.SearchIfaClientsByIdentityOrPassportAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Onboarding/UserDetails/SearchIfaClientsByIdentityOrPassportAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetTitlesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetTitlesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetTitlesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetIdentificationTypesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetTitlesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetIdentificationTypesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetGendersAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetIdentificationTypesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetGendersAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetCountriesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetGendersAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetCountriesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetNoTaxNumberReasonsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetCountriesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetNoTaxNumberReasonsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetMaritalStatusAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetNoTaxNumberReasonsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetMaritalStatusAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetProvincesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetMaritalStatusAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetProvincesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetAssetManagersAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetProvincesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetAssetManagersAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetProductsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetAssetManagersAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetProductsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetPortfolioManagersWithCustomTeamsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetProductsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetPortfolioManagersWithCustomTeamsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetPortfolioManagersWithTeamsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetPortfolioManagersWithTeamsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetPortfolioManagersWithTeamsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetBankAccountTypesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetPortfolioManagersWithTeamsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetBankAccountTypesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetRelationshipTeamAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetBankAccountTypesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetRelationshipTeamAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetForeignTypesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetRelationshipTeamAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetForeignTypesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetIndustriesOrSectorsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetForeignTypesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetIndustriesOrSectorsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetResidenceTypesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetIndustriesOrSectorsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetResidenceTypesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetBanksAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetResidenceTypesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetBanksAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetBranchCodesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetBanksAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetBranchCodesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetBanksWithBranchAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetBranchCodesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetBanksWithBranchAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetOccupationAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetBanksWithBranchAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetOccupationAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetInternationalCurrenciesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetOccupationAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetInternationalCurrenciesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetCompaniesForIfaAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetInternationalCurrenciesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetCompaniesForIfaAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetIFAsByCompanyAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetCompaniesForIfaAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetIFAsByCompanyAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/Lookup/GetSystemUsersByFullNameAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Lookup.GetSystemUsersByFullNameAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/Lookup/GetSystemUsersByFullNameAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/SasSecLookup/GetBranchPartnersAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasSecLookup.GetBranchPartnersAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/SasSecLookup/GetBranchPartnersAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/SasSecLookup/GetProductsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasSecLookup.GetBranchPartnersAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/SasSecLookup/GetProductsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/SasSecLookup/GetAssetManagersByProductAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasSecLookup.GetProductsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/SasSecLookup/GetAssetManagersByProductAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/SasSecLookup/GetInvestmentObjectivesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasSecLookup.GetInvestmentObjectivesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/SasSecLookup/GetInvestmentObjectivesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/SasSecLookup/GetRiskTolerancesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasSecLookup.GetInvestmentObjectivesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/SasSecLookup/GetRiskTolerancesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/SasSecLookup/GetPortfolioTypesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasSecLookup.GetRiskTolerancesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/SasSecLookup/GetPortfolioTypesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/SasSecLookup/GetPortfoliosByTypeAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasSecLookup.GetPortfolioTypesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/SasSecLookup/GetPortfoliosByTypeAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Reference/SasSecLookup/GetPortfoliosAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasSecLookup.GetPortfoliosAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Reference/SasSecLookup/GetPortfoliosAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/CreateAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "SasSecLookup.GetPortfoliosAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/CreateAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/GetByIdAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetByIdAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/GetByIdAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/GetForIfaAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetByIdAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/GetForIfaAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/GetForClientAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetForClientAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/GetForClientAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/GetForRelationshipTeamAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetForRelationshipTeamAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/GetForRelationshipTeamAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/GetForOperationsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetForOperationsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/GetForOperationsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/UploadDocumentAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.UploadDocumentAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/UploadDocumentAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/Case/GetDocumentsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetDocumentsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/GetDocumentsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/GetDocumentPreviewAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetDocumentsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/GetDocumentPreviewAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/ReviewDocumentAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetDocumentPreviewAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/ReviewDocumentAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/DeleteDocumentAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.DeleteDocumentAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/DeleteDocumentAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/Case/SendMessageAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.DeleteDocumentAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/SendMessageAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/Case/GetMessagesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetMessagesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/GetMessagesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/MarkMessagesReadAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetMessagesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/MarkMessagesReadAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/GetUnreadCountAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.MarkMessagesReadAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/GetUnreadCountAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/Case/LockCaseAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetUnreadCountAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/LockCaseAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Case/UnlockCaseAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.LockCaseAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/UnlockCaseAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/Case/ForceUnlockCaseAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.UnlockCaseAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/ForceUnlockCaseAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/Case/ReassignAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.ForceUnlockCaseAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/ReassignAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/Case/CloseAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.CloseAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/CloseAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/Case/CancelAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.CloseAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/CancelAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/Case/GetActivityAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.CancelAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Case/GetActivityAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/CaseTag/GetAllAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "Case.GetActivityAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CaseTag/GetAllAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/CaseTag/CreateAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CaseTag.GetAllAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CaseTag/CreateAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/CaseTag/UpdateAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "CaseTag.CreateAsync",
+    "query": "-- Online CaseTag.CreateAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Support/CaseTag/DeleteAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "CaseTag.UpdateAsync",
+    "query": "-- Online CaseTag.UpdateAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Support/CommunicationCenter/CreateAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "CaseTag.DeleteAsync",
+    "query": "-- Online CaseTag.DeleteAsync\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Support/CommunicationCenter/GetByIdAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.GetByIdAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/GetByIdAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/CommunicationCenter/GetForUserAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.GetByIdAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/GetForUserAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/CommunicationCenter/GetForUserSystemsAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.GetForUserSystemsAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/GetForUserSystemsAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/CommunicationCenter/GetMessagesAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.GetMessagesAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/GetMessagesAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/CommunicationCenter/CreateMessageAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.CreateMessageAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/CreateMessageAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/CommunicationCenter/GetMessageDocumentAsync",
+    "method": "GET",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.GetMessageDocumentAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/GetMessageDocumentAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/CommunicationCenter/UpdateStatusAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.UpdateStatusAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/UpdateStatusAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/CommunicationCenter/CloseCaseAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.CloseCaseAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/CloseCaseAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/CommunicationCenter/MarkInProgressAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.MarkInProgressAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/MarkInProgressAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/CommunicationCenter/ReassignAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.ReassignAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/ReassignAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/CommunicationCenter/LockThreadAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.LockThreadAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/LockThreadAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/CommunicationCenter/UnlockThreadAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.UnlockThreadAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/UnlockThreadAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/CommunicationCenter/ForceUnlockThreadAsync",
+    "method": "POST",
+    "auth": "jwt",
+    "backend": "http",
+    "name": "CommunicationCenter.ForceUnlockThreadAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/CommunicationCenter/ForceUnlockThreadAsync' }}",
+    "httpMethod": "POST"
+  },
+  {
+    "path": "Support/Market/GetTickerAsync",
+    "method": "GET",
+    "auth": "none",
+    "backend": "http",
+    "name": "Market.GetTickerAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Market/GetTickerAsync' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Support/GetWebsiteFaqByCategory",
+    "method": "GET",
+    "auth": "none",
+    "backend": "http",
+    "name": "Market.GetTickerAsync",
+    "url": "={{ ($vars.DYNAMICS_API_BASE || 'http://127.0.0.1:5000') + '/Support/Support/GetWebsiteFaqByCategory' }}",
+    "httpMethod": "GET"
+  },
+  {
+    "path": "Support/Support/GetTechnicalData",
+    "method": "GET",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Support.GetWebsiteFaqByCategory",
+    "query": "-- Online Support.GetWebsiteFaqByCategory\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  },
+  {
+    "path": "Support/Support/GetConvertedPhoneNumber",
+    "method": "GET",
+    "auth": "none",
+    "backend": "mssql",
+    "credential": "WealthWebsite",
+    "name": "Support.GetTechnicalData",
+    "query": "-- Online Support.GetTechnicalData\nSELECT TOP 100 TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';"
+  }
+]

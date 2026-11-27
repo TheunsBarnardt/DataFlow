@@ -2,6 +2,7 @@ mod api_extra;
 mod catalog;
 mod control_extra;
 mod data;
+mod dataverse;
 mod files_extra;
 mod http;
 mod logic;

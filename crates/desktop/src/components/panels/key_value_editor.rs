@@ -41,7 +41,7 @@ pub fn KeyValueEditor(
     };
 
     rsx! {
-        div { class: "flex flex-col gap-1.5",
+        div { class: "flex flex-col gap-2",
             for (i, (k, v)) in entries.iter().cloned().enumerate() {
                 {
                     let entries_all = entries.clone();
@@ -51,20 +51,36 @@ pub fn KeyValueEditor(
                     rsx! {
                         div {
                             key: "{i}",
-                            class: "flex items-center gap-1",
-                            input {
-                                class: "flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs",
-                                placeholder: "Key",
-                                value: "{k}",
-                                oninput: move |e| {
-                                    let mut next = entries_upd.clone();
-                                    if let Some(row) = next.get_mut(i) {
-                                        row.0 = e.value();
-                                    }
-                                    set_entries(next);
-                                },
+                            class: "flex min-w-0 flex-col gap-1.5 rounded-md border border-border/60 bg-muted/10 p-2",
+                            div { class: "flex items-center gap-1.5",
+                                input {
+                                    class: "flex h-8 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-xs",
+                                    placeholder: "Key",
+                                    value: "{k}",
+                                    oninput: move |e| {
+                                        let mut next = entries_upd.clone();
+                                        if let Some(row) = next.get_mut(i) {
+                                            row.0 = e.value();
+                                        }
+                                        set_entries(next);
+                                    },
+                                }
+                                button {
+                                    r#type: "button",
+                                    class: "inline-flex h-8 shrink-0 items-center rounded-md px-2 text-xs text-muted-foreground hover:bg-muted",
+                                    onclick: move |_| {
+                                        let next: Vec<_> = entries_rm
+                                            .iter()
+                                            .enumerate()
+                                            .filter(|(j, _)| *j != i)
+                                            .map(|(_, r)| r.clone())
+                                            .collect();
+                                        set_entries(next);
+                                    },
+                                    "Remove"
+                                }
                             }
-                            div { class: "min-w-0 flex-1",
+                            div { class: "min-w-0",
                                 ExpressionField {
                                     id: Some(field_id),
                                     value: v,
@@ -82,20 +98,6 @@ pub fn KeyValueEditor(
                                         }
                                     },
                                 }
-                            }
-                            button {
-                                r#type: "button",
-                                class: "inline-flex h-8 shrink-0 items-center rounded-md px-2 text-xs text-muted-foreground hover:bg-muted",
-                                onclick: move |_| {
-                                    let next: Vec<_> = entries_rm
-                                        .iter()
-                                        .enumerate()
-                                        .filter(|(j, _)| *j != i)
-                                        .map(|(_, r)| r.clone())
-                                        .collect();
-                                    set_entries(next);
-                                },
-                                "Remove"
                             }
                         }
                     }

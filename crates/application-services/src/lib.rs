@@ -67,6 +67,7 @@ impl AppState {
         }
         let saved = storage::insert_workflow(&self.db, wf).await?;
         let _ = storage::insert_audit(&self.db, "system", "workflow.create", &saved.name, "").await;
+        self.sync_api_endpoint_registry(&saved).await;
         Ok(saved)
     }
 
@@ -79,18 +80,34 @@ impl AppState {
             ));
         }
         let saved = storage::update_workflow(&self.db, id, wf).await?;
-        if saved.is_some() {
+        if let Some(ref wf) = saved {
             let _ = storage::insert_audit(&self.db, "system", "workflow.update", id, "").await;
+            self.sync_api_endpoint_registry(wf).await;
         }
         Ok(saved)
     }
 
     pub async fn delete_workflow(&self, id: &str) -> Result<bool> {
+        let _ = storage::delete_api_endpoints_for_workflow(&self.db, id).await;
         let ok = storage::delete_workflow(&self.db, id).await?;
         if ok {
             let _ = storage::insert_audit(&self.db, "system", "workflow.delete", id, "").await;
         }
         Ok(ok)
+    }
+
+    async fn sync_api_endpoint_registry(&self, wf: &WorkflowDoc) {
+        let Some(wid) = wf.id.as_deref() else {
+            return;
+        };
+        let _ = storage::sync_api_endpoints_from_workflow(
+            &self.db,
+            wid,
+            wf.api_project_id.as_deref(),
+            wf.kind.as_deref(),
+            &wf.nodes,
+        )
+        .await;
     }
 
     pub async fn validate(&self, wf: &WorkflowDoc) -> botflow_workflow_validation::ValidationResult {

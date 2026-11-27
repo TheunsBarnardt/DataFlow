@@ -135,79 +135,83 @@ pub fn ConditionBuilder(
                     rsx! {
                         div {
                             key: "{i}",
-                            class: "flex flex-wrap items-center gap-1",
-                            input {
-                                class: "flex h-8 min-w-[7rem] flex-1 rounded-md border border-input bg-background px-2 font-mono text-xs",
-                                placeholder: "Field / expression",
-                                value: "{field}",
-                                oninput: {
-                                    let combinator = combinator.clone();
-                                    let mut rows = rows_all.clone();
-                                    move |e| {
-                                        if let Some(r) = rows.get_mut(i) {
-                                            if let Some(obj) = r.as_object_mut() {
-                                                obj.insert("field".into(), Value::String(e.value()));
+                            class: "flex min-w-0 flex-col gap-1.5 rounded-md border border-border/60 bg-muted/10 p-2",
+                            div { class: "flex flex-wrap items-center gap-1.5",
+                                input {
+                                    class: "flex h-8 min-w-[7rem] flex-1 rounded-md border border-input bg-background px-2 font-mono text-xs",
+                                    placeholder: "Field / expression",
+                                    value: "{field}",
+                                    oninput: {
+                                        let combinator = combinator.clone();
+                                        let mut rows = rows_all.clone();
+                                        move |e| {
+                                            if let Some(r) = rows.get_mut(i) {
+                                                if let Some(obj) = r.as_object_mut() {
+                                                    obj.insert("field".into(), Value::String(e.value()));
+                                                }
                                             }
+                                            emit(combinator.clone(), ignore_case, rows.clone());
                                         }
-                                        emit(combinator.clone(), ignore_case, rows.clone());
-                                    }
-                                },
-                            }
-                            select {
-                                class: "flex h-8 rounded-md border border-input bg-background px-2 text-xs",
-                                value: "{operator}",
-                                onchange: {
-                                    let combinator = combinator.clone();
-                                    let mut rows = rows_all.clone();
-                                    move |e| {
-                                        if let Some(r) = rows.get_mut(i) {
-                                            if let Some(obj) = r.as_object_mut() {
-                                                obj.insert("operator".into(), Value::String(e.value()));
+                                    },
+                                }
+                                select {
+                                    class: "flex h-8 shrink-0 rounded-md border border-input bg-background px-2 text-xs",
+                                    value: "{operator}",
+                                    onchange: {
+                                        let combinator = combinator.clone();
+                                        let mut rows = rows_all.clone();
+                                        move |e| {
+                                            if let Some(r) = rows.get_mut(i) {
+                                                if let Some(obj) = r.as_object_mut() {
+                                                    obj.insert("operator".into(), Value::String(e.value()));
+                                                }
                                             }
+                                            emit(combinator.clone(), ignore_case, rows.clone());
                                         }
-                                        emit(combinator.clone(), ignore_case, rows.clone());
+                                    },
+                                    for (ov, ol) in COMPARE_OPS {
+                                        option { value: "{ov}", "{ol}" }
                                     }
-                                },
-                                for (ov, ol) in COMPARE_OPS {
-                                    option { value: "{ov}", "{ol}" }
+                                }
+                                button {
+                                    r#type: "button",
+                                    class: "inline-flex h-8 shrink-0 items-center rounded-md px-2 text-xs text-muted-foreground hover:bg-muted",
+                                    onclick: {
+                                        let combinator = combinator.clone();
+                                        let rows = rows_all.clone();
+                                        move |_| {
+                                            let next: Vec<_> = rows
+                                                .iter()
+                                                .enumerate()
+                                                .filter(|(j, _)| *j != i)
+                                                .map(|(_, r)| r.clone())
+                                                .collect();
+                                            emit(combinator.clone(), ignore_case, next);
+                                        }
+                                    },
+                                    "Remove"
                                 }
                             }
-                            ExpressionField {
-                                id: Some(format!("{id_prefix}-cond-{i}-value")),
-                                value: val,
-                                placeholder: Some("Value".into()),
-                                expr_bus,
-                                active_field,
-                                on_change: {
-                                    let combinator = combinator.clone();
-                                    let mut rows = rows_all.clone();
-                                    move |next: String| {
-                                        if let Some(r) = rows.get_mut(i) {
-                                            if let Some(obj) = r.as_object_mut() {
-                                                obj.insert("value".into(), Value::String(next));
+                            div { class: "min-w-0",
+                                ExpressionField {
+                                    id: Some(format!("{id_prefix}-cond-{i}-value")),
+                                    value: val,
+                                    placeholder: Some("Value".into()),
+                                    expr_bus,
+                                    active_field,
+                                    on_change: {
+                                        let combinator = combinator.clone();
+                                        let mut rows = rows_all.clone();
+                                        move |next: String| {
+                                            if let Some(r) = rows.get_mut(i) {
+                                                if let Some(obj) = r.as_object_mut() {
+                                                    obj.insert("value".into(), Value::String(next));
+                                                }
                                             }
+                                            emit(combinator.clone(), ignore_case, rows.clone());
                                         }
-                                        emit(combinator.clone(), ignore_case, rows.clone());
-                                    }
-                                },
-                            }
-                            button {
-                                r#type: "button",
-                                class: "inline-flex h-8 items-center rounded-md px-2 text-xs text-muted-foreground hover:bg-muted",
-                                onclick: {
-                                    let combinator = combinator.clone();
-                                    let rows = rows_all.clone();
-                                    move |_| {
-                                        let next: Vec<_> = rows
-                                            .iter()
-                                            .enumerate()
-                                            .filter(|(j, _)| *j != i)
-                                            .map(|(_, r)| r.clone())
-                                            .collect();
-                                        emit(combinator.clone(), ignore_case, next);
-                                    }
-                                },
-                                "Remove"
+                                    },
+                                }
                             }
                         }
                     }
@@ -298,44 +302,64 @@ pub fn AssignmentsEditor(
                     rsx! {
                         div {
                             key: "{i}",
-                            class: "flex items-center gap-1",
-                            input {
-                                class: "flex h-8 min-w-[5rem] flex-1 rounded-md border border-input bg-background px-2 text-xs",
-                                placeholder: "Name",
-                                value: "{name}",
-                                oninput: {
-                                    let rows_all = rows_all.clone();
-                                    move |e| {
-                                        let mut rows = rows_all.clone();
-                                        if let Some(r) = rows.get_mut(i) {
-                                            if let Some(obj) = r.as_object_mut() {
-                                                obj.insert("name".into(), Value::String(e.value()));
+                            class: "flex min-w-0 flex-col gap-1.5 rounded-md border border-border/60 bg-muted/10 p-2",
+                            div { class: "flex items-center gap-1.5",
+                                input {
+                                    class: "flex h-8 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-xs",
+                                    placeholder: "Name",
+                                    value: "{name}",
+                                    oninput: {
+                                        let rows_all = rows_all.clone();
+                                        move |e| {
+                                            let mut rows = rows_all.clone();
+                                            if let Some(r) = rows.get_mut(i) {
+                                                if let Some(obj) = r.as_object_mut() {
+                                                    obj.insert("name".into(), Value::String(e.value()));
+                                                }
                                             }
+                                            emit(rows);
                                         }
-                                        emit(rows);
-                                    }
-                                },
-                            }
-                            select {
-                                class: "flex h-8 w-auto min-w-[5.5rem] rounded-md border border-input bg-background px-2 text-xs",
-                                value: "{ty}",
-                                onchange: {
-                                    let rows_all = rows_all.clone();
-                                    move |e| {
-                                        let mut rows = rows_all.clone();
-                                        if let Some(r) = rows.get_mut(i) {
-                                            if let Some(obj) = r.as_object_mut() {
-                                                obj.insert("type".into(), Value::String(e.value()));
+                                    },
+                                }
+                                select {
+                                    class: "flex h-8 w-auto min-w-[5.5rem] shrink-0 rounded-md border border-input bg-background px-2 text-xs",
+                                    value: "{ty}",
+                                    onchange: {
+                                        let rows_all = rows_all.clone();
+                                        move |e| {
+                                            let mut rows = rows_all.clone();
+                                            if let Some(r) = rows.get_mut(i) {
+                                                if let Some(obj) = r.as_object_mut() {
+                                                    obj.insert("type".into(), Value::String(e.value()));
+                                                }
                                             }
+                                            emit(rows);
                                         }
-                                        emit(rows);
+                                    },
+                                    for (tv, tl) in ASSIGNMENT_TYPES {
+                                        option { value: "{tv}", "{tl}" }
                                     }
-                                },
-                                for (tv, tl) in ASSIGNMENT_TYPES {
-                                    option { value: "{tv}", "{tl}" }
+                                }
+                                button {
+                                    r#type: "button",
+                                    class: "inline-flex h-8 shrink-0 items-center rounded-md px-2 text-xs text-muted-foreground hover:bg-muted",
+                                    aria_label: "Remove",
+                                    onclick: {
+                                        let rows = rows_all.clone();
+                                        move |_| {
+                                            let next: Vec<_> = rows
+                                                .iter()
+                                                .enumerate()
+                                                .filter(|(j, _)| *j != i)
+                                                .map(|(_, r)| r.clone())
+                                                .collect();
+                                            emit(next);
+                                        }
+                                    },
+                                    "Remove"
                                 }
                             }
-                            div { class: "min-w-0 flex-1",
+                            div { class: "min-w-0",
                                 ExpressionField {
                                     id: Some(field_id),
                                     value: val,
@@ -355,24 +379,6 @@ pub fn AssignmentsEditor(
                                         }
                                     },
                                 }
-                            }
-                            button {
-                                r#type: "button",
-                                class: "inline-flex h-8 shrink-0 items-center rounded-md px-2 text-xs text-muted-foreground hover:bg-muted",
-                                aria_label: "Remove",
-                                onclick: {
-                                    let rows = rows_all.clone();
-                                    move |_| {
-                                        let next: Vec<_> = rows
-                                            .iter()
-                                            .enumerate()
-                                            .filter(|(j, _)| *j != i)
-                                            .map(|(_, r)| r.clone())
-                                            .collect();
-                                        emit(next);
-                                    }
-                                },
-                                "Remove"
                             }
                         }
                     }
