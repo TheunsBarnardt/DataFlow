@@ -269,29 +269,74 @@ pub fn build_openapi_document(project: &Value, endpoints: &[Value]) -> Value {
 fn swagger_ui_html(spec_url: &str, title: &str) -> String {
     let safe_title = title.replace('<', "&lt;");
     let spec = serde_json::to_string(spec_url).unwrap_or_else(|_| "\"\"".into());
+    // Use r## so embedded "#id" selectors do not terminate the raw string.
     format!(
-        r#"<!DOCTYPE html>
+        r##"<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>{safe_title} — Swagger</title>
   <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui.css" />
-  <style>body{{margin:0}} .topbar{{display:none}}</style>
+  <style>body{{margin:0}} .topbar{{display:none}} #bf-auth-hint{{padding:10px 16px;font:14px/1.4 system-ui,sans-serif;background:#fff8e6;border-bottom:1px solid #f0e0a0;color:#5c4b00}}</style>
 </head>
 <body>
+  <div id="bf-auth-hint">Authorize with JWT (Bearer) or X-Api-Key. The OpenAPI document is filtered to endpoints your credentials may call.</div>
   <div id="swagger-ui"></div>
   <script src="https://unpkg.com/swagger-ui-dist@5.17.14/swagger-ui-bundle.js"></script>
   <script>
-    window.ui = SwaggerUIBundle({{
-      url: {spec},
-      dom_id: '#swagger-ui',
-      deepLinking: true,
-      presets: [SwaggerUIBundle.presets.apis],
-      layout: "BaseLayout"
-    }});
+    (async function () {{
+      const specUrl = {spec};
+      const params = new URLSearchParams(location.search);
+      const token = params.get("token") || "";
+      const apiKey = params.get("api_key") || params.get("apiKey") || "";
+      const headers = {{}};
+      if (token) headers["Authorization"] = "Bearer " + token;
+      if (apiKey) headers["X-Api-Key"] = apiKey;
+      let specDoc;
+      try {{
+        const res = await fetch(specUrl, {{ headers }});
+        if (!res.ok) {{
+          document.getElementById("swagger-ui").textContent =
+            "Failed to load OpenAPI (" + res.status + "). Provide ?token= or ?api_key= with credentials that can access this API.";
+          return;
+        }}
+        specDoc = await res.json();
+      }} catch (e) {{
+        document.getElementById("swagger-ui").textContent = "Failed to load OpenAPI: " + e;
+        return;
+      }}
+      const schemes = (specDoc.components && specDoc.components.securitySchemes) || {{}};
+      const bearerName = Object.keys(schemes).find(function (k) {{
+        const s = schemes[k];
+        return s && s.type === "http" && String(s.scheme || "").toLowerCase() === "bearer";
+      }}) || "Bearer";
+      window.ui = SwaggerUIBundle({{
+        spec: specDoc,
+        dom_id: "#swagger-ui",
+        deepLinking: true,
+        persistAuthorization: true,
+        presets: [SwaggerUIBundle.presets.apis],
+        layout: "BaseLayout",
+        requestInterceptor: function (req) {{
+          if (token && !req.headers.Authorization && !req.headers.authorization) {{
+            req.headers.Authorization = "Bearer " + token;
+          }}
+          if (apiKey && !req.headers["X-Api-Key"] && !req.headers["x-api-key"]) {{
+            req.headers["X-Api-Key"] = apiKey;
+          }}
+          return req;
+        }},
+        onComplete: function () {{
+          try {{
+            if (token) window.ui.preauthorizeApiKey(bearerName, token);
+            if (apiKey) window.ui.preauthorizeApiKey("ApiKey", apiKey);
+          }} catch (_) {{}}
+        }}
+      }});
+    }})();
   </script>
 </body>
-</html>"#
+</html>"##
     )
 }
 
@@ -475,6 +520,203 @@ fn api_key_from_headers(headers: &HeaderMap) -> Option<String> {
     .filter(|s| !s.is_empty())
 }
 
+fn endpoint_doc_id(endpoint: &Value) -> String {
+    json_str(endpoint, "id")
+}
+
+fn forbidden() -> Response {
+    (
+        StatusCode::FORBIDDEN,
+        Json(json!({ "message": "Forbidden" })),
+    )
+        .into_response()
+}
+
+fn unauthorized() -> Response {
+    (
+        StatusCode::UNAUTHORIZED,
+        Json(json!({ "message": "Unauthorized" })),
+    )
+        .into_response()
+}
+
+/// Enforce `api.invoke` + effective `apiAccess` for a JWT principal context.
+fn enforce_jwt_api_access(
+    ctx: &Value,
+    project: &Value,
+    endpoint: &Value,
+    method: &str,
+    path: &str,
+) -> Result<(), Response> {
+    let perms: Vec<String> = ctx
+        .get("permissions")
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|p| p.as_str().map(String::from))
+                .collect()
+        })
+        .unwrap_or_default();
+    if !botflow_storage::permissions_include_api_invoke(&perms) {
+        return Err(forbidden());
+    }
+    let access = ctx.get("apiAccess").cloned().unwrap_or_else(|| json!({}));
+    let pid = project_id(project);
+    let slug = json_str(project, "slug");
+    let eid = endpoint_doc_id(endpoint);
+    if !botflow_storage::api_access_allows(
+        &access,
+        &pid,
+        &slug,
+        method,
+        path,
+        if eid.is_empty() { None } else { Some(eid.as_str()) },
+    ) {
+        return Err(forbidden());
+    }
+    Ok(())
+}
+
+/// Caller access used to filter OpenAPI/Swagger to allowed operations.
+struct DocsAccess {
+    /// Access document (`apiAccess` or API key metadata). `None` = anonymous.
+    access: Option<Value>,
+    /// When true, caller must have `api.invoke` (JWT users). API keys skip this.
+    require_api_invoke: bool,
+    permissions: Vec<String>,
+}
+
+fn jwt_permissions(ctx: &Value) -> Vec<String> {
+    ctx.get("permissions")
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|p| p.as_str().map(String::from))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Resolve JWT or API key from docs request headers / query. Invalid creds → 401.
+async fn resolve_docs_access(
+    state: &HttpState,
+    headers: &HeaderMap,
+    query_token: Option<&str>,
+    query_api_key: Option<&str>,
+) -> Result<DocsAccess, Response> {
+    let bearer = bearer_from_headers(headers)
+        .or_else(|| {
+            query_token
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(|s| s.to_string())
+        });
+    let api_key = api_key_from_headers(headers).or_else(|| {
+        query_api_key
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(|s| s.to_string())
+    });
+
+    if let Some(token) = bearer {
+        if let Ok(claims) = state.jwt.verify(&token) {
+            let ctx = botflow_storage::build_auth_context(
+                &state.app.db,
+                &claims.sub,
+                &claims.role,
+            )
+            .await
+            .unwrap_or_else(|_| {
+                json!({
+                    "sub": claims.sub,
+                    "role": claims.role,
+                    "permissions": [],
+                    "apiAccess": {}
+                })
+            });
+            return Ok(DocsAccess {
+                access: Some(
+                    ctx.get("apiAccess")
+                        .cloned()
+                        .unwrap_or_else(|| json!({})),
+                ),
+                require_api_invoke: true,
+                permissions: jwt_permissions(&ctx),
+            });
+        }
+        // Project-signed JWTs still need a BotFlow role context when possible.
+        // For docs filtering, only instance JWTs are accepted as Bearer identity.
+        return Err(unauthorized());
+    }
+
+    if let Some(key) = api_key {
+        if let Ok(Some(verified)) =
+            botflow_storage::verify_instance_api_key(&state.app.db, &key).await
+        {
+            let meta = verified
+                .get("metadata")
+                .cloned()
+                .unwrap_or_else(|| json!({}));
+            return Ok(DocsAccess {
+                access: Some(meta),
+                require_api_invoke: false,
+                permissions: vec![],
+            });
+        }
+        return Err(unauthorized());
+    }
+
+    Ok(DocsAccess {
+        access: None,
+        require_api_invoke: false,
+        permissions: vec![],
+    })
+}
+
+/// Filter endpoints for OpenAPI: anonymous sees only `auth: none`; authenticated
+/// callers see endpoints their access allows.
+fn filter_endpoints_for_docs(
+    project: &Value,
+    endpoints: &[Value],
+    docs: &DocsAccess,
+) -> Vec<Value> {
+    let pid = project_id(project);
+    let slug = json_str(project, "slug");
+    endpoints
+        .iter()
+        .filter(|ep| {
+            let ep_auth = ep.get("auth").and_then(|a| a.as_str()).unwrap_or("none");
+            if ep_auth == "none" || ep_auth.is_empty() {
+                return true;
+            }
+            let Some(access) = docs.access.as_ref() else {
+                return false;
+            };
+            if docs.require_api_invoke
+                && !botflow_storage::permissions_include_api_invoke(&docs.permissions)
+            {
+                return false;
+            }
+            let method = json_str(ep, "method");
+            let path = normalize_path(&json_str(ep, "path"));
+            let eid = endpoint_doc_id(ep);
+            botflow_storage::api_access_allows(
+                access,
+                &pid,
+                &slug,
+                &method,
+                &path,
+                if eid.is_empty() {
+                    None
+                } else {
+                    Some(eid.as_str())
+                },
+            )
+        })
+        .cloned()
+        .collect()
+}
+
 async fn authorize_endpoint(
     state: &HttpState,
     project: &Value,
@@ -484,75 +726,44 @@ async fn authorize_endpoint(
     headers: &HeaderMap,
 ) -> Result<Option<Value>, Response> {
     let ep_auth = endpoint.get("auth").and_then(|a| a.as_str()).unwrap_or("none");
+    let eid = endpoint_doc_id(endpoint);
+    let eid_opt = if eid.is_empty() {
+        None
+    } else {
+        Some(eid.as_str())
+    };
     match ep_auth {
         "none" | "" => Ok(None),
         "apiKey" => {
-            let key = api_key_from_headers(headers).ok_or_else(|| {
-                (
-                    StatusCode::UNAUTHORIZED,
-                    Json(json!({ "message": "Unauthorized" })),
-                )
-                    .into_response()
-            })?;
+            let key = api_key_from_headers(headers).ok_or_else(unauthorized)?;
             let pid = project_id(project);
             let slug = json_str(project, "slug");
             if let Ok(Some(verified)) =
                 botflow_storage::verify_instance_api_key(&state.app.db, &key).await
             {
-                if botflow_storage::instance_api_key_allows(&verified, &pid, &slug, method, path)
-                {
+                if botflow_storage::instance_api_key_allows(
+                    &verified, &pid, &slug, method, path, eid_opt,
+                ) {
                     return Ok(Some(botflow_storage::api_key_auth_context(&verified)));
                 }
-                return Err((
-                    StatusCode::FORBIDDEN,
-                    Json(json!({ "message": "Forbidden" })),
-                )
-                    .into_response());
+                return Err(forbidden());
             }
-            let expected = project
-                .get("auth")
-                .and_then(|a| a.get("jwtSecret"))
-                .and_then(|s| s.as_str())
-                .unwrap_or("");
-            if !expected.is_empty() && key == expected {
-                return Ok(Some(json!({ "apiKey": true })));
-            }
-            Err((
-                StatusCode::UNAUTHORIZED,
-                Json(json!({ "message": "Unauthorized" })),
-            )
-                .into_response())
+            Err(unauthorized())
         }
         "headerBearer" => {
-            let token = bearer_from_headers(headers).ok_or_else(|| {
-                (
-                    StatusCode::UNAUTHORIZED,
-                    Json(json!({ "message": "Unauthorized" })),
-                )
-                    .into_response()
-            })?;
+            let token = bearer_from_headers(headers).ok_or_else(unauthorized)?;
             let expected = project
                 .get("auth")
                 .and_then(|a| a.get("jwtSecret"))
                 .and_then(|s| s.as_str())
                 .unwrap_or("");
             if expected.is_empty() || token != expected {
-                return Err((
-                    StatusCode::UNAUTHORIZED,
-                    Json(json!({ "message": "Unauthorized" })),
-                )
-                    .into_response());
+                return Err(unauthorized());
             }
             Ok(Some(json!({ "bearer": true })))
         }
         "jwt" => {
-            let token = bearer_from_headers(headers).ok_or_else(|| {
-                (
-                    StatusCode::UNAUTHORIZED,
-                    Json(json!({ "message": "Unauthorized" })),
-                )
-                    .into_response()
-            })?;
+            let token = bearer_from_headers(headers).ok_or_else(unauthorized)?;
             let secret = project
                 .get("auth")
                 .and_then(|a| a.get("jwtSecret"))
@@ -560,7 +771,6 @@ async fn authorize_endpoint(
                 .unwrap_or("botflow-dev-jwt-secret");
             match verify_hs256_jwt(&token, secret) {
                 Ok(payload) => {
-                    // Enrich with BotFlow auth context when sub/role are present.
                     let sub = payload
                         .get("sub")
                         .or_else(|| payload.get("nameid"))
@@ -570,18 +780,27 @@ async fn authorize_endpoint(
                         .get("role")
                         .and_then(|v| v.as_str())
                         .unwrap_or("shell_user");
-                    if !sub.is_empty() {
-                        if let Ok(ctx) =
-                            botflow_storage::build_auth_context(&state.app.db, sub, role).await
-                        {
-                            let mut merged = payload;
-                            if let Some(obj) = merged.as_object_mut() {
-                                obj.insert("botflow".into(), ctx);
-                            }
-                            return Ok(Some(merged));
-                        }
+                    let principal = if sub.is_empty() { "anonymous" } else { sub };
+                    let ctx = botflow_storage::build_auth_context(
+                        &state.app.db,
+                        principal,
+                        role,
+                    )
+                    .await
+                    .unwrap_or_else(|_| {
+                        json!({
+                            "sub": principal,
+                            "role": role,
+                            "permissions": [],
+                            "apiAccess": {}
+                        })
+                    });
+                    enforce_jwt_api_access(&ctx, project, endpoint, method, path)?;
+                    let mut merged = payload;
+                    if let Some(obj) = merged.as_object_mut() {
+                        obj.insert("botflow".into(), ctx);
                     }
-                    Ok(Some(payload))
+                    Ok(Some(merged))
                 }
                 Err(_) => {
                     // Also accept studio-issued BotFlow JWTs (instance secret).
@@ -593,19 +812,21 @@ async fn authorize_endpoint(
                         )
                         .await
                         .unwrap_or_else(|_| {
-                            json!({ "sub": claims.sub, "role": claims.role })
+                            json!({
+                                "sub": claims.sub.clone(),
+                                "role": claims.role.clone(),
+                                "permissions": [],
+                                "apiAccess": {}
+                            })
                         });
+                        enforce_jwt_api_access(&ctx, project, endpoint, method, path)?;
                         return Ok(Some(json!({
                             "sub": claims.sub,
                             "role": claims.role,
                             "botflow": ctx,
                         })));
                     }
-                    Err((
-                        StatusCode::UNAUTHORIZED,
-                        Json(json!({ "message": "Unauthorized" })),
-                    )
-                        .into_response())
+                    Err(unauthorized())
                 }
             }
         }
@@ -617,9 +838,21 @@ async fn authorize_endpoint(
     }
 }
 
+#[derive(Debug, Default, serde::Deserialize)]
+struct DocsQuery {
+    #[serde(default)]
+    token: Option<String>,
+    #[serde(default)]
+    api_key: Option<String>,
+    #[serde(default, alias = "apiKey")]
+    api_key_camel: Option<String>,
+}
+
 async fn openapi_json(
     State(state): State<HttpState>,
     Path(slug): Path<String>,
+    headers: HeaderMap,
+    Query(query): Query<DocsQuery>,
 ) -> Response {
     let Some(project) = botflow_storage::find_api_project_by_slug(&state.app.db, &slug)
         .await
@@ -632,11 +865,27 @@ async fn openapi_json(
         )
             .into_response();
     };
+    let api_key = query
+        .api_key
+        .as_deref()
+        .or(query.api_key_camel.as_deref());
+    let docs = match resolve_docs_access(
+        &state,
+        &headers,
+        query.token.as_deref(),
+        api_key,
+    )
+    .await
+    {
+        Ok(d) => d,
+        Err(resp) => return resp,
+    };
     let pid = project_id(&project);
     let endpoints = botflow_storage::list_api_endpoints_for_project(&state.app.db, &pid)
         .await
         .unwrap_or_default();
-    Json(build_openapi_document(&project, &endpoints)).into_response()
+    let filtered = filter_endpoints_for_docs(&project, &endpoints, &docs);
+    Json(build_openapi_document(&project, &filtered)).into_response()
 }
 
 async fn swagger_ui(
@@ -656,6 +905,7 @@ async fn swagger_ui(
     };
     let title = json_str(&project, "name");
     let title = if title.is_empty() { slug.clone() } else { title };
+    // Spec URL is same-origin; Swagger page forwards ?token= / ?api_key= and Authorize headers.
     let spec_url = format!("/apis/{slug}/openapi.json");
     Html(swagger_ui_html(&spec_url, &title)).into_response()
 }

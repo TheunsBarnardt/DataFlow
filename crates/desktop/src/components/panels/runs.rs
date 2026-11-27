@@ -5,12 +5,14 @@ use crate::components::icons::{ChevronDown, ChevronRight, RefreshCw, Trash2};
 use crate::components::panels::{
     format_local_datetime, has_binary_data, json_id, json_string, BinaryViewer,
 };
+use super::ndv_data_pane::format_io_json_display;
 use crate::components::ui::{
     Alert, AlertDescription, AlertVariant, Badge, BadgeVariant, Button, ButtonSize, ButtonVariant,
-    Card, CardContent, CardHeader, CardSize, CardTitle, ConfirmDeleteDialog, Empty,
+    Card, CardContent, CardHeader, CardSize, CardTitle, CodeEditor, ConfirmDeleteDialog, Empty,
     EmptyDescription, EmptyHeader, EmptyTitle, PageLoader, ResizableHandle, ResizableOrientation,
     ResizablePanel, ResizablePanelGroup,
 };
+use crate::format_code::CodeLanguage;
 
 fn run_status_variant(status: &str, failed: bool) -> BadgeVariant {
     if failed || status == "failed" {
@@ -78,25 +80,31 @@ fn format_duration_ms(ms: i64) -> String {
     }
 }
 
-fn json_pretty(value: Option<&serde_json::Value>) -> String {
-    match value {
-        None | Some(serde_json::Value::Null) => String::new(),
-        Some(v) => serde_json::to_string_pretty(v).unwrap_or_else(|_| json_string(v)),
-    }
-}
-
 #[component]
-fn JsonBlock(value: Option<serde_json::Value>) -> Element {
-    if value.is_none() || matches!(value.as_ref(), Some(serde_json::Value::Null)) {
+fn JsonBlock(value: Option<serde_json::Value>, editor_id: String) -> Element {
+    // Always allocate — CodeEditor mounts CodeMirror; keep hook order stable.
+    let mut json_value = use_signal(String::new);
+    let text = match value.as_ref() {
+        None | Some(serde_json::Value::Null) => String::new(),
+        Some(v) => format_io_json_display(v),
+    };
+    if json_value.peek().as_str() != text.as_str() {
+        json_value.set(text.clone());
+    }
+    if text.is_empty() {
         return rsx! {
             span { class: "text-muted-foreground", "—" }
         };
     }
-    let text = json_pretty(value.as_ref());
     rsx! {
-        pre {
-            class: "max-h-40 overflow-auto rounded-md border bg-muted/30 p-2 font-mono text-[11px] whitespace-pre-wrap break-words",
-            "{text}"
+        CodeEditor {
+            value: json_value,
+            language: CodeLanguage::Json,
+            height_px: 160,
+            read_only: true,
+            show_format: false,
+            id: Some(editor_id),
+            on_change: move |_| {},
         }
     }
 }
@@ -107,6 +115,8 @@ fn StepRow(log: serde_json::Value) -> Element {
     let failed = step_status == "failed";
     let mut open = use_signal(|| true);
     let node = log.get("nodeName").map(json_string).unwrap_or_default();
+    let node_id = log.get("nodeId").map(json_string).unwrap_or_default();
+    let started_at = log.get("startedAt").map(json_string).unwrap_or_default();
     let error = log
         .get("error")
         .and_then(|e| e.as_str())
@@ -122,6 +132,9 @@ fn StepRow(log: serde_json::Value) -> Element {
     };
     let input = log.get("input").cloned();
     let output = log.get("output").cloned();
+    let id_base = format!("{node_id}-{started_at}");
+    let input_editor_id = format!("step-in-{id_base}");
+    let output_editor_id = format!("step-out-{id_base}");
 
     rsx! {
         div { class: "{row_class}",
@@ -161,14 +174,14 @@ fn StepRow(log: serde_json::Value) -> Element {
                     }
                     div {
                         div { class: "mb-1 text-[10px] uppercase text-muted-foreground", "Input" }
-                        JsonBlock { value: input.clone() }
+                        JsonBlock { value: input.clone(), editor_id: input_editor_id }
                         if input.as_ref().map(has_binary_data).unwrap_or(false) {
                             BinaryViewer { data: input.clone().unwrap_or(Value::Null) }
                         }
                     }
                     div {
                         div { class: "mb-1 text-[10px] uppercase text-muted-foreground", "Output" }
-                        JsonBlock { value: output.clone() }
+                        JsonBlock { value: output.clone(), editor_id: output_editor_id }
                         if output.as_ref().map(has_binary_data).unwrap_or(false) {
                             BinaryViewer { data: output.clone().unwrap_or(Value::Null) }
                         }

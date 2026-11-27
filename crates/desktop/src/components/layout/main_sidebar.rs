@@ -38,7 +38,7 @@ pub fn MainSidebar(
     on_toggle_theme: EventHandler<()>,
     on_profile: EventHandler<()>,
     on_open_settings: EventHandler<SettingsPageId>,
-    on_logout: Option<EventHandler<()>>,
+    on_logout: EventHandler<()>,
 ) -> Element {
     let mut settings_open = use_signal(|| false);
     let is_admin = role == "admin";
@@ -258,19 +258,17 @@ pub fn MainSidebar(
                         }
                     }
                 }
-                if let Some(logout) = on_logout {
-                    Button {
-                        variant: ButtonVariant::Ghost,
-                        class: Some(if collapsed {
-                            "h-auto w-full justify-center gap-2.5 px-0 py-2 text-[13px] text-muted-foreground"
-                        } else {
-                            "h-auto w-full justify-start gap-2.5 px-2.5 py-2 text-[13px] text-muted-foreground"
-                        }.into()),
-                        title: Some("Sign out".into()),
-                        onclick: move |_| logout.call(()),
-                        LogOut { class: Some("h-4 w-4".into()) }
-                        if !collapsed { "Sign out" }
-                    }
+                Button {
+                    variant: ButtonVariant::Ghost,
+                    class: Some(if collapsed {
+                        "h-auto w-full justify-center gap-2.5 px-0 py-2 text-[13px] text-muted-foreground"
+                    } else {
+                        "h-auto w-full justify-start gap-2.5 px-2.5 py-2 text-[13px] text-muted-foreground"
+                    }.into()),
+                    title: Some("Sign out".into()),
+                    onclick: move |_| on_logout.call(()),
+                    LogOut { class: Some("h-4 w-4".into()) }
+                    if !collapsed { "Sign out" }
                 }
                 Button {
                     variant: ButtonVariant::Ghost,

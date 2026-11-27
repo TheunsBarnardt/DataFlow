@@ -86,7 +86,7 @@ pub fn App() -> Element {
 
     let auth_disabled = std::env::var("BOTFLOW_AUTH_DISABLED")
         .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
-        .unwrap_or(true);
+        .unwrap_or(false);
 
     use_effect(move || {
         spawn(async move {
@@ -200,11 +200,8 @@ pub fn App() -> Element {
             style { dangerous_inner_html: crate::styles::STUDIO_CSS }
             div { class: "{root_class}",
                 LoginPage {
-                    on_logged_in: move |_| {
-                        session.set(Some(SessionUser {
-                            name: "user".into(),
-                            role: "admin".into(),
-                        }));
+                    on_logged_in: move |(name, role)| {
+                        session.set(Some(SessionUser { name, role }));
                     }
                 }
             }
@@ -287,14 +284,11 @@ pub fn App() -> Element {
                         section.set(NavSection::Settings);
                         editor_open.set(false);
                     },
-                    on_logout: if auth_disabled {
-                        None
-                    } else {
-                        Some(EventHandler::new(move |_| {
-                            session.set(None);
-                            section.set(NavSection::Dashboard);
-                            editor_open.set(false);
-                        }))
+                    on_logout: move |_| {
+                        crate::api::set_auth_token(None);
+                        session.set(None);
+                        section.set(NavSection::Dashboard);
+                        editor_open.set(false);
                     },
                 }
             }

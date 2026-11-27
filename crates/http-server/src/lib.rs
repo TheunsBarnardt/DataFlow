@@ -42,6 +42,7 @@ pub fn build_router(state: AppState, cfg: &HttpConfig) -> Router {
                 header::AUTHORIZATION,
                 header::CONTENT_TYPE,
                 header::ACCEPT,
+                header::HeaderName::from_static("x-api-key"),
             ])
     } else {
         let origins: Vec<HeaderValue> = cfg
@@ -63,6 +64,7 @@ pub fn build_router(state: AppState, cfg: &HttpConfig) -> Router {
                 header::AUTHORIZATION,
                 header::CONTENT_TYPE,
                 header::ACCEPT,
+                header::HeaderName::from_static("x-api-key"),
             ])
             .allow_credentials(true)
     };

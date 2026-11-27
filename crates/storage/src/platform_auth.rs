@@ -255,6 +255,7 @@ pub async fn create_role(
     name: &str,
     description: &str,
     permissions: &[String],
+    api_access: Option<&Value>,
 ) -> Result<Value> {
     let id = id.trim().to_lowercase().replace(' ', "_");
     let name = name.trim();
@@ -270,7 +271,7 @@ pub async fn create_role(
         .filter(|s| !s.is_empty())
         .map(|s| mongodb::bson::Bson::String(s.to_string()))
         .collect();
-    let doc = doc! {
+    let mut doc = doc! {
         "id": &id,
         "name": name,
         "description": description.trim(),
@@ -279,6 +280,9 @@ pub async fn create_role(
         "createdAt": now(),
         "updatedAt": now(),
     };
+    if let Some(access) = api_access {
+        doc.insert("apiAccess", mongodb::bson::to_bson(access)?);
+    }
     roles_coll(db).insert_one(doc.clone()).await?;
     document_to_json(doc)
 }
@@ -289,6 +293,7 @@ pub async fn update_role(
     name: Option<&str>,
     description: Option<&str>,
     permissions: Option<&[String]>,
+    api_access: Option<&Value>,
 ) -> Result<Option<Value>> {
     let mut set = Document::new();
     if let Some(n) = name.map(str::trim).filter(|s| !s.is_empty()) {
@@ -306,6 +311,9 @@ pub async fn update_role(
             .collect();
         set.insert("permissions", arr);
     }
+    if let Some(access) = api_access {
+        set.insert("apiAccess", mongodb::bson::to_bson(access)?);
+    }
     if set.is_empty() {
         anyhow::bail!("No values to update");
     }
@@ -317,6 +325,35 @@ pub async fn update_role(
         return Ok(None);
     }
     get_role(db, id).await
+}
+
+/// Resolve effective API call access: user `apiAccess` fully replaces role when present.
+/// Missing/`null` user override → role `apiAccess` (or `{}` = unrestricted within `api.invoke`).
+pub async fn effective_api_access(
+    db: &Db,
+    user: Option<&Value>,
+    role_id: &str,
+) -> Result<Value> {
+    if let Some(u) = user {
+        if let Some(access) = u.get("apiAccess") {
+            if !access.is_null() {
+                return Ok(access.clone());
+            }
+        }
+    }
+    if let Some(role) = get_role(db, role_id).await? {
+        if let Some(access) = role.get("apiAccess") {
+            if !access.is_null() {
+                return Ok(access.clone());
+            }
+        }
+    }
+    Ok(json!({}))
+}
+
+/// True when the permission list grants API invoke (or wildcard).
+pub fn permissions_include_api_invoke(permissions: &[String]) -> bool {
+    permissions.iter().any(|p| p == "api.invoke" || p == "*")
 }
 
 pub async fn delete_role(db: &Db, id: &str) -> Result<bool> {
@@ -479,6 +516,7 @@ pub async fn build_auth_context(db: &Db, principal_id: &str, role_id: &str) -> R
     let permissions = permissions_for_role(db, role_id).await?;
     let links = list_linked_identities(db, Some(principal_id)).await?;
     let user = crate::find_user_by_id(db, principal_id).await?;
+    let api_access = effective_api_access(db, user.as_ref(), role_id).await?;
     let company_ids = user
         .as_ref()
         .and_then(|u| u.get("companyIds"))
@@ -505,6 +543,7 @@ pub async fn build_auth_context(db: &Db, principal_id: &str, role_id: &str) -> R
         "sub": principal_id,
         "role": role_id,
         "permissions": permissions,
+        "apiAccess": api_access,
         "companyId": company_id,
         "companyIds": company_ids,
         "companyName": company_name,

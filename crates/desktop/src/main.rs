@@ -108,9 +108,8 @@ fn main() -> Result<()> {
     if std::env::var_os("PORT").is_none() {
         unsafe { std::env::set_var("PORT", "8788") };
     }
-    if std::env::var_os("BOTFLOW_AUTH_DISABLED").is_none() {
-        unsafe { std::env::set_var("BOTFLOW_AUTH_DISABLED", "1") };
-    }
+    // Desktop studio always shows the login screen (ignore inherited BOTFLOW_AUTH_DISABLED=1).
+    unsafe { std::env::set_var("BOTFLOW_AUTH_DISABLED", "0") };
     if std::env::var_os("HTTP_ALLOW_PRIVATE").is_none() {
         unsafe { std::env::set_var("HTTP_ALLOW_PRIVATE", "true") };
     }

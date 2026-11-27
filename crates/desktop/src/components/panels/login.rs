@@ -1,35 +1,43 @@
+use base64::Engine;
 use dioxus::prelude::*;
 
 use crate::components::ui::{
     Alert, AlertDescription, Button, Card, CardContent, CardDescription, CardFooter, CardHeader,
-    CardTitle, Input, Label,
+    Input, Label,
 };
 
+fn logo_src() -> String {
+    const BYTES: &[u8] = include_bytes!("../../../assets/dataflow-logo.jpg");
+    let b64 = base64::engine::general_purpose::STANDARD.encode(BYTES);
+    format!("data:image/jpeg;base64,{b64}")
+}
+
 #[component]
-pub fn LoginPage(on_logged_in: EventHandler<()>) -> Element {
+pub fn LoginPage(on_logged_in: EventHandler<(String, String)>) -> Element {
     let mut email = use_signal(|| "admin".to_string());
     let mut password = use_signal(String::new);
     let mut busy = use_signal(|| false);
     let mut err = use_signal(|| None::<String>);
+    let logo = use_memo(logo_src);
 
     rsx! {
         div {
-            class: "relative flex min-h-full items-center justify-center overflow-hidden bg-background px-4",
-            div {
-                class: "pointer-events-none absolute inset-0 opacity-70",
-                style: "background:
-                    radial-gradient(ellipse 80% 50% at 50% -20%, color-mix(in oklch, var(--brand) 22%, transparent), transparent),
-                    radial-gradient(ellipse 60% 40% at 100% 100%, color-mix(in oklch, var(--brand) 10%, transparent), transparent);",
-            }
-            Card { class: Some("relative z-10 w-full max-w-sm shadow-md".into()),
-                CardHeader { class: Some("items-center text-center".into()),
-                    div {
-                        class: "mb-2 flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold text-white",
-                        style: "background: var(--brand)",
-                        "DF"
+            class: "relative flex min-h-full items-center justify-center overflow-hidden px-4",
+            style: "background:
+                radial-gradient(ellipse 90% 55% at 50% -15%, rgba(77, 184, 233, 0.22), transparent 55%),
+                radial-gradient(ellipse 55% 45% at 100% 100%, rgba(245, 130, 32, 0.12), transparent 50%),
+                radial-gradient(ellipse 45% 40% at 0% 90%, rgba(29, 59, 134, 0.14), transparent 50%),
+                var(--background);",
+            Card { class: Some("relative z-10 w-full max-w-md border-border/60 shadow-lg".into()),
+                CardHeader { class: Some("items-center gap-3 pb-2 text-center".into()),
+                    img {
+                        src: "{logo()}",
+                        alt: "DATAFLOW — Workflow & API Automation",
+                        class: "mx-auto h-auto w-full max-w-[280px] object-contain select-none",
                     }
-                    CardTitle { class: Some("text-xl tracking-tight".into()), "DataFlow" }
-                    CardDescription { "Sign in with your username and password" }
+                    CardDescription { class: Some("pt-1".into()),
+                        "Sign in with your username and password"
+                    }
                 }
                 form {
                     class: "flex flex-col gap-4",
@@ -43,9 +51,17 @@ pub fn LoginPage(on_logged_in: EventHandler<()>) -> Element {
                                 "password": pw,
                             });
                             match crate::api::post_json("/api/v1/auth/login", body).await {
-                                Ok(_) => {
+                                Ok(res) => {
+                                    if let Some(token) = res.get("token").and_then(|v| v.as_str()) {
+                                        crate::api::set_auth_token(Some(token.to_string()));
+                                    }
+                                    let role = res
+                                        .get("role")
+                                        .and_then(|v| v.as_str())
+                                        .unwrap_or("admin")
+                                        .to_string();
                                     err.set(None);
-                                    on_logged_in.call(());
+                                    on_logged_in.call((em, role));
                                 }
                                 Err(e) => err.set(Some(e)),
                             }
@@ -91,7 +107,9 @@ pub fn LoginPage(on_logged_in: EventHandler<()>) -> Element {
                     }
                     CardFooter {
                         Button {
-                            class: Some("w-full".into()),
+                            class: Some(
+                                "w-full !bg-[#1D3B86] text-white hover:!bg-[#162e6a]".into(),
+                            ),
                             r#type: Some("submit".into()),
                             disabled: busy(),
                             if busy() { "Signing in…" } else { "Sign in" }

@@ -291,6 +291,8 @@ struct CreateUserBody {
     company_id: Option<String>,
     #[serde(default)]
     company_ids: Option<Vec<String>>,
+    #[serde(default)]
+    api_access: Option<Value>,
 }
 
 async fn create_user_handler(
@@ -338,6 +340,20 @@ async fn create_user_handler(
             .collect();
         doc.insert("companyIds", arr);
     }
+    if let Some(access) = &body.api_access {
+        match mongodb::bson::to_bson(access) {
+            Ok(b) => {
+                doc.insert("apiAccess", b);
+            }
+            Err(e) => {
+                return (
+                    StatusCode::BAD_REQUEST,
+                    Json(json!({ "error": e.to_string() })),
+                )
+                    .into_response();
+            }
+        }
+    }
     match botflow_storage::insert_user(&state.app.db, doc).await {
         Ok(user) => (StatusCode::CREATED, Json(json!({ "user": user }))).into_response(),
         Err(e) => error_response(e),
@@ -353,6 +369,11 @@ struct PatchUserBody {
     company_id: Option<String>,
     company_ids: Option<Vec<String>>,
     name: Option<String>,
+    #[serde(default)]
+    api_access: Option<Value>,
+    /// When true, clears user `apiAccess` so the role default applies again.
+    #[serde(default)]
+    clear_api_access: Option<bool>,
 }
 
 async fn patch_user_handler(
@@ -384,7 +405,24 @@ async fn patch_user_handler(
     if let Some(name) = body.name.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
         set.insert("name", name);
     }
-    if set.is_empty() {
+    if body.clear_api_access.unwrap_or(false) {
+        // Handled via $unset below after $set.
+    } else if let Some(access) = &body.api_access {
+        match mongodb::bson::to_bson(access) {
+            Ok(b) => {
+                set.insert("apiAccess", b);
+            }
+            Err(e) => {
+                return (
+                    StatusCode::BAD_REQUEST,
+                    Json(json!({ "error": e.to_string() })),
+                )
+                    .into_response();
+            }
+        }
+    }
+    let clear_access = body.clear_api_access.unwrap_or(false);
+    if set.is_empty() && !clear_access {
         return (
             StatusCode::BAD_REQUEST,
             Json(json!({ "error": "No updates" })),
@@ -413,7 +451,12 @@ async fn patch_user_handler(
         return Json(json!({ "user": user })).into_response();
     }
 
-    match botflow_storage::update_user_by_id(&state.app.db, &id, set).await {
+    let unset = if clear_access {
+        mongodb::bson::doc! { "apiAccess": "" }
+    } else {
+        mongodb::bson::Document::new()
+    };
+    match botflow_storage::update_user_by_id_with_unset(&state.app.db, &id, set, unset).await {
         Ok(Some(user)) => Json(json!({ "user": user })).into_response(),
         Ok(None) => (StatusCode::NOT_FOUND, Json(json!({ "error": "not found" }))).into_response(),
         Err(e) => error_response(e),

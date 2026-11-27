@@ -158,6 +158,8 @@ struct CreateRoleBody {
     description: Option<String>,
     #[serde(default)]
     permissions: Vec<String>,
+    #[serde(default)]
+    api_access: Option<Value>,
 }
 
 async fn create_role(
@@ -171,6 +173,7 @@ async fn create_role(
         &body.name,
         body.description.as_deref().unwrap_or(""),
         &body.permissions,
+        body.api_access.as_ref(),
     )
     .await
     {
@@ -185,6 +188,8 @@ struct PatchRoleBody {
     name: Option<String>,
     description: Option<String>,
     permissions: Option<Vec<String>>,
+    #[serde(default)]
+    api_access: Option<Value>,
 }
 
 async fn patch_role(
@@ -199,6 +204,7 @@ async fn patch_role(
         body.name.as_deref(),
         body.description.as_deref(),
         body.permissions.as_deref(),
+        body.api_access.as_ref(),
     )
     .await
     {

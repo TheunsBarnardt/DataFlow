@@ -1,9 +1,11 @@
 use dioxus::prelude::*;
 
+use super::api_access_editor::{
+    parse_projects, ApiAccessDraft, ApiAccessEditor, ProjectOpt,
+};
 use crate::components::ui::{
     Alert, AlertDescription, AlertVariant, Button, ButtonVariant, Card, CardContent, CardHeader,
-    CardTitle, Checkbox, ConfirmDeleteDialog, Empty, EmptyDescription, Input, Label, Select,
-    SelectOption, Switch,
+    CardTitle, ConfirmDeleteDialog, Empty, EmptyDescription, Input, Label, Select, SelectOption,
 };
 
 #[derive(Clone)]
@@ -12,17 +14,13 @@ struct ApiKeyRow {
     name: String,
     preview: String,
     enabled: bool,
-    /// Empty = all projects; otherwise scoped project ids.
     project_ids: Vec<String>,
+    endpoint_ids: Vec<String>,
+    scopes_text: String,
     readonly: bool,
     created: String,
     expires: String,
-}
-
-#[derive(Clone)]
-struct ProjectOpt {
-    id: String,
-    label: String,
+    metadata: serde_json::Value,
 }
 
 fn json_str(v: &serde_json::Value, key: &str) -> String {
@@ -76,31 +74,11 @@ fn parse_keys(v: &serde_json::Value) -> Vec<ApiKeyRow> {
                     start
                 )
             };
-            let meta = row.get("metadata").cloned().unwrap_or(serde_json::Value::Null);
-            let mut project_ids: Vec<String> = meta
-                .get("projectIds")
-                .and_then(|x| x.as_array())
-                .map(|arr| {
-                    arr.iter()
-                        .filter_map(|v| v.as_str().map(str::trim).filter(|s| !s.is_empty()))
-                        .map(|s| s.to_string())
-                        .collect()
-                })
-                .unwrap_or_default();
-            if let Some(legacy) = meta
-                .get("projectId")
-                .and_then(|x| x.as_str())
-                .map(str::trim)
-                .filter(|s| !s.is_empty())
-            {
-                if !project_ids.iter().any(|id| id == legacy) {
-                    project_ids.push(legacy.to_string());
-                }
-            }
-            let readonly = meta
-                .get("readonly")
-                .and_then(|x| x.as_bool())
-                .unwrap_or(false);
+            let meta = row
+                .get("metadata")
+                .cloned()
+                .unwrap_or(serde_json::Value::Null);
+            let draft = ApiAccessDraft::from_json(&meta);
             Some(ApiKeyRow {
                 id,
                 name: {
@@ -116,8 +94,10 @@ fn parse_keys(v: &serde_json::Value) -> Vec<ApiKeyRow> {
                     .get("enabled")
                     .and_then(|x| x.as_bool())
                     .unwrap_or(true),
-                project_ids,
-                readonly,
+                project_ids: draft.project_ids.clone(),
+                endpoint_ids: draft.endpoint_ids.clone(),
+                scopes_text: draft.scopes_text.clone(),
+                readonly: draft.readonly,
                 created: row
                     .get("createdAt")
                     .map(format_ts)
@@ -132,33 +112,7 @@ fn parse_keys(v: &serde_json::Value) -> Vec<ApiKeyRow> {
                         }
                     })
                     .unwrap_or_else(|| "never".into()),
-            })
-        })
-        .collect()
-}
-
-fn parse_projects(v: &serde_json::Value) -> Vec<ProjectOpt> {
-    let arr = v
-        .get("projects")
-        .and_then(|x| x.as_array())
-        .cloned()
-        .unwrap_or_default();
-    arr.into_iter()
-        .filter_map(|p| {
-            let id = json_str(&p, "_id");
-            let id = if id.is_empty() {
-                json_str(&p, "id")
-            } else {
-                id
-            };
-            if id.is_empty() {
-                return None;
-            }
-            let name = json_str(&p, "name");
-            let slug = json_str(&p, "slug");
-            Some(ProjectOpt {
-                id,
-                label: format!("{name} (/apis/{slug})"),
+                metadata: meta,
             })
         })
         .collect()
@@ -172,15 +126,14 @@ pub fn DataFlowApiPanel() -> Element {
     let mut err = use_signal(|| None::<String>);
     let mut name = use_signal(String::new);
     let mut expires_in = use_signal(String::new);
-    let mut selected_project_ids = use_signal(Vec::<String>::new);
     let mut company_id = use_signal(String::new);
     let mut companies = use_signal(Vec::<ProjectOpt>::new);
-    let mut call_scopes = use_signal(String::new);
-    let mut readonly = use_signal(|| false);
+    let mut access = use_signal(ApiAccessDraft::default);
     let mut creating = use_signal(|| false);
     let mut created_secret = use_signal(|| None::<String>);
     let mut busy_id = use_signal(|| None::<String>);
     let mut confirm_delete = use_signal(|| None::<(String, String)>);
+    let mut editing_id = use_signal(|| None::<String>);
 
     let reload = move || {
         spawn(async move {
@@ -227,7 +180,7 @@ pub fn DataFlowApiPanel() -> Element {
         reload();
     });
 
-    let create = move |_| {
+    let save = move |_| {
         let trimmed = name().trim().to_string();
         if trimmed.is_empty() {
             err.set(Some("Enter a name for the API key".into()));
@@ -235,83 +188,72 @@ pub fn DataFlowApiPanel() -> Element {
         }
         creating.set(true);
         let exp = expires_in();
-        let projs = selected_project_ids();
         let company = company_id();
-        let scopes_raw = call_scopes();
-        let ro = readonly();
+        let draft = access();
+        let edit_id = editing_id();
         spawn(async move {
-            let mut body = serde_json::json!({ "name": trimmed });
-            if let Ok(secs) = exp.parse::<i64>() {
-                if secs > 0 {
-                    body["expiresIn"] = serde_json::json!(secs);
+            let mut meta = draft.to_json();
+            if let Some(obj) = meta.as_object_mut() {
+                if !company.trim().is_empty() {
+                    obj.insert(
+                        "companyId".into(),
+                        serde_json::Value::String(company.trim().to_string()),
+                    );
                 }
             }
-            let mut meta = serde_json::Map::new();
-            if !projs.is_empty() {
-                meta.insert(
-                    "projectIds".into(),
-                    serde_json::Value::Array(
-                        projs
-                            .into_iter()
-                            .map(serde_json::Value::String)
-                            .collect(),
-                    ),
-                );
-            }
-            if !company.trim().is_empty() {
-                meta.insert(
-                    "companyId".into(),
-                    serde_json::Value::String(company.trim().to_string()),
-                );
-            }
-            let mut scopes = Vec::new();
-            for line in scopes_raw.lines() {
-                let line = line.trim();
-                if line.is_empty() {
-                    continue;
-                }
-                let mut parts = line.splitn(2, char::is_whitespace);
-                let method = parts.next().unwrap_or("*").trim();
-                let path = parts.next().unwrap_or("*").trim();
-                scopes.push(serde_json::json!({
-                    "method": method,
-                    "pathPattern": path,
-                }));
-            }
-            if !scopes.is_empty() {
-                meta.insert("scopes".into(), serde_json::Value::Array(scopes));
-            }
-            if ro {
-                meta.insert("readonly".into(), serde_json::Value::Bool(true));
-            }
-            if !meta.is_empty() {
-                body["metadata"] = serde_json::Value::Object(meta);
-            }
-            match crate::api::post_json("/api/settings/api-keys", body).await {
-                Ok(v) => {
-                    let secret = v
-                        .pointer("/key/key")
-                        .and_then(|x| x.as_str())
-                        .map(|s| s.to_string());
-                    if let Some(secret) = secret {
-                        created_secret.set(Some(secret));
+            if let Some(key_id) = edit_id {
+                let body = serde_json::json!({
+                    "name": trimmed,
+                    "metadata": meta,
+                });
+                match crate::api::patch_json(&format!("/api/settings/api-keys/{key_id}"), body).await
+                {
+                    Ok(_) => {
+                        name.set(String::new());
+                        expires_in.set(String::new());
+                        company_id.set(String::new());
+                        access.set(ApiAccessDraft::default());
+                        editing_id.set(None);
+                        err.set(None);
+                        if let Ok(list) = crate::api::get_json("/api/settings/api-keys").await {
+                            keys.set(parse_keys(&list));
+                        }
                     }
-                    name.set(String::new());
-                    expires_in.set(String::new());
-                    selected_project_ids.set(Vec::new());
-                    company_id.set(String::new());
-                    call_scopes.set(String::new());
-                    readonly.set(false);
-                    err.set(None);
-                    if let Ok(list) = crate::api::get_json("/api/settings/api-keys").await {
-                        keys.set(parse_keys(&list));
+                    Err(e) => err.set(Some(e)),
+                }
+            } else {
+                let mut body = serde_json::json!({ "name": trimmed, "metadata": meta });
+                if let Ok(secs) = exp.parse::<i64>() {
+                    if secs > 0 {
+                        body["expiresIn"] = serde_json::json!(secs);
                     }
                 }
-                Err(e) => err.set(Some(e)),
+                match crate::api::post_json("/api/settings/api-keys", body).await {
+                    Ok(v) => {
+                        let secret = v
+                            .pointer("/key/key")
+                            .and_then(|x| x.as_str())
+                            .map(|s| s.to_string());
+                        if let Some(secret) = secret {
+                            created_secret.set(Some(secret));
+                        }
+                        name.set(String::new());
+                        expires_in.set(String::new());
+                        company_id.set(String::new());
+                        access.set(ApiAccessDraft::default());
+                        err.set(None);
+                        if let Ok(list) = crate::api::get_json("/api/settings/api-keys").await {
+                            keys.set(parse_keys(&list));
+                        }
+                    }
+                    Err(e) => err.set(Some(e)),
+                }
             }
             creating.set(false);
         });
     };
+
+    let is_editing = editing_id().is_some();
 
     rsx! {
         div { class: "flex h-full min-h-0 flex-1 flex-col overflow-auto",
@@ -319,117 +261,72 @@ pub fn DataFlowApiPanel() -> Element {
                 h1 { class: "text-[1.75rem] font-normal leading-[1.25] tracking-normal",
                     "API Integration"
                 }
-                p { class: "mt-3 text-sm leading-[1.35] text-muted-foreground",
-                    "Issue API keys so external apps (Cloudflare Workers, webhooks, partners, CI) can call your published API projects. Send the key in the "
-                    code { class: "text-foreground", "X-Api-Key" }
-                    " header to "
-                    code { class: "text-foreground", "/apis/{{slug}}/…" }
-                    " when the endpoint auth mode is API Key."
+                p { class: "mt-1 text-sm text-muted-foreground",
+                    "Issue scoped API keys for external callers. Keys use X-Api-Key; users authenticate with JWT and their own call-level access."
                 }
             }
 
-            div { class: "min-h-0 flex-1 space-y-6 p-6",
-                Card {
+            if let Some(message) = err() {
+                Alert {
+                    variant: AlertVariant::Destructive,
+                    class: Some("mx-6 mt-2".into()),
+                    AlertDescription { class: Some("text-destructive".into()), "{message}" }
+                }
+            }
+
+            if let Some(secret) = created_secret() {
+                Alert {
+                    class: Some("mx-6 mt-2".into()),
+                    AlertDescription {
+                        "Copy this key now — it will not be shown again: "
+                        code { class: "break-all text-xs", "{secret}" }
+                        Button {
+                            class: Some("ml-2".into()),
+                            variant: ButtonVariant::Outline,
+                            onclick: move |_| created_secret.set(None),
+                            "Dismiss"
+                        }
+                    }
+                }
+            }
+
+            div { class: "grid min-h-0 flex-1 gap-6 p-6 lg:grid-cols-[minmax(320px,420px)_1fr]",
+                Card { class: Some("self-start".into()),
                     CardHeader { class: Some("px-4 pt-4 pb-0".into()),
-                        CardTitle { class: Some("text-sm".into()), "How external callers connect" }
-                    }
-                    CardContent { class: Some("px-4 pb-4 pt-2".into()),
-                        p { class: "text-sm text-muted-foreground",
-                            "Each API project is served at "
-                            code { class: "text-foreground", "/apis/{{slug}}" }
-                            " with OpenAPI and Swagger UI under that path. Keys are stored hashed ("
-                            code { class: "text-foreground", "bf_" }
-                            " prefix). In-app studio "
-                            code { class: "text-foreground", "/api/*" }
-                            " routes still use your signed-in session — these keys are only for outside callers."
+                        CardTitle { class: Some("text-sm".into()),
+                            if is_editing { "Edit API key" } else { "Create API key" }
                         }
                     }
-                }
-
-                if let Some(message) = err() {
-                    Alert {
-                        variant: AlertVariant::Destructive,
-                        AlertDescription {
-                            class: Some("text-destructive".into()),
-                            "{message}"
-                        }
-                    }
-                }
-
-                if let Some(secret) = created_secret() {
-                    Alert {
-                        variant: AlertVariant::Success,
-                        AlertDescription {
-                            div { class: "space-y-2 text-foreground",
-                                p { class: "text-sm font-semibold", "Copy your new API key" }
-                                p { class: "text-sm text-muted-foreground",
-                                    "This secret is shown once. Store it securely."
-                                }
-                                code { class: "block break-all rounded-md border bg-background px-3 py-2 text-sm",
-                                    "{secret}"
-                                }
-                                Button {
-                                    variant: ButtonVariant::Ghost,
-                                    onclick: move |_| created_secret.set(None),
-                                    "Dismiss"
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Card {
-                    CardContent { class: Some("p-4".into()),
-                    h2 { class: "text-sm font-semibold", "Create API key" }
-                    div { class: "mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3",
-                        div {
-                            Label { class: Some("text-xs text-muted-foreground".into()),
-                                "Name"
-                            }
+                    CardContent { class: Some("space-y-3 px-4 pb-4".into()),
+                        div { class: "flex flex-col gap-1.5",
+                            Label { class: Some("text-xs text-muted-foreground".into()), "Name" }
                             Input {
-                                class: Some("mt-1 h-9".into()),
+                                class: Some("h-9".into()),
                                 value: name(),
-                                placeholder: Some("CI integration".into()),
+                                placeholder: Some("Mobile app".into()),
                                 oninput: move |e: FormEvent| name.set(e.value()),
                             }
                         }
-                        div {
-                            Label { class: Some("text-xs text-muted-foreground".into()),
-                                "Expires"
-                            }
-                            Select {
-                                class: Some("mt-1".into()),
-                                value: expires_in(),
-                                onchange: move |e: FormEvent| expires_in.set(e.value()),
-                                SelectOption { value: String::new(), "No expiry" }
-                                SelectOption { value: "604800".to_string(), "7 days" }
-                                SelectOption { value: "2592000".to_string(), "30 days" }
-                                SelectOption { value: "7776000".to_string(), "90 days" }
-                                SelectOption { value: "31536000".to_string(), "1 year" }
-                            }
-                        }
-                        div { class: "flex items-end justify-between gap-3",
-                            div { class: "flex items-center gap-2 pb-1.5",
-                                Switch {
-                                    checked: readonly(),
-                                    on_checked_change: move |v| readonly.set(v),
+                        if !is_editing {
+                            div { class: "flex flex-col gap-1.5",
+                                Label { class: Some("text-xs text-muted-foreground".into()), "Expires" }
+                                Select {
+                                    class: Some("mt-1".into()),
+                                    value: expires_in(),
+                                    onchange: move |e: FormEvent| expires_in.set(e.value()),
+                                    SelectOption { value: String::new(), "No expiry" }
+                                    SelectOption { value: "604800".to_string(), "7 days" }
+                                    SelectOption { value: "2592000".to_string(), "30 days" }
+                                    SelectOption { value: "7776000".to_string(), "90 days" }
+                                    SelectOption { value: "31536000".to_string(), "1 year" }
                                 }
-                                Label { class: Some("text-sm".into()), "Read-only" }
-                            }
-                            Button {
-                                disabled: creating(),
-                                onclick: create,
-                                "Create"
                             }
                         }
-                    }
-                    div { class: "mt-3 grid gap-3 md:grid-cols-2",
-                        div {
+                        div { class: "flex flex-col gap-1.5",
                             Label { class: Some("text-xs text-muted-foreground".into()),
                                 "Company (optional)"
                             }
                             Select {
-                                class: Some("mt-1".into()),
                                 value: company_id(),
                                 onchange: move |e: FormEvent| company_id.set(e.value()),
                                 SelectOption { value: String::new(), "No company" }
@@ -438,71 +335,30 @@ pub fn DataFlowApiPanel() -> Element {
                                 }
                             }
                         }
-                        div {
-                            Label { class: Some("text-xs text-muted-foreground".into()),
-                                "Call scopes (one per line: METHOD /path*)"
-                            }
-                            Input {
-                                class: Some("mt-1 h-9".into()),
-                                value: call_scopes(),
-                                placeholder: Some("GET /portfolio/*".into()),
-                                oninput: move |e: FormEvent| call_scopes.set(e.value()),
-                            }
+                        ApiAccessEditor {
+                            draft: access,
+                            projects: projects(),
+                            compact: true,
                         }
-                    }
-                    div { class: "mt-3",
-                        Label { class: Some("text-xs text-muted-foreground".into()),
-                            "Project scope"
-                        }
-                        div { class: "mt-1 max-h-40 space-y-1 overflow-y-auto rounded-md border p-2",
-                            {
-                                let all_selected = selected_project_ids().is_empty();
-                                rsx! {
-                                    label { class: "flex cursor-pointer items-center gap-2 rounded-sm px-1 py-1 hover:bg-muted/50",
-                                        Checkbox {
-                                            checked: all_selected,
-                                            aria_label: "All API projects".to_string(),
-                                            on_checked_change: move |_| {
-                                                selected_project_ids.set(Vec::new());
-                                            },
-                                        }
-                                        span { class: "text-sm", "All API projects" }
-                                    }
-                                }
+                        div { class: "flex items-center gap-2",
+                            Button {
+                                disabled: creating(),
+                                onclick: save,
+                                if is_editing { "Save changes" } else { "Create" }
                             }
-                            for p in projects() {
-                                {
-                                    let pid = p.id.clone();
-                                    let pid_toggle = p.id.clone();
-                                    let checked = selected_project_ids().iter().any(|id| id == &pid);
-                                    let label = p.label.clone();
-                                    rsx! {
-                                        label { class: "flex cursor-pointer items-center gap-2 rounded-sm px-1 py-1 hover:bg-muted/50",
-                                            Checkbox {
-                                                checked,
-                                                aria_label: label.clone(),
-                                                on_checked_change: move |next| {
-                                                    selected_project_ids.with_mut(|ids| {
-                                                        if next {
-                                                            if !ids.iter().any(|id| id == &pid_toggle) {
-                                                                ids.push(pid_toggle.clone());
-                                                            }
-                                                        } else {
-                                                            ids.retain(|id| id != &pid_toggle);
-                                                        }
-                                                    });
-                                                },
-                                            }
-                                            span { class: "text-sm", "{label}" }
-                                        }
-                                    }
+                            if is_editing {
+                                Button {
+                                    variant: ButtonVariant::Ghost,
+                                    onclick: move |_| {
+                                        editing_id.set(None);
+                                        name.set(String::new());
+                                        company_id.set(String::new());
+                                        access.set(ApiAccessDraft::default());
+                                    },
+                                    "Cancel"
                                 }
                             }
                         }
-                    }
-                    p { class: "mt-3 text-xs text-muted-foreground",
-                        "Read-only keys may only call GET, HEAD, and OPTIONS. Scope by company, projects, and call patterns (METHOD path*). Empty project list = all projects."
-                    }
                     }
                 }
 
@@ -529,7 +385,9 @@ pub fn DataFlowApiPanel() -> Element {
                                 {
                                     let id = row.id.clone();
                                     let id_toggle = row.id.clone();
-                                    let name = row.name.clone();
+                                    let id_edit = row.id.clone();
+                                    let name_edit = row.name.clone();
+                                    let name_delete = row.name.clone();
                                     let enabled = row.enabled;
                                     let busy = busy_id().as_deref() == Some(row.id.as_str());
                                     let project_opts = projects();
@@ -549,8 +407,28 @@ pub fn DataFlowApiPanel() -> Element {
                                             .collect();
                                         labels.join(", ")
                                     };
+                                    let call_bits = {
+                                        let mut parts = Vec::new();
+                                        if !row.endpoint_ids.is_empty() {
+                                            parts.push(format!("{} endpoints", row.endpoint_ids.len()));
+                                        }
+                                        if !row.scopes_text.trim().is_empty() {
+                                            parts.push("path scopes".into());
+                                        }
+                                        if parts.is_empty() {
+                                            "all calls".into()
+                                        } else {
+                                            parts.join(" · ")
+                                        }
+                                    };
                                     let status_label = if enabled { "Enabled" } else { "Disabled" };
                                     let toggle_label = if enabled { "Disable" } else { "Enable" };
+                                    let meta_for_edit = row.metadata.clone();
+                                    let company_from_meta = meta_for_edit
+                                        .get("companyId")
+                                        .and_then(|x| x.as_str())
+                                        .unwrap_or("")
+                                        .to_string();
                                     rsx! {
                                         div { class: "flex flex-wrap items-center gap-3 px-4 py-3",
                                             div { class: "min-w-[12rem] flex-1",
@@ -561,12 +439,23 @@ pub fn DataFlowApiPanel() -> Element {
                                                 if row.readonly {
                                                     "Read-only · "
                                                 }
-                                                "{scope_label} · {status_label}"
+                                                "{scope_label} · {call_bits} · {status_label}"
                                             }
                                             div { class: "text-xs text-muted-foreground",
                                                 "Created {row.created} · Expires {row.expires}"
                                             }
                                             div { class: "ml-auto flex items-center gap-2",
+                                                Button {
+                                                    variant: ButtonVariant::Outline,
+                                                    disabled: busy,
+                                                    onclick: move |_| {
+                                                        editing_id.set(Some(id_edit.clone()));
+                                                        name.set(name_edit.clone());
+                                                        company_id.set(company_from_meta.clone());
+                                                        access.set(ApiAccessDraft::from_json(&meta_for_edit));
+                                                    },
+                                                    "Edit"
+                                                }
                                                 Button {
                                                     variant: ButtonVariant::Outline,
                                                     disabled: busy,
@@ -596,7 +485,7 @@ pub fn DataFlowApiPanel() -> Element {
                                                     variant: ButtonVariant::Ghost,
                                                     disabled: busy,
                                                     onclick: move |_| {
-                                                        confirm_delete.set(Some((id.clone(), name.clone())));
+                                                        confirm_delete.set(Some((id.clone(), name_delete.clone())));
                                                     },
                                                     "Delete"
                                                 }

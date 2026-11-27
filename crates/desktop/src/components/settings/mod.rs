@@ -1,3 +1,4 @@
+mod api_access_editor;
 mod authentication_panel;
 mod companies_panel;
 mod cutover_panel;

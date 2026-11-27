@@ -14,8 +14,7 @@ use crate::components::panels::{
     RunsPanel, WorkflowApiInsights,
 };
 use crate::components::ui::{
-    Badge, BadgeVariant, Button, ButtonSize, ButtonVariant, ConfirmDeleteDialog, ResizableHandle,
-    ResizableOrientation, ResizablePanel, ResizablePanelGroup, Switch,
+    Badge, BadgeVariant, Button, ButtonSize, ButtonVariant, ConfirmDeleteDialog, Switch,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
@@ -614,43 +613,13 @@ pub fn WorkflowEditor(
 
             // flex + flex-col so editor_main's flex-1/h-full resolve to a
             // real height — dioxus-flow paints nothing when container is 0×0.
-            // Executions opens like the old bottom Logs drawer (Runs + Step history).
+            // Executions and Insights replace the canvas (full workspace).
             div { class: "relative flex min-h-0 flex-1 flex-col",
                 if tab() == EditorTab::Executions {
-                    ResizablePanelGroup {
-                        orientation: ResizableOrientation::Vertical,
-                        initial_sizes: vec![55.0, 45.0],
-                        class: Some("relative min-h-0 flex-1".into()),
-                        ResizablePanel {
-                            panel_index: 0,
-                            min_pct: 25.0,
-                            max_pct: 80.0,
-                            class: Some("relative flex min-h-0 flex-col".into()),
-                            {editor_main(
-                                agent_open,
-                                nodes_open,
-                                triggers_only,
-                                false,
-                                running,
-                                on_add_node,
-                                on_execute_click,
-                                on_reload,
-                                canvas.clone(),
-                                None,
-                            )}
-                        }
-                        ResizableHandle { handle_index: 0 }
-                        ResizablePanel {
-                            panel_index: 1,
-                            min_pct: 20.0,
-                            max_pct: 75.0,
-                            class: Some("flex min-h-0 flex-col border-t bg-card".into()),
-                            div { class: "min-h-0 flex-1 overflow-hidden",
-                                RunsPanel {
-                                    refresh_key,
-                                    workflow_id: Some(wf_id_runs.clone()),
-                                }
-                            }
+                    div { class: "min-h-0 flex-1 overflow-hidden",
+                        RunsPanel {
+                            refresh_key,
+                            workflow_id: Some(wf_id_runs.clone()),
                         }
                     }
                 } else if tab() == EditorTab::Insights {

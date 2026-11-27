@@ -23,7 +23,7 @@
         "CARGO_HTTP_CHECK_REVOKE": "false",
         "HOST": "127.0.0.1",
         "PORT": "8788",
-        "BOTFLOW_AUTH_DISABLED": "1",
+        "BOTFLOW_AUTH_DISABLED": "0",
         "HTTP_ALLOW_PRIVATE": "true",
         "MONGODB_URI": "mongodb://127.0.0.1:27017/botflow",
         "RUST_LOG": "info,botflow=debug,botflow_desktop=debug"

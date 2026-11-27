@@ -479,6 +479,7 @@ name = "botflow-desktop"
 version = "1.0.3"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
  "botflow-app",
  "botflow-application-services",
  "botflow-node-api",

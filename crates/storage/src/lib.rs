@@ -1157,11 +1157,27 @@ pub async fn update_user_by_id(
     id: &str,
     set: Document,
 ) -> Result<Option<serde_json::Value>> {
-    if set.is_empty() {
+    update_user_by_id_with_unset(db, id, set, Document::new()).await
+}
+
+pub async fn update_user_by_id_with_unset(
+    db: &Db,
+    id: &str,
+    set: Document,
+    unset: Document,
+) -> Result<Option<serde_json::Value>> {
+    if set.is_empty() && unset.is_empty() {
         return find_user_by_id(db, id).await;
     }
+    let mut update = Document::new();
+    if !set.is_empty() {
+        update.insert("$set", set);
+    }
+    if !unset.is_empty() {
+        update.insert("$unset", unset);
+    }
     let res = users_coll(db)
-        .update_one(user_id_filter(id), doc! { "$set": &set })
+        .update_one(user_id_filter(id), update)
         .await?;
     if res.matched_count == 0 {
         return Ok(None);
@@ -1593,18 +1609,25 @@ fn metadata_scoped_project_ids(meta: &serde_json::Value) -> Vec<String> {
     ids
 }
 
-/// Whether metadata allows the given method/path for an API project.
-/// Optional `companyId` on the key is informational for operators; project/call
-/// scopes remain the fast deny path (no external CRM round-trip).
-pub fn instance_api_key_allows(
-    key: &serde_json::Value,
+/// Whether an `apiAccess` / key-metadata document allows a call.
+///
+/// Rules (in order):
+/// 1. Non-empty `projectIds` must include `project_id` or `project_slug`.
+/// 2. `readonly` denies non GET/HEAD/OPTIONS.
+/// 3. Non-empty `endpointIds` must include the real `api_endpoints.id` (or `*`).
+///    If the id matches → allow. If not and scopes exist → fall through to scopes.
+///    If not and no scopes → deny.
+/// 4. Non-empty `scopes` must match METHOD + pathPattern (glob `*`).
+/// 5. Empty endpointIds + empty scopes → allow within allowed projects.
+pub fn api_access_allows(
+    access: &serde_json::Value,
     project_id: &str,
     project_slug: &str,
     method: &str,
     path: &str,
+    endpoint_id: Option<&str>,
 ) -> bool {
-    let meta = key.get("metadata").unwrap_or(&serde_json::Value::Null);
-    let scoped = metadata_scoped_project_ids(meta);
+    let scoped = metadata_scoped_project_ids(access);
     if !scoped.is_empty()
         && !scoped
             .iter()
@@ -1612,7 +1635,7 @@ pub fn instance_api_key_allows(
     {
         return false;
     }
-    if meta
+    if access
         .get("readonly")
         .and_then(|v| v.as_bool())
         .unwrap_or(false)
@@ -1622,37 +1645,34 @@ pub fn instance_api_key_allows(
             return false;
         }
     }
-    // Explicit endpoint id allowlist (call-level).
-    if let Some(ids) = meta.get("endpointIds").and_then(|v| v.as_array()) {
+    let has_scopes = access
+        .get("scopes")
+        .and_then(|v| v.as_array())
+        .map(|a| !a.is_empty())
+        .unwrap_or(false);
+
+    if let Some(ids) = access.get("endpointIds").and_then(|v| v.as_array()) {
         if !ids.is_empty() {
-            let path_norm = path.trim_start_matches('/');
+            let eid = endpoint_id.unwrap_or("");
             let ok = ids.iter().any(|v| {
                 v.as_str()
-                    .map(|id| id == path || id == path_norm || id == "*")
+                    .map(|id| id == "*" || (!eid.is_empty() && id == eid))
                     .unwrap_or(false)
             });
-            if !ok {
-                // Fall through to method/path scopes if present; else deny.
-                let has_scopes = meta
-                    .get("scopes")
-                    .and_then(|v| v.as_array())
-                    .map(|a| !a.is_empty())
-                    .unwrap_or(false);
-                if !has_scopes {
-                    return false;
-                }
-            } else {
+            if ok {
                 return true;
+            }
+            if !has_scopes {
+                return false;
             }
         }
     }
-    if let Some(scopes) = meta.get("scopes").and_then(|v| v.as_array()) {
-        if !scopes.is_empty() {
+
+    if has_scopes {
+        if let Some(scopes) = access.get("scopes").and_then(|v| v.as_array()) {
+            let path_norm = path.trim_start_matches('/');
             let ok = scopes.iter().any(|s| {
-                let sm = s
-                    .get("method")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("*");
+                let sm = s.get("method").and_then(|v| v.as_str()).unwrap_or("*");
                 let pat = s
                     .get("pathPattern")
                     .and_then(|v| v.as_str())
@@ -1664,8 +1684,11 @@ pub fn instance_api_key_allows(
                 if pat == "*" {
                     return true;
                 }
-                let escaped = regex_lite_escape(pat).replace(r"\*", ".*");
-                regex_is_match(&format!("^{escaped}$"), path)
+                let pat_trim = pat.trim_start_matches('/');
+                // Escape regex metacharacters, then turn glob `*` into `.*`.
+                let escaped = regex_lite_escape(pat_trim).replace('*', ".*");
+                regex_is_match(&format!("^{escaped}$"), path_norm)
+                    || regex_is_match(&format!("^{escaped}$"), path)
             });
             if !ok {
                 return false;
@@ -1673,6 +1696,162 @@ pub fn instance_api_key_allows(
         }
     }
     true
+}
+
+/// Whether an instance API key's metadata allows the given call.
+/// Optional `companyId` on the key is informational for operators.
+pub fn instance_api_key_allows(
+    key: &serde_json::Value,
+    project_id: &str,
+    project_slug: &str,
+    method: &str,
+    path: &str,
+    endpoint_id: Option<&str>,
+) -> bool {
+    let meta = key.get("metadata").unwrap_or(&serde_json::Value::Null);
+    api_access_allows(meta, project_id, project_slug, method, path, endpoint_id)
+}
+
+#[cfg(test)]
+mod api_access_tests {
+    use super::api_access_allows;
+    use serde_json::json;
+
+    #[test]
+    fn empty_access_allows_all() {
+        assert!(api_access_allows(
+            &json!({}),
+            "p1",
+            "slug",
+            "POST",
+            "/x",
+            Some("ep1")
+        ));
+    }
+
+    #[test]
+    fn project_ids_deny() {
+        let access = json!({ "projectIds": ["other"] });
+        assert!(!api_access_allows(
+            &access,
+            "p1",
+            "slug",
+            "GET",
+            "/x",
+            None
+        ));
+    }
+
+    #[test]
+    fn project_ids_allow_by_slug() {
+        let access = json!({ "projectIds": ["slug"] });
+        assert!(api_access_allows(
+            &access,
+            "p1",
+            "slug",
+            "GET",
+            "/x",
+            None
+        ));
+    }
+
+    #[test]
+    fn readonly_blocks_post() {
+        let access = json!({ "readonly": true });
+        assert!(!api_access_allows(
+            &access,
+            "p1",
+            "slug",
+            "POST",
+            "/x",
+            None
+        ));
+        assert!(api_access_allows(
+            &access,
+            "p1",
+            "slug",
+            "GET",
+            "/x",
+            None
+        ));
+    }
+
+    #[test]
+    fn endpoint_ids_match_real_id() {
+        let access = json!({ "endpointIds": ["ep-abc"] });
+        assert!(api_access_allows(
+            &access,
+            "p1",
+            "slug",
+            "GET",
+            "/portfolio",
+            Some("ep-abc")
+        ));
+        assert!(!api_access_allows(
+            &access,
+            "p1",
+            "slug",
+            "GET",
+            "/portfolio",
+            Some("ep-other")
+        ));
+        // Path alone must not satisfy endpointIds.
+        assert!(!api_access_allows(
+            &access,
+            "p1",
+            "slug",
+            "GET",
+            "ep-abc",
+            None
+        ));
+    }
+
+    #[test]
+    fn endpoint_miss_falls_through_to_scopes() {
+        let access = json!({
+            "endpointIds": ["ep-a"],
+            "scopes": [{ "method": "GET", "pathPattern": "/ok/*" }]
+        });
+        assert!(api_access_allows(
+            &access,
+            "p1",
+            "slug",
+            "GET",
+            "/ok/1",
+            Some("ep-b")
+        ));
+        assert!(!api_access_allows(
+            &access,
+            "p1",
+            "slug",
+            "POST",
+            "/ok/1",
+            Some("ep-b")
+        ));
+    }
+
+    #[test]
+    fn scopes_glob() {
+        let access = json!({
+            "scopes": [{ "method": "GET", "pathPattern": "/portfolio/*" }]
+        });
+        assert!(api_access_allows(
+            &access,
+            "p1",
+            "slug",
+            "GET",
+            "/portfolio/123",
+            None
+        ));
+        assert!(!api_access_allows(
+            &access,
+            "p1",
+            "slug",
+            "GET",
+            "/accounts/1",
+            None
+        ));
+    }
 }
 
 /// Auth context from a verified instance API key for workflow injection.

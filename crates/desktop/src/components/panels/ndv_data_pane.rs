@@ -150,6 +150,37 @@ fn as_items(data: &Value) -> Vec<Value> {
     }
 }
 
+/// Pretty-printed NDV JSON tab text: `[{ "json": …, "pairedItem"?, "binary"? }, …]`.
+pub fn format_io_json_display(data: &Value) -> String {
+    let raw_items = as_items(data);
+    if raw_items.is_empty() {
+        return String::new();
+    }
+    let items: Vec<Value> = raw_items.iter().map(item_json).collect();
+    let display: Vec<Value> = raw_items
+        .iter()
+        .enumerate()
+        .map(|(i, raw)| {
+            let mut obj = serde_json::Map::new();
+            obj.insert(
+                "json".into(),
+                items
+                    .get(i)
+                    .cloned()
+                    .unwrap_or(Value::Object(Default::default())),
+            );
+            if let Some(p) = raw.get("pairedItem") {
+                obj.insert("pairedItem".into(), p.clone());
+            }
+            if let Some(b) = raw.get("binary") {
+                obj.insert("binary".into(), b.clone());
+            }
+            Value::Object(obj)
+        })
+        .collect();
+    serde_json::to_string_pretty(&display).unwrap_or_else(|_| "[]".into())
+}
+
 /// Expands `__raw` / `value` / `rows` / `data` / `items` list payloads into table rows.
 fn to_table_rows(items: &[Value]) -> Vec<Value> {
     if items.is_empty() {
@@ -295,26 +326,7 @@ pub fn NdvDataPane(
             if !first.is_null() {
                 flatten_paths(&first, &root, &mut fields, 0);
             }
-            let display: Vec<Value> = raw_items
-                .iter()
-                .enumerate()
-                .map(|(i, raw)| {
-                    let mut obj = serde_json::Map::new();
-                    obj.insert(
-                        "json".into(),
-                        items.get(i).cloned().unwrap_or(Value::Object(Default::default())),
-                    );
-                    if let Some(p) = raw.get("pairedItem") {
-                        obj.insert("pairedItem".into(), p.clone());
-                    }
-                    if let Some(b) = raw.get("binary") {
-                        obj.insert("binary".into(), b.clone());
-                    }
-                    Value::Object(obj)
-                })
-                .collect();
-            let json_text =
-                serde_json::to_string_pretty(&display).unwrap_or_else(|_| "[]".into());
+            let json_text = format_io_json_display(data);
             let rows = table_rows;
             let mut cols = std::collections::BTreeSet::new();
             for row in &rows {

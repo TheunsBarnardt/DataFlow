@@ -21,6 +21,27 @@ fn method_badge_class(method: &str) -> &'static str {
     }
 }
 
+fn urlencoding_lightweight(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for b in s.bytes() {
+        match b {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                out.push(b as char);
+            }
+            _ => out.push_str(&format!("%{b:02X}")),
+        }
+    }
+    out
+}
+
+fn swagger_url_for_slug(base: &str, slug: &str) -> String {
+    let mut url = format!("{base}/apis/{slug}/swagger");
+    if let Some(token) = crate::api::auth_token().filter(|t| !t.is_empty()) {
+        url.push_str(&format!("?token={}", urlencoding_lightweight(&token)));
+    }
+    url
+}
+
 fn auth_label(project: &serde_json::Value) -> String {
     let auth = project.get("auth");
     let scheme = auth
@@ -171,8 +192,14 @@ pub fn ApiProjectsPanel(
             .unwrap_or_else(|| "v1".into());
         let auth = auth_label(&project);
         let base = crate::api::base_url();
-        let openapi_url = format!("{base}/apis/{slug}/openapi.json");
-        let swagger_url = format!("{base}/apis/{slug}/swagger");
+        let openapi_url = {
+            let mut url = format!("{base}/apis/{slug}/openapi.json");
+            if let Some(token) = crate::api::auth_token().filter(|t| !t.is_empty()) {
+                url.push_str(&format!("?token={}", urlencoding_lightweight(&token)));
+            }
+            url
+        };
+        let swagger_url = swagger_url_for_slug(&base, &slug);
         let q = endpoint_query().trim().to_lowercase();
         let filtered: Vec<serde_json::Value> = endpoints
             .iter()
@@ -630,11 +657,8 @@ oninput: move |e: FormEvent| version_draft.set(e.value()),
                                 let edit_slug = slug.clone();
                                 let del_id = id.clone();
                                 let del_name = name.clone();
-                                let swagger = format!(
-                                    "{}/apis/{}/swagger",
-                                    crate::api::base_url(),
-                                    slug
-                                );
+                                let swagger =
+                                    swagger_url_for_slug(&crate::api::base_url(), &slug);
                                 rsx! {
                                     div {
                                         key: "{id}",
