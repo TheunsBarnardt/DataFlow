@@ -367,7 +367,7 @@ pub fn App() -> Element {
                                     }
                                 });
                             },
-                            on_run: move |_| {
+                            on_run: move |input: serde_json::Value| {
                                 let id = selected_id().unwrap_or_default();
                                 // Persist graph before run so executions match the canvas.
                                 let name = workflow_name();
@@ -400,7 +400,7 @@ pub fn App() -> Element {
                                     .await;
                                     match crate::api::post_json(
                                         &format!("/api/workflows/{id}/run"),
-                                        serde_json::json!({}),
+                                        serde_json::json!({ "input": input }),
                                     )
                                     .await
                                     {

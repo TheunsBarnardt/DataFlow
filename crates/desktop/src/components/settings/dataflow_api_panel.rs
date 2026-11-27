@@ -2,8 +2,8 @@ use dioxus::prelude::*;
 
 use crate::components::ui::{
     Alert, AlertDescription, AlertVariant, Button, ButtonVariant, Card, CardContent, CardHeader,
-    CardTitle, ConfirmDeleteDialog, Empty, EmptyDescription, Input, Label, Select, SelectOption,
-    Switch,
+    CardTitle, Checkbox, ConfirmDeleteDialog, Empty, EmptyDescription, Input, Label, Select,
+    SelectOption, Switch,
 };
 
 #[derive(Clone)]
@@ -12,7 +12,8 @@ struct ApiKeyRow {
     name: String,
     preview: String,
     enabled: bool,
-    project: String,
+    /// Empty = all projects; otherwise scoped project ids.
+    project_ids: Vec<String>,
     readonly: bool,
     created: String,
     expires: String,
@@ -76,11 +77,26 @@ fn parse_keys(v: &serde_json::Value) -> Vec<ApiKeyRow> {
                 )
             };
             let meta = row.get("metadata").cloned().unwrap_or(serde_json::Value::Null);
-            let project = meta
+            let mut project_ids: Vec<String> = meta
+                .get("projectIds")
+                .and_then(|x| x.as_array())
+                .map(|arr| {
+                    arr.iter()
+                        .filter_map(|v| v.as_str().map(str::trim).filter(|s| !s.is_empty()))
+                        .map(|s| s.to_string())
+                        .collect()
+                })
+                .unwrap_or_default();
+            if let Some(legacy) = meta
                 .get("projectId")
                 .and_then(|x| x.as_str())
-                .unwrap_or("")
-                .to_string();
+                .map(str::trim)
+                .filter(|s| !s.is_empty())
+            {
+                if !project_ids.iter().any(|id| id == legacy) {
+                    project_ids.push(legacy.to_string());
+                }
+            }
             let readonly = meta
                 .get("readonly")
                 .and_then(|x| x.as_bool())
@@ -100,7 +116,7 @@ fn parse_keys(v: &serde_json::Value) -> Vec<ApiKeyRow> {
                     .get("enabled")
                     .and_then(|x| x.as_bool())
                     .unwrap_or(true),
-                project,
+                project_ids,
                 readonly,
                 created: row
                     .get("createdAt")
@@ -156,7 +172,7 @@ pub fn DataFlowApiPanel() -> Element {
     let mut err = use_signal(|| None::<String>);
     let mut name = use_signal(String::new);
     let mut expires_in = use_signal(String::new);
-    let mut project_id = use_signal(String::new);
+    let mut selected_project_ids = use_signal(Vec::<String>::new);
     let mut readonly = use_signal(|| false);
     let mut creating = use_signal(|| false);
     let mut created_secret = use_signal(|| None::<String>);
@@ -194,7 +210,7 @@ pub fn DataFlowApiPanel() -> Element {
         }
         creating.set(true);
         let exp = expires_in();
-        let proj = project_id();
+        let projs = selected_project_ids();
         let ro = readonly();
         spawn(async move {
             let mut body = serde_json::json!({ "name": trimmed });
@@ -204,8 +220,16 @@ pub fn DataFlowApiPanel() -> Element {
                 }
             }
             let mut meta = serde_json::Map::new();
-            if !proj.is_empty() {
-                meta.insert("projectId".into(), serde_json::Value::String(proj));
+            if !projs.is_empty() {
+                meta.insert(
+                    "projectIds".into(),
+                    serde_json::Value::Array(
+                        projs
+                            .into_iter()
+                            .map(serde_json::Value::String)
+                            .collect(),
+                    ),
+                );
             }
             if ro {
                 meta.insert("readonly".into(), serde_json::Value::Bool(true));
@@ -224,7 +248,7 @@ pub fn DataFlowApiPanel() -> Element {
                     }
                     name.set(String::new());
                     expires_in.set(String::new());
-                    project_id.set(String::new());
+                    selected_project_ids.set(Vec::new());
                     readonly.set(false);
                     err.set(None);
                     if let Ok(list) = crate::api::get_json("/api/settings/api-keys").await {
@@ -305,7 +329,7 @@ pub fn DataFlowApiPanel() -> Element {
                 Card {
                     CardContent { class: Some("p-4".into()),
                     h2 { class: "text-sm font-semibold", "Create API key" }
-                    div { class: "mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4",
+                    div { class: "mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3",
                         div {
                             Label { class: Some("text-xs text-muted-foreground".into()),
                                 "Name"
@@ -332,20 +356,6 @@ pub fn DataFlowApiPanel() -> Element {
                                 SelectOption { value: "31536000".to_string(), "1 year" }
                             }
                         }
-                        div {
-                            Label { class: Some("text-xs text-muted-foreground".into()),
-                                "Project scope"
-                            }
-                            Select {
-                                class: Some("mt-1".into()),
-                                value: project_id(),
-                                onchange: move |e: FormEvent| project_id.set(e.value()),
-                                SelectOption { value: String::new(), "All API projects" }
-                                for p in projects() {
-                                    SelectOption { value: p.id.clone(), "{p.label}" }
-                                }
-                            }
-                        }
                         div { class: "flex items-end justify-between gap-3",
                             div { class: "flex items-center gap-2 pb-1.5",
                                 Switch {
@@ -361,8 +371,58 @@ pub fn DataFlowApiPanel() -> Element {
                             }
                         }
                     }
+                    div { class: "mt-3",
+                        Label { class: Some("text-xs text-muted-foreground".into()),
+                            "Project scope"
+                        }
+                        div { class: "mt-1 max-h-40 space-y-1 overflow-y-auto rounded-md border p-2",
+                            {
+                                let all_selected = selected_project_ids().is_empty();
+                                rsx! {
+                                    label { class: "flex cursor-pointer items-center gap-2 rounded-sm px-1 py-1 hover:bg-muted/50",
+                                        Checkbox {
+                                            checked: all_selected,
+                                            aria_label: "All API projects".into(),
+                                            on_checked_change: move |_| {
+                                                selected_project_ids.set(Vec::new());
+                                            },
+                                        }
+                                        span { class: "text-sm", "All API projects" }
+                                    }
+                                }
+                            }
+                            for p in projects() {
+                                {
+                                    let pid = p.id.clone();
+                                    let pid_toggle = p.id.clone();
+                                    let checked = selected_project_ids().iter().any(|id| id == &pid);
+                                    let label = p.label.clone();
+                                    rsx! {
+                                        label { class: "flex cursor-pointer items-center gap-2 rounded-sm px-1 py-1 hover:bg-muted/50",
+                                            Checkbox {
+                                                checked,
+                                                aria_label: label.clone(),
+                                                on_checked_change: move |next| {
+                                                    selected_project_ids.with_mut(|ids| {
+                                                        if next {
+                                                            if !ids.iter().any(|id| id == &pid_toggle) {
+                                                                ids.push(pid_toggle.clone());
+                                                            }
+                                                        } else {
+                                                            ids.retain(|id| id != &pid_toggle);
+                                                        }
+                                                    });
+                                                },
+                                            }
+                                            span { class: "text-sm", "{label}" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     p { class: "mt-3 text-xs text-muted-foreground",
-                        "Read-only keys may only call GET, HEAD, and OPTIONS. Project scope limits the key to one API project."
+                        "Read-only keys may only call GET, HEAD, and OPTIONS. Leave project scope empty (All) or select one or more API projects."
                     }
                     }
                 }
@@ -393,10 +453,22 @@ pub fn DataFlowApiPanel() -> Element {
                                     let name = row.name.clone();
                                     let enabled = row.enabled;
                                     let busy = busy_id().as_deref() == Some(row.id.as_str());
-                                    let scope_label = if row.project.is_empty() {
+                                    let project_opts = projects();
+                                    let scope_label = if row.project_ids.is_empty() {
                                         "All projects".to_string()
                                     } else {
-                                        row.project.clone()
+                                        let labels: Vec<String> = row
+                                            .project_ids
+                                            .iter()
+                                            .map(|pid| {
+                                                project_opts
+                                                    .iter()
+                                                    .find(|p| &p.id == pid)
+                                                    .map(|p| p.label.clone())
+                                                    .unwrap_or_else(|| pid.clone())
+                                            })
+                                            .collect();
+                                        labels.join(", ")
                                     };
                                     let status_label = if enabled { "Enabled" } else { "Disabled" };
                                     let toggle_label = if enabled { "Disable" } else { "Enable" };

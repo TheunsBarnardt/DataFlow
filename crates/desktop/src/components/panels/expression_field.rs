@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use serde_json::Value;
 
 use super::ndv_data_pane::{normalize_drag_expr, DF_DRAG_MIME};
 use super::variable_aware_field::{VariableAwareInput, VariableAwareTextarea};
@@ -104,6 +105,7 @@ pub fn ExpressionField(
                     }
                 }
             },
+            "data-bf-drop-expr": "1",
             ondragover: move |e| {
                 e.prevent_default();
                 drag_over.set(true);
@@ -113,13 +115,32 @@ pub fn ExpressionField(
                 e.prevent_default();
                 drag_over.set(false);
                 let dt = e.data().data_transfer();
-                let expr = dt
+                let from_dt = dt
                     .get_data(DF_DRAG_MIME)
-                    .or_else(|| dt.get_as_text());
-                let Some(expr) = expr.filter(|s| !s.trim().is_empty()) else {
-                    return;
-                };
-                apply_expr_insert(mode, on_change, &expr);
+                    .or_else(|| dt.get_as_text())
+                    .filter(|s| !s.trim().is_empty());
+                spawn(async move {
+                    let expr = match from_dt {
+                        Some(s) => s,
+                        None => {
+                            let result = document::eval(
+                                r#"return (function(){
+  if (window.__bfExprDnD && typeof window.__bfExprDnD.consume === 'function') {
+    return window.__bfExprDnD.consume();
+  }
+  return null;
+})();"#,
+                            )
+                            .await
+                            .ok();
+                            match result {
+                                Some(Value::String(s)) if !s.trim().is_empty() => s,
+                                _ => return,
+                            }
+                        }
+                    };
+                    apply_expr_insert(mode, on_change, &expr);
+                });
             },
             div { class: "flex shrink-0 items-center gap-1",
                 button {

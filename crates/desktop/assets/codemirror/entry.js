@@ -168,14 +168,17 @@ function create(host, opts) {
     },
     insertAtCursor(text) {
       const sel = view.state.selection.main;
+      const insert = text == null ? "" : String(text);
       slot.suppress = true;
       view.dispatch({
-        changes: { from: sel.from, to: sel.to, insert: text },
-        selection: { anchor: sel.from + text.length },
+        changes: { from: sel.from, to: sel.to, insert },
+        selection: { anchor: sel.from + insert.length },
       });
       slot.lastSent = view.state.doc.toString();
       slot.suppress = false;
       view.focus();
+      // Notify Rust even though suppress blocked the updateListener.
+      if (typeof opts.onChange === "function") opts.onChange(slot.lastSent);
       return slot.lastSent;
     },
     focus() {
@@ -212,3 +215,49 @@ function create(host, opts) {
 }
 
 window.bfCodeMirror = { create, langExt };
+
+// Dioxus desktop serializes drag events and stubs DataTransfer.set_data, so HTML5
+// drag payloads never stick unless we set them on the real browser event.
+(function installExprDnD() {
+  if (window.__bfExprDnD && window.__bfExprDnD.bound) return;
+  window.__bfExprDnD = {
+    mime: "application/x-dataflow-expr",
+    payload: null,
+    bound: false,
+    normalize(expr) {
+      const t = String(expr || "").trim();
+      if (!t) return "";
+      if (t.startsWith("={{")) return t;
+      if (t.startsWith("{{")) return `=${t}`;
+      return `={{ ${t} }}`;
+    },
+    consume() {
+      const v = this.payload;
+      this.payload = null;
+      return v;
+    },
+    bind() {
+      if (this.bound) return;
+      this.bound = true;
+      const self = this;
+      document.addEventListener(
+        "dragstart",
+        (e) => {
+          const el =
+            e.target && e.target.closest && e.target.closest("[data-bf-expr]");
+          if (!el || !e.dataTransfer) return;
+          const expr = el.getAttribute("data-bf-expr") || "";
+          if (!expr) return;
+          self.payload = expr;
+          try {
+            e.dataTransfer.setData(self.mime, expr);
+            e.dataTransfer.setData("text/plain", expr);
+            e.dataTransfer.effectAllowed = "copy";
+          } catch (_) {}
+        },
+        true
+      );
+    },
+  };
+  window.__bfExprDnD.bind();
+})();

@@ -32,6 +32,12 @@ pub fn set_auth_token(token: Option<String>) {
         .unwrap() = token;
 }
 
+pub fn auth_token() -> Option<String> {
+    AUTH_TOKEN
+        .get()
+        .and_then(|t| t.read().unwrap().clone())
+}
+
 pub fn set_runtime_handle(handle: tokio::runtime::Handle) {
     let _ = TOKIO_HANDLE.set(handle);
 }

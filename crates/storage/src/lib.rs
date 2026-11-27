@@ -1544,6 +1544,29 @@ pub async fn verify_instance_api_key(
     Ok(Some(public_api_key_json(json)))
 }
 
+fn metadata_scoped_project_ids(meta: &serde_json::Value) -> Vec<String> {
+    let mut ids = Vec::new();
+    if let Some(arr) = meta.get("projectIds").and_then(|v| v.as_array()) {
+        for v in arr {
+            if let Some(s) = v.as_str().map(str::trim).filter(|s| !s.is_empty()) {
+                ids.push(s.to_string());
+            }
+        }
+    }
+    // Legacy single-project field — treat as a one-element scope list.
+    if let Some(s) = meta
+        .get("projectId")
+        .and_then(|v| v.as_str())
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+    {
+        if !ids.iter().any(|id| id == s) {
+            ids.push(s.to_string());
+        }
+    }
+    ids
+}
+
 /// Whether metadata allows the given method/path for an API project.
 pub fn instance_api_key_allows(
     key: &serde_json::Value,
@@ -1553,10 +1576,13 @@ pub fn instance_api_key_allows(
     path: &str,
 ) -> bool {
     let meta = key.get("metadata").unwrap_or(&serde_json::Value::Null);
-    if let Some(scoped) = meta.get("projectId").and_then(|v| v.as_str()) {
-        if !scoped.is_empty() && scoped != project_id && scoped != project_slug {
-            return false;
-        }
+    let scoped = metadata_scoped_project_ids(meta);
+    if !scoped.is_empty()
+        && !scoped
+            .iter()
+            .any(|id| id == project_id || id == project_slug)
+    {
+        return false;
     }
     if meta
         .get("readonly")

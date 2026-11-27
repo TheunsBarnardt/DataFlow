@@ -434,9 +434,10 @@ pub fn NdvDataPane(
                                                     key: "{c}",
                                                     class: Some("h-8 px-2 py-1".into()),
                                                     span {
-                                                        class: "cursor-grab",
+                                                        class: "cursor-grab select-none",
                                                         title: "Drag into a parameter",
-                                                        draggable: true,
+                                                        draggable: "true",
+                                                        "data-bf-expr": "{expr_drag}",
                                                         ondragstart: move |e| set_drag_transfer(&e, &expr_drag),
                                                         onclick: move |_| {
                                                             if let Some(cb) = on_insert_expr.as_ref() {
@@ -484,11 +485,14 @@ pub fn NdvDataPane(
                         for f in schema_fields.iter().take(60).cloned() {
                             li {
                                 key: "{f.path}",
-                                button {
-                                    r#type: "button",
+                                // Use a div — <button draggable> is unreliable in WebView2.
+                                div {
+                                    role: "button",
+                                    tabindex: "0",
                                     class: "flex w-full cursor-grab items-center justify-between gap-2 rounded px-1.5 py-1 text-left hover:bg-muted active:cursor-grabbing",
                                     title: "Drag into a parameter or click to insert",
-                                    draggable: true,
+                                    draggable: "true",
+                                    "data-bf-expr": "{f.expr}",
                                     ondragstart: {
                                         let expr = f.expr.clone();
                                         move |e| set_drag_transfer(&e, &expr)
@@ -501,8 +505,8 @@ pub fn NdvDataPane(
                                             }
                                         }
                                     },
-                                    span { class: "truncate font-mono text-[11px]", "{f.path}" }
-                                    span { class: "shrink-0 text-[10px] text-muted-foreground",
+                                    span { class: "truncate font-mono text-[11px] pointer-events-none", "{f.path}" }
+                                    span { class: "shrink-0 text-[10px] text-muted-foreground pointer-events-none",
                                         "{f.type_name} · {f.preview.chars().take(24).collect::<String>()}"
                                     }
                                 }

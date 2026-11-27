@@ -5,11 +5,12 @@ use crate::components::flow::{
     http_method_badge_class, merge_flow_into_workflow_json, PendingAddRequest, StudioNodeData,
 };
 use crate::components::icons::{
-    Boxes, ChevronDown, ChevronLeft, ChevronUp, Copy, Download, FlaskConical, History, MessageSquare,
-    MoreHorizontal, Pencil, Share2, Trash2, X,
+    Boxes, ChevronLeft, Copy, Download, FlaskConical, History, MessageSquare, MoreHorizontal,
+    Pencil, Share2, Trash2, X,
 };
 use crate::components::panels::{
-    json_bool, json_id, json_string, ChatPanel, NodeCatalogItem, NodesPanel, NodesPanelVariant,
+    api_endpoint_form_fields, build_run_input, json_bool, json_id, json_string, needs_execute_dialog,
+    ChatPanel, ExecuteWorkflowDialog, FormField, NodeCatalogItem, NodesPanel, NodesPanelVariant,
     RunsPanel,
 };
 use crate::components::ui::{
@@ -53,7 +54,7 @@ pub fn WorkflowEditor(
     #[props(default = "Projects".to_string())] list_label: String,
     on_back: EventHandler<()>,
     on_save: EventHandler<()>,
-    on_run: EventHandler<()>,
+    on_run: EventHandler<serde_json::Value>,
     on_add_node: EventHandler<NodeCatalogItem>,
     #[props(default)] on_reload: Option<EventHandler<()>>,
     #[props(default)] refresh_key: u32,
@@ -75,12 +76,31 @@ pub fn WorkflowEditor(
     let mut agent_open = use_signal(|| false);
     let mut nodes_open = use_signal(|| false);
     let mut triggers_only = use_signal(|| false);
-    let mut logs_open = use_signal(|| false);
     let mut renaming = use_signal(|| false);
     let mut name_draft = use_signal(|| workflow_name());
     let mut menu_open = use_signal(|| false);
     let mut confirm_delete = use_signal(|| false);
     let mut delete_busy = use_signal(|| false);
+    let mut execute_open = use_signal(|| false);
+    let mut execute_busy = use_signal(|| false);
+    let mut execute_params = use_signal(|| serde_json::json!({}));
+    let mut execute_fields = use_signal(Vec::<FormField>::new);
+
+    let on_execute_click = EventHandler::new(move |_| {
+        let (params, fields) = api_endpoint_form_fields(&doc_nodes());
+        if let Some(p) = params {
+            if needs_execute_dialog(&p, &fields) {
+                execute_params.set(p);
+                execute_fields.set(fields);
+                execute_open.set(true);
+            } else {
+                // apiEndpoint with no schema / anonymous auth — run immediately.
+                on_run.call(build_run_input(&p, &std::collections::HashMap::new()));
+            }
+        } else {
+            on_run.call(serde_json::json!({}));
+        }
+    });
     let mut history_open = use_signal(|| false);
     let mut history_events = use_signal(Vec::<serde_json::Value>::new);
     let mut history_loading = use_signal(|| false);
@@ -581,46 +601,39 @@ pub fn WorkflowEditor(
                 }
             }
 
+            // flex + flex-col so editor_main's flex-1/h-full resolve to a
+            // real height — dioxus-flow paints nothing when container is 0×0.
+            // Executions opens like the old bottom Logs drawer (Runs + Step history).
             div { class: "relative flex min-h-0 flex-1 flex-col",
-                if logs_open() {
+                if tab() == EditorTab::Executions {
                     ResizablePanelGroup {
                         orientation: ResizableOrientation::Vertical,
-                        initial_sizes: vec![65.0, 35.0],
+                        initial_sizes: vec![55.0, 45.0],
                         class: Some("relative min-h-0 flex-1".into()),
                         ResizablePanel {
                             panel_index: 0,
-                            min_pct: 30.0,
-                            max_pct: 85.0,
+                            min_pct: 25.0,
+                            max_pct: 80.0,
                             class: Some("relative flex min-h-0 flex-col".into()),
                             {editor_main(
-                                tab(),
                                 agent_open,
                                 nodes_open,
                                 triggers_only,
-                                show_details,
-                                wf_id_runs.clone(),
-                                refresh_key,
+                                false,
                                 running,
                                 on_add_node,
-                                on_run,
+                                on_execute_click,
                                 on_reload,
                                 canvas.clone(),
-                                details.clone(),
+                                None,
                             )}
                         }
                         ResizableHandle { handle_index: 0 }
                         ResizablePanel {
                             panel_index: 1,
-                            min_pct: 15.0,
-                            max_pct: 70.0,
+                            min_pct: 20.0,
+                            max_pct: 75.0,
                             class: Some("flex min-h-0 flex-col border-t bg-card".into()),
-                            button {
-                                r#type: "button",
-                                class: "flex w-full shrink-0 items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted/50",
-                                onclick: move |_| logs_open.set(false),
-                                ChevronDown { class: Some("h-3.5 w-3.5".into()) }
-                                "Logs"
-                            }
                             div { class: "min-h-0 flex-1 overflow-hidden",
                                 RunsPanel {
                                     refresh_key,
@@ -630,41 +643,44 @@ pub fn WorkflowEditor(
                         }
                     }
                 } else {
-                    div { class: "relative flex min-h-0 flex-1 flex-col",
-                        // flex + flex-col so editor_main's flex-1/h-full resolve to a
-                        // real height — dioxus-flow paints nothing when container is 0×0.
-                        div { class: "relative flex min-h-0 flex-1 flex-col",
-                            {editor_main(
-                                tab(),
-                                agent_open,
-                                nodes_open,
-                                triggers_only,
-                                show_details,
-                                wf_id_runs.clone(),
-                                refresh_key,
-                                running,
-                                on_add_node,
-                                on_run,
-                                on_reload,
-                                canvas,
-                                details,
-                            )}
-                        }
-                        div { class: "shrink-0 border-t bg-card",
-                            button {
-                                r#type: "button",
-                                class: "flex w-full items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted/50",
-                                onclick: move |_| logs_open.set(true),
-                                ChevronUp { class: Some("h-3.5 w-3.5".into()) }
-                                "Logs"
-                            }
-                        }
-                    }
+                    {editor_main(
+                        agent_open,
+                        nodes_open,
+                        triggers_only,
+                        show_details,
+                        running,
+                        on_add_node,
+                        on_execute_click,
+                        on_reload,
+                        canvas,
+                        details,
+                    )}
                 }
             }
 
             div { class: "sr-only",
                 "Workflow {workflow_id} — nodes: {flow_nodes().len()}, edges: {flow_edges().len()}"
+            }
+
+            if execute_open() {
+                ExecuteWorkflowDialog {
+                    parameters: execute_params(),
+                    fields: execute_fields(),
+                    busy: execute_busy(),
+                    on_cancel: move |_| {
+                        if !execute_busy() {
+                            execute_open.set(false);
+                        }
+                    },
+                    on_execute: move |input: serde_json::Value| {
+                        execute_busy.set(true);
+                        running.set(true);
+                        on_run.call(input);
+                        execute_busy.set(false);
+                        running.set(false);
+                        execute_open.set(false);
+                    },
+                }
             }
 
             if confirm_delete() {
@@ -731,53 +747,35 @@ fn urlencoding_quote(s: &str) -> String {
 
 #[allow(clippy::too_many_arguments)]
 fn editor_main(
-    tab: EditorTab,
     mut agent_open: Signal<bool>,
     mut nodes_open: Signal<bool>,
     mut triggers_only: Signal<bool>,
     show_details: bool,
-    workflow_id: String,
-    refresh_key: u32,
     mut running: Signal<bool>,
     on_add_node: EventHandler<NodeCatalogItem>,
-    on_run: EventHandler<()>,
+    on_execute_click: EventHandler<()>,
     on_reload: Option<EventHandler<()>>,
     canvas: Element,
     details: Option<Element>,
 ) -> Element {
     rsx! {
         div { class: "relative flex h-full min-h-0 w-full flex-1",
-            if tab == EditorTab::Editor {
-                div { class: "relative h-full min-h-0 min-w-0 flex-1",
-                    {editor_canvas_stack(
-                        agent_open,
-                        nodes_open,
-                        triggers_only,
-                        running,
-                        on_add_node,
-                        on_run,
-                        on_reload,
-                        canvas,
-                    )}
-                    if show_details {
-                        if let Some(details_el) = details {
-                            div { class: "absolute inset-0 z-40 min-w-0",
-                                {details_el}
-                            }
+            div { class: "relative h-full min-h-0 min-w-0 flex-1",
+                {editor_canvas_stack(
+                    agent_open,
+                    nodes_open,
+                    triggers_only,
+                    running,
+                    on_add_node,
+                    on_execute_click,
+                    on_reload,
+                    canvas,
+                )}
+                if show_details {
+                    if let Some(details_el) = details {
+                        div { class: "absolute inset-0 z-40 min-w-0",
+                            {details_el}
                         }
-                    }
-                }
-            } else {
-                div { class: "flex h-full min-h-0 w-full flex-1",
-                    div { class: "w-[min(100%,20rem)] shrink-0 border-r bg-card",
-                        RunsPanel {
-                            refresh_key,
-                            workflow_id: Some(workflow_id.clone()),
-                            list_only: true,
-                        }
-                    }
-                    div { class: "relative h-full min-h-0 min-w-0 flex-1",
-                        {canvas}
                     }
                 }
             }
@@ -792,7 +790,7 @@ fn editor_canvas_stack(
     mut triggers_only: Signal<bool>,
     mut running: Signal<bool>,
     on_add_node: EventHandler<NodeCatalogItem>,
-    on_run: EventHandler<()>,
+    on_execute_click: EventHandler<()>,
     on_reload: Option<EventHandler<()>>,
     canvas: Element,
 ) -> Element {
@@ -903,11 +901,7 @@ fn editor_canvas_stack(
                     size: ButtonSize::Lg,
                     class: Some("pointer-events-auto h-11 rounded-xl px-6 text-[13px] font-semibold tracking-tight shadow-[0_8px_28px_color-mix(in_oklch,var(--brand)_35%,transparent)]".into()),
                     disabled: running(),
-                    onclick: move |_| {
-                        running.set(true);
-                        on_run.call(());
-                        running.set(false);
-                    },
+                    onclick: move |_| on_execute_click.call(()),
                     FlaskConical { class: Some("h-4 w-4".into()) }
                     if running() { "Executing…" } else { "Execute workflow" }
                 }

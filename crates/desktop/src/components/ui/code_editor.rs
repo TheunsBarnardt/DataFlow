@@ -37,6 +37,42 @@ fn sanitize_dom_id(raw: &str) -> String {
         .collect()
 }
 
+/// Insert text at the live CodeMirror cursor; returns the full document afterwards.
+async fn insert_at_cursor(editor_id: &str, text: &str) -> Option<String> {
+    let result = document::eval(&format!(
+        r#"return (function(){{
+  const slot = window.__bfCm && window.__bfCm[{id}];
+  if (!slot || !slot.insertAtCursor) return null;
+  return slot.insertAtCursor({text});
+}})();"#,
+        id = serde_json::to_string(editor_id).unwrap_or_else(|_| "\"\"".into()),
+        text = serde_json::to_string(text).unwrap_or_else(|_| "\"\"".into()),
+    ))
+    .await
+    .ok()?;
+    match result {
+        Value::String(s) => Some(s),
+        _ => None,
+    }
+}
+
+async fn consume_drag_expr() -> Option<String> {
+    let result = document::eval(
+        r#"return (function(){
+  if (window.__bfExprDnD && typeof window.__bfExprDnD.consume === 'function') {
+    return window.__bfExprDnD.consume();
+  }
+  return null;
+})();"#,
+    )
+    .await
+    .ok()?;
+    match result {
+        Value::String(s) if !s.trim().is_empty() => Some(s),
+        _ => None,
+    }
+}
+
 #[component]
 pub fn CodeEditor(
     value: ReadSignal<String>,
@@ -81,7 +117,12 @@ pub fn CodeEditor(
             return;
         }
         bus.set(None);
-        on_change.call(normalize_drag_expr(&expr));
+        let normalized = normalize_drag_expr(&expr);
+        let editor_id = field_key.clone();
+        spawn(async move {
+            let full = insert_at_cursor(&editor_id, &normalized).await;
+            on_change.call(full.unwrap_or(normalized));
+        });
     });
 
     // Keep CM doc in sync after mount.
@@ -217,6 +258,8 @@ pub fn CodeEditor(
                         }
                     }
                 },
+                "data-bf-drop-expr": "1",
+                "data-bf-editor-id": "{editor_id}",
                 ondragover: move |e| {
                     if read_only { return; }
                     e.prevent_default();
@@ -230,25 +273,23 @@ pub fn CodeEditor(
                         e.prevent_default();
                         drag_over.set(false);
                         let dt = e.data().data_transfer();
-                        let expr = dt.get_data(DF_DRAG_MIME).or_else(|| dt.get_as_text());
-                        let Some(expr) = expr.filter(|s| !s.trim().is_empty()) else { return; };
-                        let normalized = normalize_drag_expr(&expr);
+                        let from_dt = dt
+                            .get_data(DF_DRAG_MIME)
+                            .or_else(|| dt.get_as_text())
+                            .filter(|s| !s.trim().is_empty());
                         let editor_id = editor_id.clone();
-                        let insert = normalized.clone();
                         spawn(async move {
-                            let _ = document::eval(&format!(
-                                r#"return (function(){{
-  const slot = window.__bfCm && window.__bfCm[{id}];
-  if (!slot) return false;
-  slot.insertAtCursor({text});
-  return true;
-}})();"#,
-                                id = serde_json::to_string(&editor_id).unwrap_or_else(|_| "\"\"".into()),
-                                text = serde_json::to_string(&insert).unwrap_or_else(|_| "\"\"".into()),
-                            ))
-                            .await;
+                            let expr = match from_dt {
+                                Some(s) => s,
+                                None => match consume_drag_expr().await {
+                                    Some(s) => s,
+                                    None => return,
+                                },
+                            };
+                            let normalized = normalize_drag_expr(&expr);
+                            let full = insert_at_cursor(&editor_id, &normalized).await;
+                            on_change.call(full.unwrap_or(normalized));
                         });
-                        on_change.call(normalized);
                     }
                 },
                 div {

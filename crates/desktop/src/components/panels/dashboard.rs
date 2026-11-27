@@ -6,7 +6,8 @@ use crate::components::layout::NavSection;
 use crate::components::ui::{
     Badge, BadgeVariant, Button, ButtonSize, ButtonVariant, Card, CardAction, CardContent,
     CardDescription, CardHeader, CardSize, CardTitle, Empty, EmptyDescription, EmptyHeader,
-    EmptyMedia, EmptyMediaVariant, EmptyTitle, Skeleton, Switch,
+    EmptyMedia, EmptyMediaVariant, EmptyTitle, Item, ItemActions, ItemContent, ItemDescription,
+    ItemGroup, ItemSize, ItemTitle, Skeleton, Switch,
 };
 
 #[component]
@@ -139,7 +140,7 @@ pub fn DashboardPanel(
                             }
                         }
                         CardContent { class: Some("pt-1".into()),
-                            div { class: "flex flex-col gap-1",
+                            ItemGroup {
                                 for w in wf.iter().take(6) {
                                     {
                                         let id = json_id(w);
@@ -148,21 +149,28 @@ pub fn DashboardPanel(
                                         let id_open = id.clone();
                                         let id_toggle = id.clone();
                                         rsx! {
-                                            div {
+                                            Item {
                                                 key: "{id}",
-                                                class: "flex items-center justify-between gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted",
-                                                Button {
-                                                    variant: ButtonVariant::Link,
-                                                    class: Some("min-w-0 h-auto flex-1 justify-start truncate p-0 text-left font-medium".into()),
-                                                    onclick: move |_| on_open_workflow.call(id_open.clone()),
-                                                    "{name}"
+                                                size: ItemSize::Xs,
+                                                class: Some("hover:bg-muted".into()),
+                                                ItemContent { class: Some("min-w-0".into()),
+                                                    ItemTitle { class: Some("w-full min-w-0".into()),
+                                                        Button {
+                                                            variant: ButtonVariant::Link,
+                                                            class: Some("min-w-0 h-auto w-full justify-start truncate p-0 text-left font-medium".into()),
+                                                            onclick: move |_| on_open_workflow.call(id_open.clone()),
+                                                            "{name}"
+                                                        }
+                                                    }
                                                 }
-                                                Switch {
-                                                    checked: enabled,
-                                                    size: Some("sm".into()),
-                                                    on_checked_change: move |checked| {
-                                                        on_toggle_enabled.call((id_toggle.clone(), checked));
-                                                    },
+                                                ItemActions {
+                                                    Switch {
+                                                        checked: enabled,
+                                                        size: Some("sm".into()),
+                                                        on_checked_change: move |checked| {
+                                                            on_toggle_enabled.call((id_toggle.clone(), checked));
+                                                        },
+                                                    }
                                                 }
                                             }
                                         }
@@ -204,7 +212,7 @@ pub fn DashboardPanel(
                             }
                         }
                         CardContent { class: Some("pt-1".into()),
-                            div { class: "flex flex-col gap-1",
+                            ItemGroup {
                                 for r in runs().iter() {
                                     {
                                         let id = json_id(r);
@@ -221,22 +229,26 @@ pub fn DashboardPanel(
                                             _ => BadgeVariant::Secondary,
                                         };
                                         rsx! {
-                                            div {
+                                            Item {
                                                 key: "{id}",
-                                                class: "flex flex-col gap-1 rounded-md px-2 py-2 text-sm hover:bg-muted/60",
-                                                div { class: "flex items-center justify-between gap-2",
-                                                    div { class: "min-w-0",
-                                                        div { class: "truncate font-medium", "{name}" }
-                                                        div { class: "text-xs text-muted-foreground",
-                                                            "{trigger} · {started}"
+                                                size: ItemSize::Xs,
+                                                class: Some("items-start hover:bg-muted/60".into()),
+                                                ItemContent { class: Some("min-w-0 gap-0.5".into()),
+                                                    ItemTitle { class: Some("w-full min-w-0 truncate".into()),
+                                                        "{name}"
+                                                    }
+                                                    ItemDescription { class: Some("text-xs".into()),
+                                                        "{trigger} · {started}"
+                                                    }
+                                                    if let Some(err) = error {
+                                                        ItemDescription {
+                                                            class: Some("text-xs leading-snug text-destructive".into()),
+                                                            "{err}"
                                                         }
                                                     }
-                                                    Badge { variant, "{status}" }
                                                 }
-                                                if let Some(err) = error {
-                                                    div { class: "text-xs leading-snug text-destructive line-clamp-2",
-                                                        "{err}"
-                                                    }
+                                                ItemActions { class: Some("shrink-0 self-center".into()),
+                                                    Badge { variant, "{status}" }
                                                 }
                                             }
                                         }

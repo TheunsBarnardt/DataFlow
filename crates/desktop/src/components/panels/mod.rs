@@ -1,4 +1,5 @@
 mod binary_viewer;
+mod execute_workflow_dialog;
 mod webhook_listen_panel;
 mod condition_builder;
 mod credentials_picker;
@@ -30,6 +31,10 @@ pub use audit::AuditPanel;
 pub use chat::ChatPanel;
 pub use credentials::{CredentialDialog, CredentialsPanel};
 pub use dashboard::DashboardPanel;
+pub use execute_workflow_dialog::{
+    api_endpoint_form_fields, build_run_input, needs_execute_dialog, ExecuteWorkflowDialog,
+    FormField,
+};
 pub use insights::InsightsPanel;
 pub use login::LoginPage;
 pub use node_details::{NodeDetailsPanel, NodeUpdate};

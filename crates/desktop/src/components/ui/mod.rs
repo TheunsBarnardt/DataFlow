@@ -9,9 +9,11 @@ mod checkbox;
 mod code_editor;
 mod code_textarea;
 mod confirm_delete_dialog;
+mod dialog;
 mod data_table;
 mod empty;
 mod input;
+mod item;
 mod label;
 mod page_loader;
 mod resizable;
@@ -34,6 +36,10 @@ pub use checkbox::Checkbox;
 pub use code_editor::CodeEditor;
 pub use code_textarea::CodeTextarea;
 pub use confirm_delete_dialog::ConfirmDeleteDialog;
+pub use dialog::{
+    Dialog, DialogAction, DialogBody, DialogClose, DialogContent, DialogDescription, DialogFooter,
+    DialogHeader, DialogTitle,
+};
 pub use data_table::{
     DataTable, DataTableBody, DataTableCaption, DataTableCell, DataTableFooter, DataTableHead,
     DataTableHeader, DataTableRow, DataTableWrapper,
@@ -42,6 +48,10 @@ pub use empty::{
     Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
 };
 pub use input::Input;
+pub use item::{
+    Item, ItemActions, ItemContent, ItemDescription, ItemFooter, ItemGroup, ItemHeader, ItemMedia,
+    ItemMediaVariant, ItemSeparator, ItemSize, ItemTitle, ItemVariant,
+};
 pub use label::Label;
 pub use page_loader::PageLoader;
 pub use resizable::{ResizableHandle, ResizableOrientation, ResizablePanel, ResizablePanelGroup};

@@ -48,10 +48,56 @@ pub fn with_config(cfg: Config) -> Config {
     cfg
 }
 
+/// HTML5 drag bridge: Dioxus desktop stubs DataTransfer.set_data, so we set the
+/// real browser payload from `[data-bf-expr]` elements during dragstart.
+const EXPR_DND_JS: &str = r#"
+(function(){
+  if (window.__bfExprDnD && window.__bfExprDnD.bound) return true;
+  window.__bfExprDnD = {
+    mime: "application/x-dataflow-expr",
+    payload: null,
+    bound: false,
+    normalize: function(expr) {
+      var t = String(expr || "").trim();
+      if (!t) return "";
+      if (t.indexOf("={{") === 0) return t;
+      if (t.indexOf("{{") === 0) return "=" + t;
+      return "={{ " + t + " }}";
+    },
+    consume: function() {
+      var v = this.payload;
+      this.payload = null;
+      return v;
+    },
+    bind: function() {
+      if (this.bound) return;
+      this.bound = true;
+      var self = this;
+      document.addEventListener("dragstart", function(e) {
+        var el = e.target && e.target.closest && e.target.closest("[data-bf-expr]");
+        if (!el || !e.dataTransfer) return;
+        var expr = el.getAttribute("data-bf-expr") || "";
+        if (!expr) return;
+        self.payload = expr;
+        try {
+          e.dataTransfer.setData(self.mime, expr);
+          e.dataTransfer.setData("text/plain", expr);
+          e.dataTransfer.effectAllowed = "copy";
+        } catch (_) {}
+      }, true);
+    }
+  };
+  window.__bfExprDnD.bind();
+  return true;
+})()
+"#;
+
 /// Load `window.bfCodeMirror` once by evaluating the vendored IIFE in the webview.
 pub fn preload() {
     use_effect(|| {
         spawn(async move {
+            let _ = document::eval(EXPR_DND_JS).await;
+
             if let Ok(v) =
                 document::eval("return !!(window.bfCodeMirror && window.bfCodeMirror.create)").await
             {
