@@ -3,8 +3,40 @@
 use serde_json::{json, Map, Value};
 
 pub const SCHEMA_PROP_TYPES: &[&str] = &[
-    "string", "integer", "number", "boolean", "array", "object",
+    "string", "integer", "number", "boolean", "date", "date-time", "array", "object",
 ];
+
+/// Map a UI row type to JSON Schema `type` + optional `format`.
+fn schema_type_and_format(prop_type: &str) -> (&'static str, Option<&'static str>) {
+    match prop_type {
+        "date" => ("string", Some("date")),
+        "date-time" => ("string", Some("date-time")),
+        "integer" => ("integer", None),
+        "number" => ("number", None),
+        "boolean" => ("boolean", None),
+        "array" => ("array", None),
+        "object" => ("object", None),
+        _ => ("string", None),
+    }
+}
+
+/// Map JSON Schema property to a UI row type (honours `format` for dates).
+fn ui_prop_type(prop: &Value) -> String {
+    let raw_type = prop.get("type").and_then(|v| v.as_str()).unwrap_or("string");
+    let format = prop.get("format").and_then(|v| v.as_str()).unwrap_or("");
+    if raw_type == "string" {
+        match format {
+            "date" => return "date".into(),
+            "date-time" => return "date-time".into(),
+            _ => {}
+        }
+    }
+    if SCHEMA_PROP_TYPES.contains(&raw_type) {
+        raw_type.to_string()
+    } else {
+        "string".into()
+    }
+}
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct SchemaPropertyRow {
@@ -79,6 +111,8 @@ fn coerce_example(prop_type: &str, raw: &str) -> Value {
             "boolean" => json!(false),
             "array" => json!([]),
             "object" => json!({}),
+            "date" => json!("2026-01-01"),
+            "date-time" => json!("2026-01-01T00:00:00.000Z"),
             _ => json!(""),
         };
     }
@@ -103,6 +137,7 @@ fn coerce_example(prop_type: &str, raw: &str) -> Value {
                 json!({ "value": trimmed })
             }
         }),
+        // date / date-time are JSON strings (ISO-8601)
         _ => Value::String(trimmed.to_string()),
     }
 }
@@ -129,15 +164,7 @@ pub fn schema_to_property_rows(schema: &Value) -> Vec<SchemaPropertyRow> {
     props
         .into_iter()
         .map(|(name, prop)| {
-            let raw_type = prop
-                .get("type")
-                .and_then(|v| v.as_str())
-                .unwrap_or("string");
-            let prop_type = if SCHEMA_PROP_TYPES.contains(&raw_type) {
-                raw_type.to_string()
-            } else {
-                "string".into()
-            };
+            let prop_type = ui_prop_type(&prop);
             let required = required.contains(&name);
             SchemaPropertyRow {
                 name,
@@ -157,8 +184,12 @@ pub fn property_rows_to_schema(rows: &[SchemaPropertyRow]) -> Value {
         if name.is_empty() {
             continue;
         }
+        let (schema_type, format) = schema_type_and_format(&row.prop_type);
         let mut prop = Map::new();
-        prop.insert("type".into(), Value::String(row.prop_type.clone()));
+        prop.insert("type".into(), Value::String(schema_type.into()));
+        if let Some(fmt) = format {
+            prop.insert("format".into(), Value::String(fmt.into()));
+        }
         if !row.example.trim().is_empty() {
             let ex = coerce_example(&row.prop_type, &row.example);
             prop.insert("default".into(), ex.clone());

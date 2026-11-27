@@ -4,8 +4,9 @@ use crate::components::icons::Variable as VariableIcon;
 use crate::components::panels::{json_id, json_string};
 use crate::components::ui::{
     Alert, AlertDescription, AlertVariant, Button, ButtonSize, ButtonVariant, Card,
-    ConfirmDeleteDialog, Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant,
-    EmptyTitle, Input, PageLoader,
+    ConfirmDeleteDialog, DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeader,
+    DataTableRow, Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyMediaVariant, EmptyTitle,
+    Input, PageLoader,
 };
 
 #[component]
@@ -164,74 +165,33 @@ pub fn VariablesPanel() -> Element {
             div { class: "min-h-0 flex-1 overflow-y-auto",
                 div { class: "p-6",
                     Card { class: Some("overflow-hidden p-0 gap-0".into()),
-                        div { class: "grid grid-cols-[1.2fr_1.4fr_1.2fr_auto] gap-3 border-b bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground",
-                            div { "Key" }
-                            div { "Value" }
-                            div { "Usage syntax" }
-                            div { class: "text-right", "Actions" }
-                        }
-
-                        if editing_id().as_deref() == Some("new") {
-                            div { class: "grid grid-cols-[1.2fr_1.4fr_1.2fr_auto] items-center gap-3 border-b px-4 py-3",
-                                Input {
-                                    placeholder: Some("Key".into()),
-                                    value: draft_key(),
-                                    oninput: move |e: FormEvent| draft_key.set(e.value()),
-                                }
-                                Input {
-                                    placeholder: Some("Value".into()),
-                                    value: draft_value(),
-                                    oninput: move |e: FormEvent| draft_value.set(e.value()),
-                                }
-                                code { class: "truncate text-sm text-muted-foreground",
-                                    {
-                                        let key = draft_key();
-                                        let key = key.trim();
-                                        let shown = if key.is_empty() { "..." } else { key };
-                                        format!("$vars.{shown}")
-                                    }
-                                }
-                                div { class: "flex justify-end gap-2",
-                                    Button {
-                                        size: ButtonSize::Sm,
-                                        variant: ButtonVariant::Ghost,
-                                        onclick: cancel_edit,
-                                        "Cancel"
-                                    }
-                                    Button {
-                                        size: ButtonSize::Sm,
-                                        disabled: busy(),
-                                        onclick: save,
-                                        "Save"
-                                    }
+                        DataTable { class: Some("max-w-none".into()),
+                            DataTableHeader { class: Some("bg-muted/40 text-xs uppercase tracking-wide".into()),
+                                DataTableRow {
+                                    DataTableHead { class: Some("px-4 py-2".into()), "Key" }
+                                    DataTableHead { class: Some("px-4 py-2".into()), "Value" }
+                                    DataTableHead { class: Some("px-4 py-2".into()), "Usage syntax" }
+                                    DataTableHead { class: Some("px-4 py-2 text-right".into()), "Actions" }
                                 }
                             }
-                        }
-
-                        for item in filtered.iter().cloned() {
-                            {
-                                let id = json_id(&item);
-                                let key = item.get("key").map(json_string).unwrap_or_default();
-                                let value = item.get("value").map(json_string).unwrap_or_default();
-                                let is_editing = editing_id().as_deref() == Some(id.as_str());
-                                let del_id = id.clone();
-                                let del_key = key.clone();
-                                let edit_id = id.clone();
-                                let edit_key = key.clone();
-                                let edit_value = value.clone();
-                                rsx! {
-                                    div {
-                                        key: "{id}",
-                                        class: "grid grid-cols-[1.2fr_1.4fr_1.2fr_auto] items-center gap-3 border-b px-4 py-3 last:border-b-0",
-                                        if is_editing {
+                            DataTableBody {
+                                if editing_id().as_deref() == Some("new") {
+                                    DataTableRow {
+                                        DataTableCell { class: Some("px-4 py-3".into()),
                                             Input {
+                                                placeholder: Some("Key".into()),
                                                 value: draft_key(),
                                                 oninput: move |e: FormEvent| draft_key.set(e.value()),
                                             }
+                                        }
+                                        DataTableCell { class: Some("px-4 py-3".into()),
                                             Input {
+                                                placeholder: Some("Value".into()),
                                                 value: draft_value(),
                                                 oninput: move |e: FormEvent| draft_value.set(e.value()),
                                             }
+                                        }
+                                        DataTableCell { class: Some("px-4 py-3".into()),
                                             code { class: "truncate text-sm text-muted-foreground",
                                                 {
                                                     let key = draft_key();
@@ -240,6 +200,8 @@ pub fn VariablesPanel() -> Element {
                                                     format!("$vars.{shown}")
                                                 }
                                             }
+                                        }
+                                        DataTableCell { class: Some("px-4 py-3".into()),
                                             div { class: "flex justify-end gap-2",
                                                 Button {
                                                     size: ButtonSize::Sm,
@@ -254,43 +216,112 @@ pub fn VariablesPanel() -> Element {
                                                     "Save"
                                                 }
                                             }
-                                        } else {
-                                            div { class: "truncate text-sm font-medium", "{key}" }
-                                            div { class: "truncate text-sm text-muted-foreground", "{value}" }
-                                            code { class: "truncate text-sm text-muted-foreground", "$vars.{key}" }
-                                            div { class: "flex justify-end gap-2",
-                                                Button {
-                                                    size: ButtonSize::Sm,
-                                                    variant: ButtonVariant::Outline,
-                                                    onclick: move |_| {
-                                                        editing_id.set(Some(edit_id.clone()));
-                                                        draft_key.set(edit_key.clone());
-                                                        draft_value.set(edit_value.clone());
-                                                    },
-                                                    "Edit"
-                                                }
-                                                Button {
-                                                    size: ButtonSize::Sm,
-                                                    variant: ButtonVariant::Ghost,
-                                                    onclick: move |_| {
-                                                        confirm_delete.set(Some((del_id.clone(), del_key.clone())));
-                                                    },
-                                                    "Delete"
+                                        }
+                                    }
+                                }
+
+                                for item in filtered.iter().cloned() {
+                                    {
+                                        let id = json_id(&item);
+                                        let key = item.get("key").map(json_string).unwrap_or_default();
+                                        let value = item.get("value").map(json_string).unwrap_or_default();
+                                        let is_editing = editing_id().as_deref() == Some(id.as_str());
+                                        let del_id = id.clone();
+                                        let del_key = key.clone();
+                                        let edit_id = id.clone();
+                                        let edit_key = key.clone();
+                                        let edit_value = value.clone();
+                                        rsx! {
+                                            DataTableRow {
+                                                key: "{id}",
+                                                if is_editing {
+                                                    DataTableCell { class: Some("px-4 py-3".into()),
+                                                        Input {
+                                                            value: draft_key(),
+                                                            oninput: move |e: FormEvent| draft_key.set(e.value()),
+                                                        }
+                                                    }
+                                                    DataTableCell { class: Some("px-4 py-3".into()),
+                                                        Input {
+                                                            value: draft_value(),
+                                                            oninput: move |e: FormEvent| draft_value.set(e.value()),
+                                                        }
+                                                    }
+                                                    DataTableCell { class: Some("px-4 py-3".into()),
+                                                        code { class: "truncate text-sm text-muted-foreground",
+                                                            {
+                                                                let key = draft_key();
+                                                                let key = key.trim();
+                                                                let shown = if key.is_empty() { "..." } else { key };
+                                                                format!("$vars.{shown}")
+                                                            }
+                                                        }
+                                                    }
+                                                    DataTableCell { class: Some("px-4 py-3".into()),
+                                                        div { class: "flex justify-end gap-2",
+                                                            Button {
+                                                                size: ButtonSize::Sm,
+                                                                variant: ButtonVariant::Ghost,
+                                                                onclick: cancel_edit,
+                                                                "Cancel"
+                                                            }
+                                                            Button {
+                                                                size: ButtonSize::Sm,
+                                                                disabled: busy(),
+                                                                onclick: save,
+                                                                "Save"
+                                                            }
+                                                        }
+                                                    }
+                                                } else {
+                                                    DataTableCell { class: Some("truncate px-4 py-3 font-medium".into()), "{key}" }
+                                                    DataTableCell { class: Some("truncate px-4 py-3 text-muted-foreground".into()), "{value}" }
+                                                    DataTableCell { class: Some("px-4 py-3".into()),
+                                                        code { class: "truncate text-sm text-muted-foreground", "$vars.{key}" }
+                                                    }
+                                                    DataTableCell { class: Some("px-4 py-3".into()),
+                                                        div { class: "flex justify-end gap-2",
+                                                            Button {
+                                                                size: ButtonSize::Sm,
+                                                                variant: ButtonVariant::Outline,
+                                                                onclick: move |_| {
+                                                                    editing_id.set(Some(edit_id.clone()));
+                                                                    draft_key.set(edit_key.clone());
+                                                                    draft_value.set(edit_value.clone());
+                                                                },
+                                                                "Edit"
+                                                            }
+                                                            Button {
+                                                                size: ButtonSize::Sm,
+                                                                variant: ButtonVariant::Ghost,
+                                                                onclick: move |_| {
+                                                                    confirm_delete.set(Some((del_id.clone(), del_key.clone())));
+                                                                },
+                                                                "Delete"
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                            }
-                        }
-                        if filtered.is_empty() && editing_id().as_deref() != Some("new") {
-                            Empty { class: Some("border-0 py-10".into()),
-                                EmptyHeader {
-                                    EmptyMedia { variant: EmptyMediaVariant::Icon,
-                                        VariableIcon { class: Some("size-5".into()) }
+                                if filtered.is_empty() && editing_id().as_deref() != Some("new") {
+                                    DataTableRow {
+                                        DataTableCell {
+                                            colspan: Some(4),
+                                            class: Some("p-0".into()),
+                                            Empty { class: Some("border-0 py-10".into()),
+                                                EmptyHeader {
+                                                    EmptyMedia { variant: EmptyMediaVariant::Icon,
+                                                        VariableIcon { class: Some("size-5".into()) }
+                                                    }
+                                                    EmptyTitle { class: Some("text-sm".into()), "No variables yet" }
+                                                    EmptyDescription { "Click Add variable to create one." }
+                                                }
+                                            }
+                                        }
                                     }
-                                    EmptyTitle { class: Some("text-sm".into()), "No variables yet" }
-                                    EmptyDescription { "Click Add variable to create one." }
                                 }
                             }
                         }

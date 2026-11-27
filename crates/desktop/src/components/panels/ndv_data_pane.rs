@@ -4,7 +4,10 @@ use dioxus::prelude::*;
 use serde_json::Value;
 
 use super::binary_viewer::{has_binary_data, BinaryViewer};
-use crate::components::ui::CodeEditor;
+use crate::components::ui::{
+    CodeEditor, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableWrapper, Tabs,
+    TabsList, TabsTrigger,
+};
 use crate::format_code::CodeLanguage;
 
 pub const DF_DRAG_MIME: &str = "application/x-dataflow-expr";
@@ -263,7 +266,7 @@ pub fn NdvDataPane(
 ) -> Element {
     let mut view = use_signal(|| View::Schema);
     let io_tabs = input_data.is_some() && data.is_some();
-    let mut io_tab = use_signal(|| "output");
+    let mut io_tab = use_signal(|| "output".to_string());
     let root = expr_prefix.unwrap_or_else(|| "$json".into());
     // Always allocate — Json view mounts Monaco; keep hook order stable across tabs.
     let mut json_value = use_signal(String::new);
@@ -341,40 +344,59 @@ pub fn NdvDataPane(
                 "{title}"
             }
             if io_tabs {
-                div { class: "flex items-center gap-0.5 rounded-md bg-muted/50 p-0.5",
-                    button {
-                        r#type: "button",
-                        class: if io_tab() == "input" {
-                            "flex-1 rounded px-2 py-1 text-[10px] font-medium bg-card text-foreground shadow-sm"
-                        } else {
-                            "flex-1 rounded px-2 py-1 text-[10px] font-medium text-muted-foreground"
-                        },
-                        onclick: move |_| io_tab.set("input"),
-                        "Input"
-                    }
-                    button {
-                        r#type: "button",
-                        class: if io_tab() == "output" {
-                            "flex-1 rounded px-2 py-1 text-[10px] font-medium bg-card text-foreground shadow-sm"
-                        } else {
-                            "flex-1 rounded px-2 py-1 text-[10px] font-medium text-muted-foreground"
-                        },
-                        onclick: move |_| io_tab.set("output"),
-                        "Output"
+                Tabs {
+                    class: Some("gap-0 w-full".into()),
+                    value: Some(io_tab()),
+                    on_value_change: move |next: String| io_tab.set(next),
+                    TabsList { class: Some("h-7 w-full".into()),
+                        TabsTrigger {
+                            value: "input".to_string(),
+                            class: Some("flex-1 px-2 text-[10px]".into()),
+                            "Input"
+                        }
+                        TabsTrigger {
+                            value: "output".to_string(),
+                            class: Some("flex-1 px-2 text-[10px]".into()),
+                            "Output"
+                        }
                     }
                 }
             }
-            div { class: "flex items-center gap-0.5 rounded-md bg-muted/50 p-0.5",
-                for (v, label) in [(View::Schema, "schema"), (View::Table, "table"), (View::Json, "json")] {
-                    button {
-                        r#type: "button",
-                        class: if view() == v {
-                            "flex-1 rounded px-2 py-1 text-[10px] font-medium capitalize bg-card text-foreground shadow-sm"
-                        } else {
-                            "flex-1 rounded px-2 py-1 text-[10px] font-medium capitalize text-muted-foreground"
+            {
+                let view_tab = match view() {
+                    View::Schema => "schema",
+                    View::Table => "table",
+                    View::Json => "json",
+                }
+                .to_string();
+                rsx! {
+                    Tabs {
+                        class: Some("gap-0 w-full".into()),
+                        value: Some(view_tab),
+                        on_value_change: move |next: String| {
+                            view.set(match next.as_str() {
+                                "table" => View::Table,
+                                "json" => View::Json,
+                                _ => View::Schema,
+                            });
                         },
-                        onclick: move |_| view.set(v),
-                        "{label}"
+                        TabsList { class: Some("h-7 w-full".into()),
+                            TabsTrigger {
+                                value: "schema".to_string(),
+                                class: Some("flex-1 px-2 text-[10px] capitalize".into()),
+                                "schema"
+                            }
+                            TabsTrigger {
+                                value: "table".to_string(),
+                                class: Some("flex-1 px-2 text-[10px] capitalize".into()),
+                                "table"
+                            }
+                            TabsTrigger {
+                                value: "json".to_string(),
+                                class: Some("flex-1 px-2 text-[10px] capitalize".into()),
+                                "json"
+                            }
+                        }
                     }
                 }
             }
@@ -394,23 +416,23 @@ pub fn NdvDataPane(
                     }
                 }
             } else if view() == View::Table {
-                div { class: "min-h-0 flex-1 overflow-auto rounded-md border",
+                TableWrapper { class: Some("min-h-0 flex-1 max-h-none rounded-md".into()),
                     if table_rows.is_empty() {
                         p { class: "p-2 text-[11px] text-muted-foreground", "{empty_hint}" }
                     } else {
-                        table { class: "w-full border-collapse text-left text-[10px]",
-                            thead { class: "sticky top-0 bg-muted/80",
-                                tr {
-                                    th { class: "border-b px-2 py-1 font-medium", "#" }
+                        Table { class: Some("text-[10px] max-w-none".into()),
+                            TableHeader { class: Some("bg-muted/80".into()),
+                                TableRow {
+                                    TableHead { class: Some("h-8 px-2 py-1".into()), "#" }
                                     for c in columns.iter() {
                                         {
                                             let expr = format!("={{{{ {root}.{c} }}}}");
                                             let expr_drag = expr.clone();
                                             let expr_click = expr.clone();
                                             rsx! {
-                                                th {
+                                                TableHead {
                                                     key: "{c}",
-                                                    class: "border-b px-2 py-1 font-medium",
+                                                    class: Some("h-8 px-2 py-1".into()),
                                                     span {
                                                         class: "cursor-grab",
                                                         title: "Drag into a parameter",
@@ -429,20 +451,20 @@ pub fn NdvDataPane(
                                     }
                                 }
                             }
-                            tbody {
+                            TableBody {
                                 for (i, row) in table_rows.iter().take(50).enumerate() {
-                                    tr {
+                                    TableRow {
                                         key: "{i}",
-                                        class: "odd:bg-muted/20",
-                                        td { class: "border-b px-2 py-1 text-muted-foreground", "{i}" }
+                                        class: Some("odd:bg-muted/20".into()),
+                                        TableCell { class: Some("p-0 px-2 py-1 text-muted-foreground".into()), "{i}" }
                                         for c in columns.iter() {
                                             {
                                                 let cell = cell_display(row.get(c));
                                                 rsx! {
-                                                    td {
+                                                    TableCell {
                                                         key: "{c}",
-                                                        class: "max-w-[10rem] truncate border-b px-2 py-1",
-                                                        title: "{cell}",
+                                                        class: Some("max-w-[10rem] truncate p-0 px-2 py-1".into()),
+                                                        title: Some(cell.clone()),
                                                         "{cell}"
                                                     }
                                                 }

@@ -4,7 +4,8 @@ use crate::components::icons::{ArrowDown, ArrowUp, ChevronRight, RefreshCw};
 use crate::components::panels::json_string;
 use crate::components::ui::{
     Alert, AlertDescription, AlertVariant, Button, ButtonSize, ButtonVariant, Card, CardContent,
-    CardSize, Empty, EmptyDescription, EmptyHeader,
+    CardSize, DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeader,
+    DataTableRow, DataTableWrapper, Empty, EmptyDescription, EmptyHeader,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -678,16 +679,17 @@ pub fn InsightsPanel(#[props(default)] refresh_key: u32) -> Element {
                     }
                     div {
                         h3 { class: "mb-2 text-sm font-semibold", "Breakdown by workflow" }
-                        div { class: "overflow-x-auto rounded-md border",
-                            table { class: "w-full min-w-[720px] text-left text-sm",
-                                thead { class: "border-b bg-muted/40 text-xs text-muted-foreground",
-                                    tr {
+                        DataTableWrapper { class: Some("overflow-x-auto max-h-none".into()),
+                            DataTable { class: Some("min-w-[720px] max-w-none".into()),
+                                DataTableHeader { class: Some("bg-muted/40 text-xs".into()),
+                                    DataTableRow {
                                         for col in TABLE_COLUMNS {
                                             {
                                                 let active = sort_key() == col;
                                                 rsx! {
-                                                    th { class: "px-3 py-2 font-medium",
+                                                    DataTableHead {
                                                         key: "{col.json_key()}",
+                                                        class: Some("px-3 py-2".into()),
                                                         button {
                                                             class: "inline-flex items-center gap-1 hover:text-foreground",
                                                             onclick: move |_| {
@@ -713,29 +715,29 @@ pub fn InsightsPanel(#[props(default)] refresh_key: u32) -> Element {
                                         }
                                     }
                                 }
-                                tbody {
+                                DataTableBody {
                                     for row in rows.iter() {
                                         {
                                             let wf_id = row.get("workflowId").map(json_string).unwrap_or_default();
                                             let name = row.get("workflowName").map(json_string).unwrap_or_default();
                                             rsx! {
-                                                tr { class: "border-b last:border-0 hover:bg-muted/30",
+                                                DataTableRow {
                                                     key: "{wf_id}",
-                                                    td { class: "px-3 py-2.5",
+                                                    DataTableCell { class: Some("px-3 py-2.5".into()),
                                                         span { class: "font-medium underline-offset-2 hover:underline", "{name}" }
                                                     }
                                                     for col in [SortKey::Total, SortKey::Failed, SortKey::FailureRate, SortKey::AverageRunTimeMs] {
-                                                        td { class: "px-3 py-2.5 tabular-nums", "{format_cell(col, row)}" }
+                                                        DataTableCell { class: Some("px-3 py-2.5 tabular-nums".into()), "{format_cell(col, row)}" }
                                                     }
                                                 }
                                             }
                                         }
                                     }
                                     if !loading() && insights().is_some() && rows.is_empty() {
-                                        tr {
-                                            td {
-                                                colspan: "5",
-                                                class: "p-0",
+                                        DataTableRow {
+                                            DataTableCell {
+                                                colspan: Some(5),
+                                                class: Some("p-0".into()),
                                                 Empty {
                                                     class: Some("border-0 py-8".into()),
                                                     EmptyHeader {

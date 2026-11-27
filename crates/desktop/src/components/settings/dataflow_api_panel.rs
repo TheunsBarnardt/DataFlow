@@ -2,7 +2,8 @@ use dioxus::prelude::*;
 
 use crate::components::ui::{
     Alert, AlertDescription, AlertVariant, Button, ButtonVariant, Card, CardContent, CardHeader,
-    CardTitle, ConfirmDeleteDialog, Empty, EmptyDescription, Input, Label, Switch,
+    CardTitle, ConfirmDeleteDialog, Empty, EmptyDescription, Input, Label, Select, SelectOption,
+    Switch,
 };
 
 #[derive(Clone)]
@@ -320,28 +321,28 @@ pub fn DataFlowApiPanel() -> Element {
                             Label { class: Some("text-xs text-muted-foreground".into()),
                                 "Expires"
                             }
-                            select {
-                                class: "mt-1 flex h-9 w-full rounded-md border bg-background px-3 text-sm",
+                            Select {
+                                class: Some("mt-1".into()),
                                 value: expires_in(),
                                 onchange: move |e: FormEvent| expires_in.set(e.value()),
-                                option { value: "", "No expiry" }
-                                option { value: "604800", "7 days" }
-                                option { value: "2592000", "30 days" }
-                                option { value: "7776000", "90 days" }
-                                option { value: "31536000", "1 year" }
+                                SelectOption { value: String::new(), "No expiry" }
+                                SelectOption { value: "604800".to_string(), "7 days" }
+                                SelectOption { value: "2592000".to_string(), "30 days" }
+                                SelectOption { value: "7776000".to_string(), "90 days" }
+                                SelectOption { value: "31536000".to_string(), "1 year" }
                             }
                         }
                         div {
                             Label { class: Some("text-xs text-muted-foreground".into()),
                                 "Project scope"
                             }
-                            select {
-                                class: "mt-1 flex h-9 w-full rounded-md border bg-background px-3 text-sm",
+                            Select {
+                                class: Some("mt-1".into()),
                                 value: project_id(),
                                 onchange: move |e: FormEvent| project_id.set(e.value()),
-                                option { value: "", "All API projects" }
+                                SelectOption { value: String::new(), "All API projects" }
                                 for p in projects() {
-                                    option { value: "{p.id}", "{p.label}" }
+                                    SelectOption { value: p.id.clone(), "{p.label}" }
                                 }
                             }
                         }

@@ -9,7 +9,8 @@ use crate::components::icons::{ArrowLeft, ChevronLeft, ChevronRight, Play, Trash
 use crate::components::node_schemas::{field_visible, get_schema, merge_defaults, sanitize_parameters};
 use crate::components::ui::{
     Button, ButtonSize, ButtonVariant, ConfirmDeleteDialog, Input, Label, ResizableHandle,
-    ResizableOrientation, ResizablePanel, ResizablePanelGroup, Switch,
+    ResizableOrientation, ResizablePanel, ResizablePanelGroup, Select, SelectOption, Switch,
+    Textarea,
 };
 
 use super::field_control::FieldControl;
@@ -397,30 +398,32 @@ fn NodeSettingsTab(
             }
             div { class: "flex flex-col gap-1.5",
                 Label { class: Some("text-[11px] text-muted-foreground".into()), "On Error" }
-                select {
-                    class: "h-9 w-full rounded-md border border-input bg-background px-3 text-sm",
-                    value: "{on_error}",
+                Select {
+                    value: on_error.clone(),
                     onchange: {
                         let nid = id.clone();
                         let settings = settings.clone();
-                        move |e| {
+                        move |e: FormEvent| {
                             patch_settings(nid.clone(), settings.clone(), "onError", json!(e.value()), on_update);
                         }
                     },
-                    option { value: "stopWorkflow", "Stop Workflow" }
-                    option { value: "continue", "Continue" }
-                    option { value: "continueErrorOutput", "Continue (using error output)" }
+                    SelectOption { value: "stopWorkflow".to_string(), "Stop Workflow" }
+                    SelectOption { value: "continue".to_string(), "Continue" }
+                    SelectOption {
+                        value: "continueErrorOutput".to_string(),
+                        "Continue (using error output)"
+                    }
                 }
             }
             div { class: "flex flex-col gap-1.5",
                 Label { class: Some("text-[11px] text-muted-foreground".into()), "Notes" }
-                textarea {
-                    class: "min-h-[72px] w-full rounded-md border border-input bg-background px-3 py-2 text-xs",
-                    value: "{notes}",
+                Textarea {
+                    class: Some("min-h-[72px] text-xs md:text-xs".into()),
+                    value: notes.clone(),
                     oninput: {
                         let nid = id.clone();
                         let settings = settings.clone();
-                        move |e| {
+                        move |e: FormEvent| {
                             patch_settings(nid.clone(), settings.clone(), "notes", json!(e.value()), on_update);
                         }
                     },
@@ -1058,9 +1061,9 @@ fn SchemaFieldEditor(
             class: "{row_class}",
             key: "{row_key}",
             if show_label {
-                label {
-                    class: "text-[11px] text-muted-foreground",
-                    r#for: "{row_key}",
+                Label {
+                    class: Some("text-[11px] font-normal text-muted-foreground".into()),
+                    r#for: Some(row_key.clone()),
                     "{field.label}"
                 }
             }
@@ -1110,10 +1113,10 @@ fn GenericParamsEditor(
                 rsx! {
                     div { class: "mb-3 flex flex-col gap-1.5",
                         Label { class: Some("text-xs font-medium".into()), "{key_label}" }
-                        textarea {
-                            class: "min-h-[64px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs",
-                            value: "{text}",
-                            oninput: move |e| {
+                        Textarea {
+                            class: Some("min-h-[64px] font-mono text-xs md:text-xs".into()),
+                            value: text.clone(),
+                            oninput: move |e: FormEvent| {
                                 let text = e.value();
                                 let next_val = serde_json::from_str::<Value>(&text)
                                     .unwrap_or(Value::String(text));

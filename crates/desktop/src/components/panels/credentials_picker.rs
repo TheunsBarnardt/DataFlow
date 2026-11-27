@@ -3,6 +3,7 @@ use std::sync::RwLock;
 
 use super::credentials::{credential_display_name, CredentialDialog};
 use super::{json_id, json_string};
+use crate::components::ui::{Select, SelectOption};
 
 const CREATE_VALUE: &str = "__create__";
 
@@ -110,13 +111,12 @@ pub fn CredentialsPicker(
     let select_key = format!("{}:{}:{}", value, options.len(), reload_tick());
 
     rsx! {
-        select {
+        Select {
             id: id,
             key: "{select_key}",
-            class: "flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm",
-            value: "{value}",
+            value: value.clone(),
             disabled: waiting,
-            onchange: move |e| {
+            onchange: move |e: FormEvent| {
                 let next = e.value();
                 if next == CREATE_VALUE {
                     dialog_open.set(true);
@@ -124,8 +124,8 @@ pub fn CredentialsPicker(
                 }
                 on_change.call(next);
             },
-            option {
-                value: "",
+            SelectOption {
+                value: String::new(),
                 selected: show_placeholder,
                 "{placeholder}"
             }
@@ -141,25 +141,22 @@ pub fn CredentialsPicker(
                         format!("{name} ({ty})")
                     };
                     rsx! {
-                        option {
+                        SelectOption {
                             key: "{cid}",
-                            value: "{cid}",
+                            value: cid.clone(),
                             selected: is_selected,
                             "{label}"
                         }
                     }
                 }
             }
-            option {
+            SelectOption {
                 disabled: true,
-                value: "__sep__",
-                selected: false,
+                value: "__sep__".to_string(),
                 "────────────"
             }
-            option {
-                value: CREATE_VALUE,
-                class: "text-primary",
-                selected: false,
+            SelectOption {
+                value: CREATE_VALUE.to_string(),
                 "+ Create new {type_label}…"
             }
         }

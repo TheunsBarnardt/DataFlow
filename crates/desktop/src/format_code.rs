@@ -428,4 +428,28 @@ mod tests {
         let out = format_sql_text(src);
         assert!(out.contains("{{ $json.id }}"));
     }
+
+    #[test]
+    fn formats_long_select_list_one_column_per_line() {
+        let src = "SELECT Id, Company, Question, Answer, Sequence, DateCreated, IsActive, Category, EditorAnswer, LastModifiedBy, LastModifiedDate FROM Faq WHERE Company = 'Wealth' ORDER BY Sequence;";
+        let out = format_sql_text(src);
+        for col in [
+            "Id,",
+            "Company,",
+            "Question,",
+            "Answer,",
+            "Sequence,",
+            "DateCreated,",
+            "IsActive,",
+            "Category,",
+            "EditorAnswer,",
+            "LastModifiedBy,",
+            "LastModifiedDate",
+        ] {
+            assert!(
+                out.lines().any(|l| l.trim() == col),
+                "expected column {col:?} on its own line in:\n{out}"
+            );
+        }
+    }
 }

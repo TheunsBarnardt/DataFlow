@@ -2,6 +2,7 @@ use dioxus::prelude::*;
 use serde_json::{json, Map, Value};
 
 use super::expression_field::ExpressionField;
+use crate::components::ui::{Button, ButtonSize, ButtonVariant, Input};
 
 #[component]
 pub fn KeyValueEditor(
@@ -53,11 +54,11 @@ pub fn KeyValueEditor(
                             key: "{i}",
                             class: "flex min-w-0 flex-col gap-1.5 rounded-md border border-border/60 bg-muted/10 p-2",
                             div { class: "flex items-center gap-1.5",
-                                input {
-                                    class: "flex h-8 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-xs",
-                                    placeholder: "Key",
-                                    value: "{k}",
-                                    oninput: move |e| {
+                                Input {
+                                    class: Some("h-8 min-w-0 flex-1 text-xs".into()),
+                                    placeholder: Some("Key".into()),
+                                    value: k.clone(),
+                                    oninput: move |e: FormEvent| {
                                         let mut next = entries_upd.clone();
                                         if let Some(row) = next.get_mut(i) {
                                             row.0 = e.value();
@@ -65,9 +66,10 @@ pub fn KeyValueEditor(
                                         set_entries(next);
                                     },
                                 }
-                                button {
-                                    r#type: "button",
-                                    class: "inline-flex h-8 shrink-0 items-center rounded-md px-2 text-xs text-muted-foreground hover:bg-muted",
+                                Button {
+                                    size: ButtonSize::Sm,
+                                    variant: ButtonVariant::Ghost,
+                                    class: Some("h-8 shrink-0 px-2 text-xs".into()),
                                     onclick: move |_| {
                                         let next: Vec<_> = entries_rm
                                             .iter()
@@ -103,9 +105,10 @@ pub fn KeyValueEditor(
                     }
                 }
             }
-            button {
-                r#type: "button",
-                class: "inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs hover:bg-muted",
+            Button {
+                size: ButtonSize::Sm,
+                variant: ButtonVariant::Outline,
+                class: Some("h-8 text-xs".into()),
                 onclick: move |_| {
                     let mut next = entries.clone();
                     next.push((String::new(), String::new()));

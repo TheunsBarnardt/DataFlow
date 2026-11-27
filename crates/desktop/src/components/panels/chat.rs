@@ -4,7 +4,7 @@ use crate::components::icons::{Bot, ChevronDown, ChevronLeft, ChevronRight, Hist
 use crate::components::panels::{json_id, json_string};
 use crate::components::ui::{
     Alert, AlertDescription, AlertVariant, Button, ButtonSize, ButtonVariant, ResizableHandle,
-    ResizableOrientation, ResizablePanel, ResizablePanelGroup,
+    ResizableOrientation, ResizablePanel, ResizablePanelGroup, Textarea,
 };
 
 #[derive(Clone, Debug)]
@@ -588,13 +588,15 @@ pub fn ChatPanel(
                             min_pct: 18.0,
                             max_pct: 55.0,
                             class: Some("flex min-h-0 flex-col gap-2 pt-2".into()),
-                            textarea {
-                                class: "text-foreground placeholder:text-muted-foreground border-input flex min-h-[4.5rem] w-full flex-1 resize-none rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-                                placeholder: "Try: \"create webhook http flow\" or paste workflow JSON",
-                                value: "{text()}",
+                            Textarea {
+                                class: Some("min-h-[4.5rem] flex-1 resize-none md:text-sm".into()),
+                                placeholder: Some(
+                                    "Try: \"create webhook http flow\" or paste workflow JSON".into(),
+                                ),
+                                value: text(),
                                 disabled: busy() || thread().is_none(),
-                                oninput: move |e| text.set(e.value()),
-                                onkeydown: move |e| {
+                                oninput: move |e: FormEvent| text.set(e.value()),
+                                onkeydown: move |e: KeyboardEvent| {
                                     if e.key() == Key::Enter && !e.modifiers().shift() {
                                         e.prevent_default();
                                         let Some(t) = thread() else { return };

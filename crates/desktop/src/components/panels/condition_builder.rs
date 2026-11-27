@@ -2,7 +2,7 @@ use dioxus::prelude::*;
 use serde_json::{json, Value};
 
 use super::expression_field::ExpressionField;
-use crate::components::ui::Switch;
+use crate::components::ui::{Button, ButtonSize, ButtonVariant, Input, Select, SelectOption, Switch};
 
 const COMPARE_OPS: &[(&str, &str)] = &[
     ("equals", "Equals"),
@@ -94,15 +94,15 @@ pub fn ConditionBuilder(
     rsx! {
         div { class: "flex flex-col gap-2",
             div { class: "flex items-center gap-2",
-                select {
-                    class: "flex h-8 min-w-[4.5rem] rounded-md border border-input bg-background px-2 text-xs",
-                    value: "{combinator}",
+                Select {
+                    class: Some("h-8 min-w-[4.5rem] text-xs".into()),
+                    value: combinator.clone(),
                     onchange: {
                         let rows = rows.clone();
-                        move |e| emit(e.value(), ignore_case, rows.clone())
+                        move |e: FormEvent| emit(e.value(), ignore_case, rows.clone())
                     },
-                    option { value: "AND", "AND" }
-                    option { value: "OR", "OR" }
+                    SelectOption { value: "AND".to_string(), "AND" }
+                    SelectOption { value: "OR".to_string(), "OR" }
                 }
                 div { class: "flex items-center gap-1.5",
                     Switch {
@@ -137,14 +137,14 @@ pub fn ConditionBuilder(
                             key: "{i}",
                             class: "flex min-w-0 flex-col gap-1.5 rounded-md border border-border/60 bg-muted/10 p-2",
                             div { class: "flex flex-wrap items-center gap-1.5",
-                                input {
-                                    class: "flex h-8 min-w-[7rem] flex-1 rounded-md border border-input bg-background px-2 font-mono text-xs",
-                                    placeholder: "Field / expression",
-                                    value: "{field}",
+                                Input {
+                                    class: Some("h-8 min-w-[7rem] flex-1 font-mono text-xs".into()),
+                                    placeholder: Some("Field / expression".into()),
+                                    value: field.clone(),
                                     oninput: {
                                         let combinator = combinator.clone();
                                         let mut rows = rows_all.clone();
-                                        move |e| {
+                                        move |e: FormEvent| {
                                             if let Some(r) = rows.get_mut(i) {
                                                 if let Some(obj) = r.as_object_mut() {
                                                     obj.insert("field".into(), Value::String(e.value()));
@@ -154,13 +154,13 @@ pub fn ConditionBuilder(
                                         }
                                     },
                                 }
-                                select {
-                                    class: "flex h-8 shrink-0 rounded-md border border-input bg-background px-2 text-xs",
-                                    value: "{operator}",
+                                Select {
+                                    class: Some("h-8 w-auto shrink-0 text-xs".into()),
+                                    value: operator.clone(),
                                     onchange: {
                                         let combinator = combinator.clone();
                                         let mut rows = rows_all.clone();
-                                        move |e| {
+                                        move |e: FormEvent| {
                                             if let Some(r) = rows.get_mut(i) {
                                                 if let Some(obj) = r.as_object_mut() {
                                                     obj.insert("operator".into(), Value::String(e.value()));
@@ -170,12 +170,13 @@ pub fn ConditionBuilder(
                                         }
                                     },
                                     for (ov, ol) in COMPARE_OPS {
-                                        option { value: "{ov}", "{ol}" }
+                                        SelectOption { value: (*ov).to_string(), "{ol}" }
                                     }
                                 }
-                                button {
-                                    r#type: "button",
-                                    class: "inline-flex h-8 shrink-0 items-center rounded-md px-2 text-xs text-muted-foreground hover:bg-muted",
+                                Button {
+                                    size: ButtonSize::Sm,
+                                    variant: ButtonVariant::Ghost,
+                                    class: Some("h-8 shrink-0 px-2 text-xs".into()),
                                     onclick: {
                                         let combinator = combinator.clone();
                                         let rows = rows_all.clone();
@@ -217,9 +218,10 @@ pub fn ConditionBuilder(
                     }
                 }
             }
-            button {
-                r#type: "button",
-                class: "inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs hover:bg-muted",
+            Button {
+                size: ButtonSize::Sm,
+                variant: ButtonVariant::Outline,
+                class: Some("h-8 text-xs".into()),
                 onclick: {
                     let combinator = combinator.clone();
                     let mut rows = rows.clone();
@@ -304,13 +306,13 @@ pub fn AssignmentsEditor(
                             key: "{i}",
                             class: "flex min-w-0 flex-col gap-1.5 rounded-md border border-border/60 bg-muted/10 p-2",
                             div { class: "flex items-center gap-1.5",
-                                input {
-                                    class: "flex h-8 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-xs",
-                                    placeholder: "Name",
-                                    value: "{name}",
+                                Input {
+                                    class: Some("h-8 min-w-0 flex-1 text-xs".into()),
+                                    placeholder: Some("Name".into()),
+                                    value: name.clone(),
                                     oninput: {
                                         let rows_all = rows_all.clone();
-                                        move |e| {
+                                        move |e: FormEvent| {
                                             let mut rows = rows_all.clone();
                                             if let Some(r) = rows.get_mut(i) {
                                                 if let Some(obj) = r.as_object_mut() {
@@ -321,12 +323,12 @@ pub fn AssignmentsEditor(
                                         }
                                     },
                                 }
-                                select {
-                                    class: "flex h-8 w-auto min-w-[5.5rem] shrink-0 rounded-md border border-input bg-background px-2 text-xs",
-                                    value: "{ty}",
+                                Select {
+                                    class: Some("h-8 w-auto min-w-[5.5rem] shrink-0 text-xs".into()),
+                                    value: ty.clone(),
                                     onchange: {
                                         let rows_all = rows_all.clone();
-                                        move |e| {
+                                        move |e: FormEvent| {
                                             let mut rows = rows_all.clone();
                                             if let Some(r) = rows.get_mut(i) {
                                                 if let Some(obj) = r.as_object_mut() {
@@ -337,13 +339,14 @@ pub fn AssignmentsEditor(
                                         }
                                     },
                                     for (tv, tl) in ASSIGNMENT_TYPES {
-                                        option { value: "{tv}", "{tl}" }
+                                        SelectOption { value: (*tv).to_string(), "{tl}" }
                                     }
                                 }
-                                button {
-                                    r#type: "button",
-                                    class: "inline-flex h-8 shrink-0 items-center rounded-md px-2 text-xs text-muted-foreground hover:bg-muted",
-                                    aria_label: "Remove",
+                                Button {
+                                    size: ButtonSize::Sm,
+                                    variant: ButtonVariant::Ghost,
+                                    class: Some("h-8 shrink-0 px-2 text-xs".into()),
+                                    title: Some("Remove".into()),
                                     onclick: {
                                         let rows = rows_all.clone();
                                         move |_| {
@@ -384,9 +387,10 @@ pub fn AssignmentsEditor(
                     }
                 }
             }
-            button {
-                r#type: "button",
-                class: "inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs hover:bg-muted",
+            Button {
+                size: ButtonSize::Sm,
+                variant: ButtonVariant::Outline,
+                class: Some("h-8 text-xs".into()),
                 onclick: {
                     let rows_all = rows.clone();
                     move |_| {

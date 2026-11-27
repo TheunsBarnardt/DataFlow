@@ -154,10 +154,51 @@ pub fn CodeEditor(
                         r#type: "button",
                         class: "rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted",
                         title: "Format",
-                        onclick: move |_| {
-                            let result = format_code(&value(), language);
-                            if result.ok {
-                                on_change.call(result.text);
+                        onclick: {
+                            let editor_id = editor_id.clone();
+                            move |_| {
+                                let editor_id = editor_id.clone();
+                                let fallback = value();
+                                spawn(async move {
+                                    // Prefer live CodeMirror doc — signal can lag behind typing.
+                                    let live = document::eval(&format!(
+                                        r#"return (function(){{
+  const slot = window.__bfCm && window.__bfCm[{id}];
+  if (!slot) return null;
+  return slot.view.state.doc.toString();
+}})();"#,
+                                        id = serde_json::to_string(&editor_id)
+                                            .unwrap_or_else(|_| "\"\"".into()),
+                                    ))
+                                    .await
+                                    .ok()
+                                    .and_then(|v| match v {
+                                        Value::String(s) => Some(s),
+                                        _ => None,
+                                    })
+                                    .unwrap_or(fallback);
+
+                                    let result = format_code(&live, language);
+                                    if !result.ok {
+                                        return;
+                                    }
+                                    let formatted = result.text;
+                                    let _ = document::eval(&format!(
+                                        r#"return (function(){{
+  const slot = window.__bfCm && window.__bfCm[{id}];
+  if (!slot) return false;
+  slot.setValue({value});
+  try {{ slot.view.focus(); }} catch (_) {{}}
+  return true;
+}})();"#,
+                                        id = serde_json::to_string(&editor_id)
+                                            .unwrap_or_else(|_| "\"\"".into()),
+                                        value = serde_json::to_string(&formatted)
+                                            .unwrap_or_else(|_| "\"\"".into()),
+                                    ))
+                                    .await;
+                                    on_change.call(formatted);
+                                });
                             }
                         },
                         "Format"

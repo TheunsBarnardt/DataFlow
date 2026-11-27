@@ -1,8 +1,9 @@
 use dioxus::prelude::*;
 
 use crate::components::ui::{
-    Alert, AlertDescription, AlertVariant, Button, Card, CardContent, CardHeader, CardTitle, Empty,
-    EmptyDescription, Input, Label, Switch,
+    Alert, AlertDescription, AlertVariant, Button, Card, CardContent, CardHeader, CardTitle,
+    DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeader, DataTableRow, Empty,
+    EmptyDescription, Input, Label, Select, SelectOption, Switch,
 };
 use crate::roles::DATAFLOW_ROLES;
 
@@ -33,14 +34,17 @@ fn RoleSelect(
     class: Option<String>,
     on_change: EventHandler<String>,
 ) -> Element {
-    let base = class.unwrap_or_default();
     rsx! {
-        select {
-            class: "flex h-9 w-full rounded-md border bg-background px-3 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring {base}",
-            value: "{value}",
-            onchange: move |e| on_change.call(e.value()),
+        Select {
+            class: class,
+            value: value.clone(),
+            onchange: move |e: FormEvent| on_change.call(e.value()),
             for role in DATAFLOW_ROLES.iter() {
-                option { value: "{role}", "{role}" }
+                SelectOption {
+                    value: (*role).to_string(),
+                    selected: value == *role,
+                    "{role}"
+                }
             }
         }
     }
@@ -209,15 +213,15 @@ pub fn UsersPanel() -> Element {
                             EmptyDescription { "No users" }
                         }
                     } else {
-                        table { class: "w-full text-left text-sm",
-                            thead { class: "border-b bg-muted/40 text-xs text-muted-foreground",
-                                tr {
-                                    th { class: "px-3 py-2 font-medium", "User" }
-                                    th { class: "px-3 py-2 font-medium", "Role" }
-                                    th { class: "px-3 py-2 font-medium", "Active" }
+                        DataTable { class: Some("max-w-none".into()),
+                            DataTableHeader { class: Some("bg-muted/40 text-xs".into()),
+                                DataTableRow {
+                                    DataTableHead { class: Some("px-3 py-2".into()), "User" }
+                                    DataTableHead { class: Some("px-3 py-2".into()), "Role" }
+                                    DataTableHead { class: Some("px-3 py-2".into()), "Active" }
                                 }
                             }
-                            tbody {
+                            DataTableBody {
                                 for u in users().iter().cloned() {
                                     {
                                         let id = user_id(&u);
@@ -244,12 +248,13 @@ pub fn UsersPanel() -> Element {
                                         let uid_role = id.clone();
                                         let uid_status = id.clone();
                                         rsx! {
-                                            tr { class: "border-b last:border-0",
-                                                td { class: "px-3 py-2",
+                                            DataTableRow {
+                                                key: "{id}",
+                                                DataTableCell { class: Some("px-3 py-2".into()),
                                                     div { class: "font-medium", "{display}" }
                                                     div { class: "text-xs text-muted-foreground", "{sub}" }
                                                 }
-                                                td { class: "px-3 py-2",
+                                                DataTableCell { class: Some("px-3 py-2".into()),
                                                     RoleSelect {
                                                         class: Some("h-8 text-xs".into()),
                                                         value: user_role.clone(),
@@ -273,7 +278,7 @@ pub fn UsersPanel() -> Element {
                                                         },
                                                     }
                                                 }
-                                                td { class: "px-3 py-2",
+                                                DataTableCell { class: Some("px-3 py-2".into()),
                                                     Switch {
                                                         size: Some("sm".into()),
                                                         checked: active,

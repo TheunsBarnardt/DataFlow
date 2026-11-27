@@ -9,7 +9,9 @@ use super::switch_rules_editor::SwitchRulesEditor;
 use super::variable_aware_field::VariableAwareTextarea;
 use crate::components::node_schemas::FieldDef;
 use super::json_schema_properties_editor::JsonSchemaPropertiesEditor;
-use crate::components::ui::{CodeEditor, Switch};
+use crate::components::ui::{
+    CodeEditor, Input, Label, Select, SelectOption, Switch, Textarea,
+};
 use crate::format_code::CodeLanguage;
 
 fn value_as_string(value: &Value) -> String {
@@ -57,7 +59,7 @@ pub fn FieldControl(
                     checked,
                     on_checked_change: move |c| on_change.call(Value::Bool(c)),
                 }
-                label { class: "text-sm", r#for: "{id}", "{field.label}" }
+                Label { class: Some("text-sm font-normal".into()), r#for: Some(id), "{field.label}" }
             }
         };
     }
@@ -75,15 +77,15 @@ pub fn FieldControl(
             .unwrap_or_default();
         let options = field.options.clone().unwrap_or_default();
         return rsx! {
-            select {
-                id: "{id}",
+            Select {
+                id: Some(id.clone()),
                 key: "{id}-{current}",
-                class: "bf-select flex h-9 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground",
-                value: "{current}",
-                onchange: move |e| on_change.call(Value::String(e.value())),
+                class: Some("bf-select".into()),
+                value: current.clone(),
+                onchange: move |e: FormEvent| on_change.call(Value::String(e.value())),
                 for opt in options {
-                    option {
-                        value: "{opt.value}",
+                    SelectOption {
+                        value: opt.value.clone(),
                         selected: current == opt.value,
                         "{opt.label}"
                     }
@@ -100,13 +102,12 @@ pub fn FieldControl(
             other => other.to_string(),
         };
         return rsx! {
-            input {
-                id: "{id}",
-                r#type: "number",
-                class: "flex h-9 w-full rounded-md border border-input bg-background px-3 text-sm",
-                value: "{current}",
-                placeholder: field.placeholder.clone().unwrap_or_default(),
-                oninput: move |e| {
+            Input {
+                id: Some(id),
+                r#type: Some("number".into()),
+                value: current,
+                placeholder: field.placeholder.clone(),
+                oninput: move |e: FormEvent| {
                     let raw = e.value();
                     if raw.trim().is_empty() {
                         on_change.call(Value::Null);
@@ -145,8 +146,12 @@ pub fn FieldControl(
         let fill = matches!(language, CodeLanguage::Sql);
         let min_h = if fill { 160 } else { 120 };
         // Keep a signal so CM can re-sync when SQL loads after mount.
+        // Only mirror props when the prop itself changes — never clobber a newer
+        // local edit (Format / typing) while the parent patch is still in flight.
         let mut code_value = use_signal(|| text.clone());
-        if code_value.peek().as_str() != text.as_str() {
+        let mut last_prop = use_signal(|| text.clone());
+        if *last_prop.peek() != text {
+            last_prop.set(text.clone());
             code_value.set(text);
         }
         return rsx! {
@@ -185,7 +190,9 @@ pub fn FieldControl(
             other => serde_json::to_string_pretty(other).unwrap_or_else(|_| other.to_string()),
         };
         let mut json_value = use_signal(|| text.clone());
-        if json_value.peek().as_str() != text.as_str() {
+        let mut last_json_prop = use_signal(|| text.clone());
+        if *last_json_prop.peek() != text {
+            last_json_prop.set(text.clone());
             json_value.set(text);
         }
         return rsx! {
@@ -244,13 +251,18 @@ pub fn FieldControl(
             })
             .unwrap_or_default();
         return rsx! {
-            textarea {
-                id: "{id}",
-                class: "min-h-[72px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs",
-                value: "{text}",
-                placeholder: field.placeholder.clone().unwrap_or_else(|| "One per line".into()),
-                spellcheck: false,
-                oninput: move |e| {
+            Textarea {
+                id: Some(id),
+                class: Some("min-h-[72px] font-mono text-xs md:text-xs".into()),
+                value: text,
+                placeholder: Some(
+                    field
+                        .placeholder
+                        .clone()
+                        .unwrap_or_else(|| "One per line".into()),
+                ),
+                spellcheck: Some(false),
+                oninput: move |e: FormEvent| {
                     let list: Vec<Value> = e
                         .value()
                         .lines()

@@ -4,7 +4,8 @@ use crate::components::icons::{ChevronRight, MoreHorizontal, Pencil, Plus, Searc
 use crate::components::panels::{json_bool, json_id, json_string};
 use crate::components::ui::{
     Alert, AlertDescription, AlertVariant, Button, ButtonSize, ButtonVariant, Card,
-    ConfirmDeleteDialog, Empty, EmptyDescription, EmptyHeader, Input, Label, PageLoader, Switch,
+    ConfirmDeleteDialog, Empty, EmptyDescription, EmptyHeader, Input, Label, PageLoader, Select,
+    SelectOption, Switch,
 };
 
 fn method_badge_class(method: &str) -> &'static str {
@@ -325,15 +326,15 @@ oninput: move |e: FormEvent| version_draft.set(e.value()),
                     }
                     div { class: "flex flex-col gap-1",
                         Label { class: Some("text-xs text-muted-foreground".into()), "Method" }
-                        select {
-                            class: "mt-1 flex h-9 w-[7.5rem] rounded-md border border-input bg-transparent px-2 text-sm",
-                            value: "{ep_method()}",
-                            onchange: move |e| ep_method.set(e.value()),
-                            option { value: "GET", "GET" }
-                            option { value: "POST", "POST" }
-                            option { value: "PUT", "PUT" }
-                            option { value: "PATCH", "PATCH" }
-                            option { value: "DELETE", "DELETE" }
+                        Select {
+                            class: Some("mt-1 w-[7.5rem]".into()),
+                            value: ep_method(),
+                            onchange: move |e: FormEvent| ep_method.set(e.value()),
+                            SelectOption { value: "GET".to_string(), "GET" }
+                            SelectOption { value: "POST".to_string(), "POST" }
+                            SelectOption { value: "PUT".to_string(), "PUT" }
+                            SelectOption { value: "PATCH".to_string(), "PATCH" }
+                            SelectOption { value: "DELETE".to_string(), "DELETE" }
                         }
                     }
                     Button {

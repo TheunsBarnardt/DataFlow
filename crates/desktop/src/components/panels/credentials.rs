@@ -4,7 +4,9 @@ use crate::components::icons::X;
 use crate::components::panels::{json_bool, json_id, json_string};
 use crate::components::ui::{
     Alert, AlertDescription, AlertVariant, Button, ButtonSize, ButtonVariant, ConfirmDeleteDialog,
-    Empty, EmptyDescription, Input, Label, PageLoader, Switch,
+    DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeader, DataTableRow,
+    DataTableWrapper, Empty, EmptyDescription, Input, Label, PageLoader, Select, SelectOption,
+    Switch, Textarea,
 };
 
 #[derive(Clone, Copy)]
@@ -1788,10 +1790,9 @@ pub fn CredentialDialog(
                                                                 },
                                                             }
                                                         } else if f.kind == "select" {
-                                                            select {
-                                                                class: "flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm",
-                                                                value: "{current}",
-                                                                onchange: move |e: Event<FormData>| {
+                                                            Select {
+                                                                value: current.clone(),
+                                                                onchange: move |e: FormEvent| {
                                                                     field_values.with_mut(|m| {
                                                                         m.insert(
                                                                             key.clone(),
@@ -1800,20 +1801,20 @@ pub fn CredentialDialog(
                                                                     });
                                                                 },
                                                                 for opt in f.options {
-                                                                    option {
+                                                                    SelectOption {
                                                                         key: "{opt.value}",
-                                                                        value: "{opt.value}",
+                                                                        value: opt.value.to_string(),
                                                                         selected: current == opt.value,
                                                                         "{opt.label}"
                                                                     }
                                                                 }
                                                             }
                                                         } else if f.kind == "textarea" {
-                                                            textarea {
-                                                                class: "min-h-[88px] w-full rounded-md border bg-background px-3 py-2 font-mono text-xs",
-                                                                placeholder: "{f.placeholder}",
-                                                                value: "{current}",
-                                                                oninput: move |e: Event<FormData>| {
+                                                            Textarea {
+                                                                class: Some("min-h-[88px] font-mono text-xs md:text-xs".into()),
+                                                                placeholder: Some(f.placeholder.to_string()),
+                                                                value: current.clone(),
+                                                                oninput: move |e: FormEvent| {
                                                                     field_values.with_mut(|m| {
                                                                         m.insert(
                                                                             key.clone(),
@@ -2057,57 +2058,70 @@ pub fn CredentialsPanel() -> Element {
             } else {
             div { class: "min-h-0 flex-1 overflow-y-auto",
                 div { class: "p-6",
-                    div { class: "overflow-hidden rounded-lg border bg-card",
-                        div { class: "grid grid-cols-[1.4fr_1fr_auto] gap-3 border-b bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground",
-                            div { "Name" }
-                            div { "Type" }
-                            div { class: "text-right", "Actions" }
-                        }
-                        for item in filtered.iter().cloned() {
-                            {
-                                let id = json_id(&item);
-                                let name = item.get("name").map(json_string).unwrap_or_default();
-                                let ty = item.get("type").map(json_string).unwrap_or_default();
-                                let type_label = credential_display_name(&ty);
-                                let del_id = id.clone();
-                                let edit_item_id = id.clone();
-                                let edit_item_name = name.clone();
-                                let edit_item_type = ty.clone();
-                                rsx! {
-                                    div {
-                                        key: "{id}",
-                                        class: "grid grid-cols-[1.4fr_1fr_auto] items-center gap-3 border-b px-4 py-3 last:border-b-0",
-                                        div { class: "truncate text-sm font-medium", "{name}" }
-                                        div { class: "truncate text-sm text-muted-foreground", "{type_label}" }
-                                        div { class: "flex justify-end gap-1",
-                                            Button {
-                                                size: ButtonSize::Sm,
-                                                variant: ButtonVariant::Ghost,
-                                                onclick: move |_| {
-                                                    edit_id.set(Some(edit_item_id.clone()));
-                                                    edit_name.set(Some(edit_item_name.clone()));
-                                                    edit_type.set(Some(edit_item_type.clone()));
-                                                    dialog_open.set(true);
-                                                },
-                                                "Edit"
-                                            }
-                                            Button {
-                                                size: ButtonSize::Sm,
-                                                variant: ButtonVariant::Ghost,
-                                                onclick: move |_| {
-                                                    confirm_delete.set(Some((del_id.clone(), name.clone())));
-                                                },
-                                                "Delete"
+                    DataTableWrapper { class: Some("overflow-hidden rounded-lg bg-card max-h-none".into()),
+                        DataTable { class: Some("max-w-none".into()),
+                            DataTableHeader { class: Some("bg-muted/40 text-xs uppercase tracking-wide".into()),
+                                DataTableRow {
+                                    DataTableHead { class: Some("px-4 py-2".into()), "Name" }
+                                    DataTableHead { class: Some("px-4 py-2".into()), "Type" }
+                                    DataTableHead { class: Some("px-4 py-2 text-right".into()), "Actions" }
+                                }
+                            }
+                            DataTableBody {
+                                for item in filtered.iter().cloned() {
+                                    {
+                                        let id = json_id(&item);
+                                        let name = item.get("name").map(json_string).unwrap_or_default();
+                                        let ty = item.get("type").map(json_string).unwrap_or_default();
+                                        let type_label = credential_display_name(&ty);
+                                        let del_id = id.clone();
+                                        let edit_item_id = id.clone();
+                                        let edit_item_name = name.clone();
+                                        let edit_item_type = ty.clone();
+                                        rsx! {
+                                            DataTableRow {
+                                                key: "{id}",
+                                                DataTableCell { class: Some("truncate px-4 py-3 font-medium".into()), "{name}" }
+                                                DataTableCell { class: Some("truncate px-4 py-3 text-muted-foreground".into()), "{type_label}" }
+                                                DataTableCell { class: Some("px-4 py-3".into()),
+                                                    div { class: "flex justify-end gap-1",
+                                                        Button {
+                                                            size: ButtonSize::Sm,
+                                                            variant: ButtonVariant::Ghost,
+                                                            onclick: move |_| {
+                                                                edit_id.set(Some(edit_item_id.clone()));
+                                                                edit_name.set(Some(edit_item_name.clone()));
+                                                                edit_type.set(Some(edit_item_type.clone()));
+                                                                dialog_open.set(true);
+                                                            },
+                                                            "Edit"
+                                                        }
+                                                        Button {
+                                                            size: ButtonSize::Sm,
+                                                            variant: ButtonVariant::Ghost,
+                                                            onclick: move |_| {
+                                                                confirm_delete.set(Some((del_id.clone(), name.clone())));
+                                                            },
+                                                            "Delete"
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
-                        }
-                        if filtered.is_empty() {
-                            Empty { class: Some("border-0 py-10".into()),
-                                EmptyDescription {
-                                    "No credentials yet. Click Add credential to create one."
+                                if filtered.is_empty() {
+                                    DataTableRow {
+                                        DataTableCell {
+                                            colspan: Some(3),
+                                            class: Some("p-0".into()),
+                                            Empty { class: Some("border-0 py-10".into()),
+                                                EmptyDescription {
+                                                    "No credentials yet. Click Add credential to create one."
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

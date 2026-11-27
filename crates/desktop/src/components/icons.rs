@@ -456,6 +456,21 @@ pub fn ChevronDown(#[props(default)] class: Option<String>) -> Element {
 }
 
 #[component]
+pub fn Check(#[props(default)] class: Option<String>) -> Element {
+    rsx! {
+        svg {
+            xmlns: "http://www.w3.org/2000/svg",
+            view_box: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            stroke_width: "1.75",
+            class: class.clone().unwrap_or_else(|| "h-4 w-4".into()),
+            path { d: "M20 6 9 17l-5-5" }
+        }
+    }
+}
+
+#[component]
 pub fn MoreHorizontal(#[props(default)] class: Option<String>) -> Element {
     rsx! {
         svg {
