@@ -780,7 +780,7 @@ pub fn NodeDetailsPanel(
                                             }
                                         }
                                     }
-                                    div { class: "min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain p-3",
+                                    div { class: "flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain p-3",
                                         if center_tab() == "parameters" {
                                             if is_webhook {
                                                 if let Some(wid) = workflow_id.clone() {
@@ -866,9 +866,9 @@ pub fn NodeDetailsPanel(
                                     min_pct: 18.0,
                                     max_pct: 45.0,
                                     class: Some("flex h-full min-h-0 flex-col border-l".into()),
-                                    div { class: "flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2",
-                                        h3 { class: "text-xs font-semibold uppercase tracking-wide text-muted-foreground", "Output" }
-                                        div { class: "flex items-center gap-1.5",
+                                    div { class: "flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2 pr-4",
+                                        h3 { class: "min-w-0 truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground", "Output" }
+                                        div { class: "flex shrink-0 items-center gap-1.5",
                                             if output_items.len() > 1 {
                                                 ItemPager {
                                                     index: safe_out,
@@ -1042,9 +1042,20 @@ fn SchemaFieldEditor(
 
     let field_key = field.key.clone();
     let row_key = format!("{id}-{field_key}");
+    let lang = field
+        .language
+        .as_deref()
+        .unwrap_or("")
+        .to_ascii_lowercase();
+    let is_sql_code = field.kind == "code" && matches!(lang.as_str(), "sql" | "tsql");
+    let row_class = if is_sql_code {
+        "mb-3 flex min-h-0 flex-1 flex-col gap-1.5"
+    } else {
+        "mb-3 flex shrink-0 flex-col gap-1.5"
+    };
     rsx! {
         div {
-            class: "mb-3 flex flex-col gap-1.5",
+            class: "{row_class}",
             key: "{row_key}",
             if show_label {
                 label {
@@ -1056,14 +1067,16 @@ fn SchemaFieldEditor(
             if let Some(desc) = &field.description {
                 p { class: "text-[11px] text-muted-foreground/80", "{desc}" }
             }
-            FieldControl {
-                field: field.clone(),
-                value: value.clone(),
-                expr_bus: Some(expr_bus),
-                active_field: Some(active_field),
-                on_param_error,
-                id_prefix: Some(id.clone()),
-                on_change: move |next| commit(next),
+            div { class: if is_sql_code { "flex min-h-0 flex-1 flex-col" } else { "contents" },
+                FieldControl {
+                    field: field.clone(),
+                    value: value.clone(),
+                    expr_bus: Some(expr_bus),
+                    active_field: Some(active_field),
+                    on_param_error,
+                    id_prefix: Some(id.clone()),
+                    on_change: move |next| commit(next),
+                }
             }
         }
     }

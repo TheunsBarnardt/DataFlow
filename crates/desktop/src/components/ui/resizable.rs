@@ -269,11 +269,8 @@ pub fn ResizablePanel(
 
     let pct = (ctx.sizes)().get(idx).copied().unwrap_or(50.0);
     let extra = class.unwrap_or_else(|| "min-h-0 min-w-0".into());
-    let style = if ctx.orientation == ResizableOrientation::Horizontal {
-        format!("flex: 0 0 {pct:.4}%; width: {pct:.4}%; max-width: {pct:.4}%;")
-    } else {
-        format!("flex: 0 0 {pct:.4}%; height: {pct:.4}%; max-height: {pct:.4}%;")
-    };
+    // Grow by ratio with basis 0 so fixed-width handles don't push the last panel past 100%.
+    let style = format!("flex: {pct:.4} 1 0%;");
 
     rsx! {
         div {

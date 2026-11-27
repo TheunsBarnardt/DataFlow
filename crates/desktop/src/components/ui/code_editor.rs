@@ -125,7 +125,7 @@ pub fn CodeEditor(
     });
 
     let height_style = if fill {
-        "height:100%;min-height:0".to_string()
+        "min-height:0".to_string()
     } else {
         format!("height:{height_px}px;min-height:{height_px}px")
     };
@@ -134,10 +134,16 @@ pub fn CodeEditor(
     } else {
         "flex w-full flex-col gap-1"
     };
-    let host_class = if drag_over() {
-        "w-full h-full min-h-0 overflow-hidden rounded-md border border-input bg-background ring-2 ring-[var(--brand)]"
+    let host_class = if fill {
+        if drag_over() {
+            "flex min-h-0 w-full flex-1 overflow-hidden rounded-md border border-input bg-background ring-2 ring-[var(--brand)]"
+        } else {
+            "flex min-h-0 w-full flex-1 overflow-hidden rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring"
+        }
+    } else if drag_over() {
+        "h-full min-h-0 w-full overflow-hidden rounded-md border border-input bg-background ring-2 ring-[var(--brand)]"
     } else {
-        "w-full h-full min-h-0 overflow-hidden rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring"
+        "h-full min-h-0 w-full overflow-hidden rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring"
     };
 
     rsx! {
@@ -206,7 +212,11 @@ pub fn CodeEditor(
                 },
                 div {
                     id: "{host_id}",
-                    class: "w-full h-full min-h-0 bf-cm-host",
+                    class: if fill {
+                        "bf-cm-host h-full min-h-0 w-full flex-1"
+                    } else {
+                        "bf-cm-host h-full min-h-0 w-full"
+                    },
                     style: "{height_style}",
                     onmounted: {
                         let editor_id = editor_id.clone();

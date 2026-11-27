@@ -142,12 +142,9 @@ pub fn FieldControl(
     if field.kind == "code" {
         let text = value_as_string(&value);
         let language = CodeLanguage::from_str(field.language.as_deref().unwrap_or("text"));
-        let min_h = if matches!(language, CodeLanguage::Sql) {
-            160
-        } else {
-            120
-        };
-        // Keep a signal so Monaco can re-sync when SQL loads after mount.
+        let fill = matches!(language, CodeLanguage::Sql);
+        let min_h = if fill { 160 } else { 120 };
+        // Keep a signal so CM can re-sync when SQL loads after mount.
         let mut code_value = use_signal(|| text.clone());
         if code_value.peek().as_str() != text.as_str() {
             code_value.set(text);
@@ -158,6 +155,7 @@ pub fn FieldControl(
                 language,
                 language_hint: field.language.clone(),
                 height_px: min_h,
+                fill,
                 placeholder: field.placeholder.clone(),
                 id: Some(id.clone()),
                 expr_bus,
