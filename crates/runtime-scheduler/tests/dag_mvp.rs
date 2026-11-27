@@ -84,6 +84,13 @@ async fn manual_set_parallel_merge_if() {
             },
         ],
         tags: None,
+        time_saved_minutes: None,
+        kind: None,
+        api_project_id: None,
+        created_by: None,
+        updated_by: None,
+        owner_id: None,
+        visibility: None,
         created_at: None,
         updated_at: None,
     };

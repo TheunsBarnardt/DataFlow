@@ -5,6 +5,7 @@ mod avatar;
 mod badge;
 mod button;
 mod card;
+mod charts;
 mod checkbox;
 mod code_editor;
 mod code_textarea;
@@ -32,6 +33,7 @@ pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };
+pub use charts::{AreaChart, ChartCurve, SvgAreaChart};
 pub use checkbox::Checkbox;
 pub use code_editor::CodeEditor;
 pub use code_textarea::CodeTextarea;

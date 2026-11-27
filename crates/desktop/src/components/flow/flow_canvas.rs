@@ -423,14 +423,6 @@ fn uuid_ish(salt: usize) -> String {
     format!("{ms:x}_{salt:x}")
 }
 
-fn format_duration_ms(ms: f64) -> String {
-    if ms < 1000.0 {
-        format!("{}ms", ms.round() as i64)
-    } else {
-        format!("{:.1}s", ms / 1000.0)
-    }
-}
-
 fn item_count_from_output(output: Option<&serde_json::Value>, source_handle: Option<&str>) -> Option<usize> {
     let output = output?;
     // Prefer array length; for multi-output maps try handle key.

@@ -474,7 +474,7 @@ pub fn NodeDetailsPanel(
     #[props(default)] on_param_error: Option<EventHandler<String>>,
 ) -> Element {
     let mut expr_bus = use_signal(|| None::<String>);
-    let mut active_field = use_signal(|| None::<String>);
+    let active_field = use_signal(|| None::<String>);
     let mut center_tab = use_signal(|| "parameters".to_string());
     let mut input_index = use_signal(|| 0usize);
     let mut output_index = use_signal(|| 0usize);
@@ -487,7 +487,6 @@ pub fn NodeDetailsPanel(
             .into_iter()
             .find(|n| n.selected)
             .map(|n| n.id.clone())
-            .or_else(|| flow_nodes().into_iter().next().map(|n| n.id.clone()))
     });
 
     use_effect(move || {

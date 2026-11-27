@@ -490,7 +490,7 @@ pub fn FlowCanvas(
         }
     };
 
-    let mut copy_node = move |id: String| {
+    let copy_node = move |id: String| {
         let Some(doc) = doc_nodes()
             .into_iter()
             .find(|n| n.get("id").and_then(|v| v.as_str()) == Some(id.as_str()))
@@ -558,7 +558,6 @@ pub fn FlowCanvas(
     };
 
     let edge_view = {
-        let mut edges = edges;
         let on_request_add = on_request_add.clone();
         let mut confirm_delete = confirm_delete;
         Callback::new(move |ctx: EdgeViewCtx| {

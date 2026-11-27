@@ -3,6 +3,7 @@ pub enum SettingsPageId {
     Profile,
     Users,
     Roles,
+    Companies,
     Authentication,
     Mcp,
     Assistant,
@@ -10,16 +11,18 @@ pub enum SettingsPageId {
     Context,
     Chat,
     Api,
-    CommunityNodes,
     Policies,
+    Cutover,
 }
 
 impl SettingsPageId {
+    #[allow(dead_code)]
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Profile => "profile",
             Self::Users => "users",
             Self::Roles => "roles",
+            Self::Companies => "companies",
             Self::Authentication => "authentication",
             Self::Mcp => "mcp",
             Self::Assistant => "assistant",
@@ -27,15 +30,17 @@ impl SettingsPageId {
             Self::Context => "context",
             Self::Chat => "chat",
             Self::Api => "api",
-            Self::CommunityNodes => "community-nodes",
             Self::Policies => "policies",
+            Self::Cutover => "cutover",
         }
     }
 
+    #[allow(dead_code)]
     pub fn from_str(s: &str) -> Self {
         match s {
             "users" => Self::Users,
             "roles" => Self::Roles,
+            "companies" => Self::Companies,
             "authentication" => Self::Authentication,
             "mcp" => Self::Mcp,
             "assistant" => Self::Assistant,
@@ -43,8 +48,8 @@ impl SettingsPageId {
             "context" => Self::Context,
             "chat" => Self::Chat,
             "api" => Self::Api,
-            "community-nodes" => Self::CommunityNodes,
             "policies" => Self::Policies,
+            "cutover" => Self::Cutover,
             _ => Self::Profile,
         }
     }
@@ -87,6 +92,12 @@ pub fn visible_settings_nav(is_admin: bool) -> Vec<SettingsNavGroup> {
                 SettingsNavItem {
                     id: SettingsPageId::Roles,
                     label: "Roles",
+                    badge: None,
+                    admin_only: true,
+                },
+                SettingsNavItem {
+                    id: SettingsPageId::Companies,
+                    label: "Companies",
                     badge: None,
                     admin_only: true,
                 },
@@ -141,13 +152,7 @@ pub fn visible_settings_nav(is_admin: bool) -> Vec<SettingsNavGroup> {
             items: vec![
                 SettingsNavItem {
                     id: SettingsPageId::Api,
-                    label: "DataFlow API",
-                    badge: None,
-                    admin_only: false,
-                },
-                SettingsNavItem {
-                    id: SettingsPageId::CommunityNodes,
-                    label: "Community nodes",
+                    label: "API Integration",
                     badge: None,
                     admin_only: false,
                 },

@@ -1,0 +1,132 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "check: all",
+      "type": "shell",
+      "command": "cargo check --workspace --all-targets",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CARGO_HTTP_CHECK_REVOKE": "false"
+        }
+      },
+      "group": "build",
+      "problemMatcher": ["$rustc"]
+    },
+    {
+      "label": "build: desktop",
+      "dependsOn": ["check: all"],
+      "type": "shell",
+      "command": "cargo build -p botflow-desktop",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CARGO_HTTP_CHECK_REVOKE": "false"
+        }
+      },
+      "group": "build",
+      "problemMatcher": ["$rustc"]
+    },
+    {
+      "label": "build: server",
+      "dependsOn": ["check: all"],
+      "type": "shell",
+      "command": "cargo build -p botflow-app",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CARGO_HTTP_CHECK_REVOKE": "false"
+        }
+      },
+      "group": "build",
+      "problemMatcher": ["$rustc"]
+    },
+    {
+      "label": "build: worker",
+      "dependsOn": ["check: all"],
+      "type": "shell",
+      "command": "cargo build -p botflow-worker",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CARGO_HTTP_CHECK_REVOKE": "false"
+        }
+      },
+      "group": "build",
+      "problemMatcher": ["$rustc"]
+    },
+    {
+      "label": "build: all",
+      "dependsOn": ["build: desktop", "build: server", "build: worker"],
+      "dependsOrder": "parallel",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "build: release all",
+      "dependsOn": ["check: all"],
+      "type": "shell",
+      "command": "cargo build --release -p botflow-desktop -p botflow-app -p botflow-worker",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CARGO_HTTP_CHECK_REVOKE": "false"
+        }
+      },
+      "group": "build",
+      "problemMatcher": ["$rustc"]
+    },
+    {
+      "label": "run: desktop (dx serve)",
+      "dependsOn": ["check: all"],
+      "type": "shell",
+      "command": ".\\scripts\\run-desktop.ps1",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "none",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "run: server",
+      "dependsOn": ["check: all"],
+      "type": "shell",
+      "command": ".\\scripts\\run-rust-server.ps1",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "none",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "run: worker",
+      "dependsOn": ["check: all"],
+      "type": "shell",
+      "command": "cargo run -p botflow-worker",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "CARGO_HTTP_CHECK_REVOKE": "false",
+          "MONGODB_URI": "mongodb://127.0.0.1:27017/botflow",
+          "RUST_LOG": "info,botflow=debug"
+        }
+      },
+      "group": "none",
+      "isBackground": true,
+      "problemMatcher": ["$rustc"]
+    },
+    {
+      "label": "run: server + worker",
+      "dependsOn": ["run: server", "run: worker"],
+      "dependsOrder": "parallel",
+      "group": "none",
+      "problemMatcher": []
+    }
+  ]
+}

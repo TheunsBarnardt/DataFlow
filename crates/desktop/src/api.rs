@@ -25,6 +25,7 @@ pub fn set_base_url(url: impl Into<String>) {
         .unwrap() = url.into();
 }
 
+#[allow(dead_code)]
 pub fn set_auth_token(token: Option<String>) {
     *AUTH_TOKEN
         .get_or_init(|| RwLock::new(None))

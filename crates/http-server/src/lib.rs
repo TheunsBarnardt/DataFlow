@@ -1,5 +1,6 @@
 mod auth;
 mod insights;
+mod platform_auth_routes;
 mod public_apis;
 mod routes;
 mod ui;

@@ -397,7 +397,7 @@ simple_node!(MarkdownNode, "markdown", "Markdown", "Pass through Markdown and a 
     Ok(NodeResult::single(vec![json!({ "markdown": md, "html": format!("<pre>{}</pre>", md) })]))
 });
 
-simple_node!(TotpNode, "totp", "TOTP", "Generate or verify time-based one-time passwords", |ctx: ExecutionContext| {
+simple_node!(TotpNode, "totp", "TOTP", "Generate or verify time-based one-time passwords", |_ctx: ExecutionContext| {
     Ok(NodeResult::single(vec![json!({
         "note": "Configure TOTP_SECRET; code generation uses HMAC-SHA1 time step",
         "configured": std::env::var("TOTP_SECRET").is_ok(),

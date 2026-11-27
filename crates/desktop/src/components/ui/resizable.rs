@@ -186,7 +186,7 @@ pub fn ResizablePanelGroup(
                 }
             },
             onmouseleave: {
-                let mut ctx = ctx.clone();
+                let ctx = ctx.clone();
                 move |_| {
                     // Keep dragging if pointer left briefly; fixed overlay below covers the rest.
                     let _ = &ctx;
@@ -289,7 +289,7 @@ pub fn ResizableHandle(
     #[props(default = 640.0)]
     container_px: f64,
 ) -> Element {
-    let mut ctx = use_context::<PanelGroupCtx>();
+    let ctx = use_context::<PanelGroupCtx>();
     let idx = handle_index;
     let orient = ctx.orientation;
     let group_id = ctx.group_id.clone();

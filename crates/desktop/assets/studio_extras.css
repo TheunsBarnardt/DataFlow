@@ -81,3 +81,30 @@ select option {
   stroke: var(--canvas-edge, var(--df-edge));
   stroke-width: 1.75;
 }
+
+/* Rust/UI AreaChart (ApexCharts) — https://rust-ui.com/charts/area-chart */
+:root {
+  --chart-1: var(--primary);
+  --chart-2: var(--destructive);
+  --chart-3: oklch(62% 0.12 230);
+  --chart-4: oklch(70% 0.10 85);
+  --chart-5: oklch(55% 0.08 300);
+  --color-chart-primary: var(--chart-1);
+  --color-chart-muted: var(--chart-2);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-chart-grid: var(--border);
+}
+
+.dark {
+  --chart-1: var(--primary);
+  --chart-2: var(--destructive);
+  --chart-3: oklch(70% 0.12 230);
+  --chart-4: oklch(75% 0.10 85);
+  --chart-5: oklch(65% 0.08 300);
+  --color-chart-primary: var(--chart-1);
+  --color-chart-muted: var(--chart-2);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-chart-grid: var(--border);
+}

@@ -27,6 +27,17 @@
   --canvas-node-border: color-mix(in oklch, var(--foreground) 10%, transparent);
   --canvas-node-selected: color-mix(in oklch, var(--brand) 28%, transparent);
   --sidebar: oklch(100% 0 89.88);
+  /* Rust/UI charts (ApexCharts) */
+  --chart-1: var(--primary);
+  --chart-2: var(--destructive);
+  --chart-3: oklch(62% 0.12 230);
+  --chart-4: oklch(70% 0.10 85);
+  --chart-5: oklch(55% 0.08 300);
+  --color-chart-primary: var(--chart-1);
+  --color-chart-muted: var(--chart-2);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-chart-grid: var(--border);
 }
 
 .dark {
@@ -56,6 +67,16 @@
   --canvas-node-border: color-mix(in oklch, var(--foreground) 15%, transparent);
   --canvas-node-selected: color-mix(in oklch, var(--brand) 32%, transparent);
   --sidebar: oklch(24% 0 89.88);
+  --chart-1: var(--primary);
+  --chart-2: var(--destructive);
+  --chart-3: oklch(70% 0.12 230);
+  --chart-4: oklch(75% 0.10 85);
+  --chart-5: oklch(65% 0.08 300);
+  --color-chart-primary: var(--chart-1);
+  --color-chart-muted: var(--chart-2);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-chart-grid: var(--border);
 }
 
 * {

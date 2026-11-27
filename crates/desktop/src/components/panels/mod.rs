@@ -20,6 +20,7 @@ mod credentials;
 mod nodes;
 mod runs;
 mod insights;
+mod workflow_insights;
 mod audit;
 mod login;
 mod chat;
@@ -29,13 +30,14 @@ pub use ndv_data_pane::{normalize_drag_expr, DF_DRAG_MIME};
 pub use api_projects::ApiProjectsPanel;
 pub use audit::AuditPanel;
 pub use chat::ChatPanel;
-pub use credentials::{CredentialDialog, CredentialsPanel};
+pub use credentials::CredentialsPanel;
 pub use dashboard::DashboardPanel;
 pub use execute_workflow_dialog::{
     api_endpoint_form_fields, build_run_input, needs_execute_dialog, ExecuteWorkflowDialog,
     FormField,
 };
 pub use insights::InsightsPanel;
+pub use workflow_insights::WorkflowApiInsights;
 pub use login::LoginPage;
 pub use node_details::{NodeDetailsPanel, NodeUpdate};
 pub use nodes::{NodeCatalogItem, NodesPanel, NodesPanelVariant};
@@ -43,7 +45,6 @@ pub use runs::RunsPanel;
 pub use variables::VariablesPanel;
 pub use workflow_list::WorkflowList;
 pub use json_schema_sample::sample_from_api_endpoint_parameters;
-pub use webhook_listen_panel::{webhook_sample_from_value, WebhookListenPanel, WebhookSample};
 
 pub(crate) fn json_string(v: &serde_json::Value) -> String {
     match v {

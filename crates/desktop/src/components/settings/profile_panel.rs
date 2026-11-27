@@ -95,8 +95,8 @@ pub fn ProfilePanel() -> Element {
         .unwrap_or_else(|| "—".into());
 
     rsx! {
-        div { class: "mx-auto flex h-full max-w-lg flex-col gap-6 overflow-auto px-8 py-5",
-            div {
+        div { class: "flex h-full min-h-0 flex-1 flex-col overflow-auto",
+            div { class: "border-b px-8 py-5",
                 h1 { class: "text-[1.75rem] font-normal leading-[1.25]", "Profile" }
                 p { class: "mt-1 text-sm text-muted-foreground",
                     "Account details and preferences"
@@ -106,6 +106,7 @@ pub fn ProfilePanel() -> Element {
             if let Some(message) = err() {
                 Alert {
                     variant: AlertVariant::Destructive,
+                    class: Some("mx-6 mt-2".into()),
                     AlertDescription {
                         class: Some("text-destructive".into()),
                         "{message}"
@@ -113,40 +114,42 @@ pub fn ProfilePanel() -> Element {
                 }
             }
 
-            Card {
-                CardContent { class: Some("space-y-3 p-4".into()),
-                div { class: "grid gap-1 text-sm",
-                    Label { class: Some("text-muted-foreground".into()), "Username" }
-                    span { class: "font-medium", "{username}" }
-                }
-                div { class: "grid gap-1 text-sm",
-                    Label { class: Some("text-muted-foreground".into()), "Email" }
-                    span { class: "font-medium", "{email}" }
-                }
-                div { class: "grid gap-1 text-sm",
-                    Label { class: Some("text-muted-foreground".into()), "Role" }
-                    span { class: "font-medium", "{role}" }
-                }
-                div { class: "flex flex-col gap-1.5",
-                    Label { class: Some("text-xs text-muted-foreground".into()), "Display name" }
-                    Input {
-                        value: name(),
-                        oninput: move |e: FormEvent| name.set(e.value()),
+            div { class: "flex min-h-0 flex-1 p-6",
+                Card { class: Some("w-full max-w-xl self-start".into()),
+                    CardContent { class: Some("space-y-3 p-4".into()),
+                        div { class: "grid gap-1 text-sm",
+                            Label { class: Some("text-muted-foreground".into()), "Username" }
+                            span { class: "font-medium", "{username}" }
+                        }
+                        div { class: "grid gap-1 text-sm",
+                            Label { class: Some("text-muted-foreground".into()), "Email" }
+                            span { class: "font-medium", "{email}" }
+                        }
+                        div { class: "grid gap-1 text-sm",
+                            Label { class: Some("text-muted-foreground".into()), "Role" }
+                            span { class: "font-medium", "{role}" }
+                        }
+                        div { class: "flex flex-col gap-1.5",
+                            Label { class: Some("text-xs text-muted-foreground".into()), "Display name" }
+                            Input {
+                                value: name(),
+                                oninput: move |e: FormEvent| name.set(e.value()),
+                            }
+                        }
+                        div { class: "flex flex-col gap-1.5",
+                            Label { class: Some("text-xs text-muted-foreground".into()), "Company" }
+                            Input {
+                                value: company_name(),
+                                placeholder: Some("Optional".into()),
+                                oninput: move |e: FormEvent| company_name.set(e.value()),
+                            }
+                        }
+                        Button {
+                            disabled: busy(),
+                            onclick: save,
+                            "Save profile"
+                        }
                     }
-                }
-                div { class: "flex flex-col gap-1.5",
-                    Label { class: Some("text-xs text-muted-foreground".into()), "Company" }
-                    Input {
-                        value: company_name(),
-                        placeholder: Some("Optional".into()),
-                        oninput: move |e: FormEvent| company_name.set(e.value()),
-                    }
-                }
-                Button {
-                    disabled: busy(),
-                    onclick: save,
-                    "Save profile"
-                }
                 }
             }
         }

@@ -78,7 +78,7 @@ pub fn App() -> Element {
     let mut creating = use_signal(|| false);
     let mut workflow_loading = use_signal(|| false);
     let mut toast = use_signal(|| None::<String>);
-    let mut details_open = use_signal(|| true);
+    let mut details_open = use_signal(|| false);
     let mut run_logs = use_signal(Vec::<serde_json::Value>::new);
     let mut pending_add = use_signal(|| None::<PendingAddRequest>);
     let mut open_nodes_tick = use_signal(|| 0u32);
@@ -115,6 +115,9 @@ pub fn App() -> Element {
 
     let mut reload_workflow = move |id: String| {
         workflow_loading.set(true);
+        // Show the canvas when opening a workflow (e.g. API method row) —
+        // do not auto-open the first node's editor.
+        details_open.set(false);
         workflow_doc.set(None);
         flow_nodes.set(vec![]);
         flow_edges.set(vec![]);
@@ -296,7 +299,7 @@ pub fn App() -> Element {
                 }
             }
 
-            div { class: "flex min-w-0 flex-1 flex-col",
+            div { class: "flex min-h-0 min-w-0 flex-1 flex-col",
                 if show_editor {
                     if workflow_loading() || workflow_doc().is_none() {
                         PageLoader { label: "Loading workflow…" }

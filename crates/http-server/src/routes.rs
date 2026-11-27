@@ -6,7 +6,7 @@ use axum::{
         sse::{Event, KeepAlive, Sse},
         IntoResponse, Response,
     },
-    routing::{delete, get, patch, post},
+    routing::{get, patch, post},
     Json, Router,
 };
 use botflow_application_services::AppState;
@@ -129,6 +129,7 @@ pub fn router(app: AppState, cfg: crate::HttpConfig) -> Router {
             "/api/api-projects/{id}/endpoints",
             post(create_api_endpoint),
         )
+        .merge(crate::platform_auth_routes::platform_auth_router())
         .with_state(state)
 }
 
@@ -286,6 +287,10 @@ struct CreateUserBody {
     role: Option<String>,
     #[serde(default)]
     company_name: Option<String>,
+    #[serde(default)]
+    company_id: Option<String>,
+    #[serde(default)]
+    company_ids: Option<Vec<String>>,
 }
 
 async fn create_user_handler(
@@ -309,9 +314,10 @@ async fn create_user_handler(
         .filter(|s| !s.is_empty())
         .unwrap_or("editor");
     let company = body.company_name.as_deref().unwrap_or("");
+    let company_id = body.company_id.as_deref().unwrap_or("");
     let id = uuid::Uuid::new_v4().to_string();
     let now = chrono::Utc::now().to_rfc3339();
-    let doc = mongodb::bson::doc! {
+    let mut doc = mongodb::bson::doc! {
         "id": &id,
         "email": email,
         "name": name,
@@ -319,11 +325,19 @@ async fn create_user_handler(
         "displayUsername": username,
         "role": role,
         "companyName": company,
+        "companyId": company_id,
         "status": "active",
         "password": botflow_storage::hash_local_password(&body.password),
         "createdAt": &now,
         "updatedAt": &now,
     };
+    if let Some(ids) = &body.company_ids {
+        let arr: Vec<_> = ids
+            .iter()
+            .map(|s| mongodb::bson::Bson::String(s.clone()))
+            .collect();
+        doc.insert("companyIds", arr);
+    }
     match botflow_storage::insert_user(&state.app.db, doc).await {
         Ok(user) => (StatusCode::CREATED, Json(json!({ "user": user }))).into_response(),
         Err(e) => error_response(e),
@@ -336,6 +350,8 @@ struct PatchUserBody {
     role: Option<String>,
     status: Option<String>,
     company_name: Option<String>,
+    company_id: Option<String>,
+    company_ids: Option<Vec<String>>,
     name: Option<String>,
 }
 
@@ -354,6 +370,16 @@ async fn patch_user_handler(
     }
     if let Some(company) = body.company_name.as_ref() {
         set.insert("companyName", company);
+    }
+    if let Some(cid) = body.company_id.as_ref() {
+        set.insert("companyId", cid);
+    }
+    if let Some(ids) = &body.company_ids {
+        let arr: Vec<_> = ids
+            .iter()
+            .map(|s| mongodb::bson::Bson::String(s.clone()))
+            .collect();
+        set.insert("companyIds", arr);
     }
     if let Some(name) = body.name.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
         set.insert("name", name);
@@ -583,6 +609,46 @@ struct LoginReq {
 }
 
 async fn login(State(state): State<HttpState>, Json(body): Json<LoginReq>) -> Response {
+    // Prefer Mongo user store; fall back to env admin for bootstrap.
+    if let Ok(Some(u)) =
+        botflow_storage::find_user_by_identity(&state.app.db, body.username.trim()).await
+    {
+        let db = state.app.db.client.default_database().unwrap_or_else(|| {
+            state.app.db.client.database("botflow")
+        });
+        let coll = db.collection::<mongodb::bson::Document>("user");
+        let filter = mongodb::bson::doc! {
+            "$or": [
+                { "username": body.username.trim() },
+                { "email": body.username.trim() },
+                { "id": body.username.trim() },
+            ]
+        };
+        if let Ok(Some(raw)) = coll.find_one(filter).await {
+            let stored = raw.get_str("password").unwrap_or("");
+            let expected = botflow_storage::hash_local_password(&body.password);
+            if stored == expected {
+                let role = u.get("role").and_then(|v| v.as_str()).unwrap_or("editor");
+                let sub = u
+                    .get("id")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or(body.username.trim());
+                return match state.jwt.issue(sub, role) {
+                    Ok(token) => {
+                        let auth = botflow_storage::build_auth_context(&state.app.db, sub, role)
+                            .await
+                            .ok();
+                        Json(json!({ "token": token, "role": role, "auth": auth })).into_response()
+                    }
+                    Err(e) => (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        Json(json!({ "error": e.to_string() })),
+                    )
+                        .into_response(),
+                };
+            }
+        }
+    }
     let expected_user = std::env::var("BOTFLOW_ADMIN_USER").unwrap_or_else(|_| "admin".into());
     let expected_pass =
         std::env::var("BOTFLOW_ADMIN_PASSWORD").unwrap_or_else(|_| "P@ssw0rd".into());
@@ -869,7 +935,7 @@ async fn webhook_ingress(
         .into_response()
 }
 
-fn error_response(e: impl std::fmt::Display) -> Response {
+pub(crate) fn error_response(e: impl std::fmt::Display) -> Response {
     (
         StatusCode::BAD_REQUEST,
         Json(json!({ "error": e.to_string() })),
@@ -1171,6 +1237,8 @@ async fn list_audit(State(state): State<HttpState>, _user: AuthUser) -> Response
 struct InsightsQuery {
     #[serde(default = "default_insights_days")]
     days: i64,
+    #[serde(default, rename = "workflowId")]
+    workflow_id: Option<String>,
 }
 
 fn default_insights_days() -> i64 {
@@ -1183,7 +1251,12 @@ async fn insights(
     Query(q): Query<InsightsQuery>,
 ) -> Response {
     match state.app.list_runs_for_insights().await {
-        Ok(runs) => Json(crate::insights::build_insights(&runs, q.days)).into_response(),
+        Ok(runs) => Json(crate::insights::build_insights_filtered(
+            &runs,
+            q.days,
+            q.workflow_id.as_deref(),
+        ))
+        .into_response(),
         Err(e) => error_response(e),
     }
 }

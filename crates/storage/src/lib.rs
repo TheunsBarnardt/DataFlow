@@ -10,6 +10,9 @@ use mongodb::{
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tracing::info;
 
+mod platform_auth;
+pub use platform_auth::*;
+
 #[derive(Clone)]
 pub struct Db {
     pub client: Client,
@@ -127,6 +130,29 @@ impl Db {
         let _ = api_keys
             .create_index(IndexModel::builder().keys(doc! { "createdAt": -1 }).build())
             .await;
+        let bf = botflow_db(self);
+        let _ = bf
+            .collection::<Document>("companies")
+            .create_index(IndexModel::builder().keys(doc! { "name": 1 }).build())
+            .await;
+        let _ = bf
+            .collection::<Document>("roles")
+            .create_index(
+                IndexModel::builder()
+                    .keys(doc! { "id": 1 })
+                    .options(IndexOptions::builder().unique(true).build())
+                    .build(),
+            )
+            .await;
+        let _ = bf
+            .collection::<Document>("linked_identities")
+            .create_index(
+                IndexModel::builder()
+                    .keys(doc! { "principalId": 1, "provider": 1 })
+                    .build(),
+            )
+            .await;
+        let _ = ensure_platform_auth_seeded(self).await;
         Ok(())
     }
 }
@@ -663,7 +689,7 @@ pub async fn list_schedules(db: &Db) -> Result<Vec<ScheduleDoc>> {
     Ok(out)
 }
 
-pub async fn upsert_schedule(db: &Db, mut sched: ScheduleDoc) -> Result<ScheduleDoc> {
+pub async fn upsert_schedule(db: &Db, sched: ScheduleDoc) -> Result<ScheduleDoc> {
     let coll = db
         .client
         .default_database()
@@ -762,7 +788,7 @@ fn normalize_json_document(mut doc: Document) -> Document {
     doc
 }
 
-fn document_to_json(doc: Document) -> Result<serde_json::Value> {
+pub(crate) fn document_to_json(doc: Document) -> Result<serde_json::Value> {
     let normalized = normalize_json_document(doc);
     Ok(mongodb::bson::from_document(normalized)?)
 }
@@ -1042,7 +1068,7 @@ pub async fn sync_api_endpoints_from_workflow(
     Ok(result)
 }
 
-fn botflow_db(db: &Db) -> mongodb::Database {
+pub(crate) fn botflow_db(db: &Db) -> mongodb::Database {
     db.client
         .default_database()
         .unwrap_or_else(|| db.client.database("botflow"))
@@ -1331,7 +1357,7 @@ pub async fn save_authentication_settings(
     Ok(merged)
 }
 
-// --- Instance API keys (DataFlow API settings) ---
+// --- Instance API keys (API Integration settings) ---
 
 pub const INSTANCE_API_KEY_PREFIX: &str = "bf_";
 
@@ -1568,6 +1594,8 @@ fn metadata_scoped_project_ids(meta: &serde_json::Value) -> Vec<String> {
 }
 
 /// Whether metadata allows the given method/path for an API project.
+/// Optional `companyId` on the key is informational for operators; project/call
+/// scopes remain the fast deny path (no external CRM round-trip).
 pub fn instance_api_key_allows(
     key: &serde_json::Value,
     project_id: &str,
@@ -1592,6 +1620,30 @@ pub fn instance_api_key_allows(
         let m = method.to_uppercase();
         if m != "GET" && m != "HEAD" && m != "OPTIONS" {
             return false;
+        }
+    }
+    // Explicit endpoint id allowlist (call-level).
+    if let Some(ids) = meta.get("endpointIds").and_then(|v| v.as_array()) {
+        if !ids.is_empty() {
+            let path_norm = path.trim_start_matches('/');
+            let ok = ids.iter().any(|v| {
+                v.as_str()
+                    .map(|id| id == path || id == path_norm || id == "*")
+                    .unwrap_or(false)
+            });
+            if !ok {
+                // Fall through to method/path scopes if present; else deny.
+                let has_scopes = meta
+                    .get("scopes")
+                    .and_then(|v| v.as_array())
+                    .map(|a| !a.is_empty())
+                    .unwrap_or(false);
+                if !has_scopes {
+                    return false;
+                }
+            } else {
+                return true;
+            }
         }
     }
     if let Some(scopes) = meta.get("scopes").and_then(|v| v.as_array()) {
@@ -1621,6 +1673,19 @@ pub fn instance_api_key_allows(
         }
     }
     true
+}
+
+/// Auth context from a verified instance API key for workflow injection.
+pub fn api_key_auth_context(key: &serde_json::Value) -> serde_json::Value {
+    let meta = key.get("metadata").cloned().unwrap_or(serde_json::Value::Null);
+    serde_json::json!({
+        "apiKeyId": key.get("id"),
+        "name": key.get("name"),
+        "companyId": meta.get("companyId"),
+        "projectIds": metadata_scoped_project_ids(&meta),
+        "readonly": meta.get("readonly").and_then(|v| v.as_bool()).unwrap_or(false),
+        "permissions": meta.get("permissions").cloned().unwrap_or_else(|| serde_json::json!([])),
+    })
 }
 
 fn regex_lite_escape(s: &str) -> String {

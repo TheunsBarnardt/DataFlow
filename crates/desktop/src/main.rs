@@ -6,6 +6,7 @@ use tracing_subscriber::{fmt::MakeWriter, EnvFilter};
 
 mod api;
 mod app;
+mod chart_assets;
 mod components;
 mod roles;
 mod format_code;

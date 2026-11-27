@@ -11,7 +11,7 @@ use crate::components::icons::{
 use crate::components::panels::{
     api_endpoint_form_fields, build_run_input, json_bool, json_id, json_string, needs_execute_dialog,
     ChatPanel, ExecuteWorkflowDialog, FormField, NodeCatalogItem, NodesPanel, NodesPanelVariant,
-    RunsPanel,
+    RunsPanel, WorkflowApiInsights,
 };
 use crate::components::ui::{
     Badge, BadgeVariant, Button, ButtonSize, ButtonVariant, ConfirmDeleteDialog, ResizableHandle,
@@ -23,6 +23,7 @@ pub enum EditorTab {
     #[default]
     Editor,
     Executions,
+    Insights,
 }
 
 fn split_http_method_name(name: &str) -> (Option<String>, String) {
@@ -111,6 +112,7 @@ pub fn WorkflowEditor(
     let wf_id_meta = workflow_id.clone();
     let wf_id_history = workflow_id.clone();
     let wf_id_runs = workflow_id.clone();
+    let wf_id_insights = workflow_id.clone();
     let wf_id_rename_blur = workflow_id.clone();
     let wf_id_rename_key = workflow_id.clone();
     let wf_id_menu_active = workflow_id.clone();
@@ -599,6 +601,15 @@ pub fn WorkflowEditor(
                     onclick: move |_| tab.set(EditorTab::Executions),
                     "Executions"
                 }
+                button {
+                    class: if tab() == EditorTab::Insights {
+                        "pointer-events-auto inline-flex items-center justify-center rounded-sm bg-background px-3.5 text-xs font-medium leading-none text-foreground"
+                    } else {
+                        "pointer-events-auto inline-flex items-center justify-center rounded-sm px-3.5 text-xs font-medium leading-none text-muted-foreground hover:bg-background/50 hover:text-foreground"
+                    },
+                    onclick: move |_| tab.set(EditorTab::Insights),
+                    "Insights"
+                }
             }
 
             // flex + flex-col so editor_main's flex-1/h-full resolve to a
@@ -640,6 +651,13 @@ pub fn WorkflowEditor(
                                     workflow_id: Some(wf_id_runs.clone()),
                                 }
                             }
+                        }
+                    }
+                } else if tab() == EditorTab::Insights {
+                    div { class: "min-h-0 flex-1 overflow-hidden",
+                        WorkflowApiInsights {
+                            workflow_id: wf_id_insights.clone(),
+                            refresh_key,
                         }
                     }
                 } else {
@@ -747,11 +765,11 @@ fn urlencoding_quote(s: &str) -> String {
 
 #[allow(clippy::too_many_arguments)]
 fn editor_main(
-    mut agent_open: Signal<bool>,
-    mut nodes_open: Signal<bool>,
-    mut triggers_only: Signal<bool>,
+    agent_open: Signal<bool>,
+    nodes_open: Signal<bool>,
+    triggers_only: Signal<bool>,
     show_details: bool,
-    mut running: Signal<bool>,
+    running: Signal<bool>,
     on_add_node: EventHandler<NodeCatalogItem>,
     on_execute_click: EventHandler<()>,
     on_reload: Option<EventHandler<()>>,
@@ -788,7 +806,7 @@ fn editor_canvas_stack(
     mut agent_open: Signal<bool>,
     mut nodes_open: Signal<bool>,
     mut triggers_only: Signal<bool>,
-    mut running: Signal<bool>,
+    running: Signal<bool>,
     on_add_node: EventHandler<NodeCatalogItem>,
     on_execute_click: EventHandler<()>,
     on_reload: Option<EventHandler<()>>,

@@ -1,0 +1,132 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug Desktop (botflow)",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=botflow",
+          "--package=botflow-desktop"
+        ],
+        "filter": {
+          "name": "botflow",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "check: all",
+      "env": {
+        "CARGO_HTTP_CHECK_REVOKE": "false",
+        "HOST": "127.0.0.1",
+        "PORT": "8788",
+        "BOTFLOW_AUTH_DISABLED": "1",
+        "HTTP_ALLOW_PRIVATE": "true",
+        "MONGODB_URI": "mongodb://127.0.0.1:27017/botflow",
+        "RUST_LOG": "info,botflow=debug,botflow_desktop=debug"
+      }
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug Server (botflow-server)",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=botflow-server",
+          "--package=botflow-app"
+        ],
+        "filter": {
+          "name": "botflow-server",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "check: all",
+      "env": {
+        "CARGO_HTTP_CHECK_REVOKE": "false",
+        "HOST": "127.0.0.1",
+        "PORT": "8788",
+        "BOTFLOW_AUTH_DISABLED": "1",
+        "HTTP_ALLOW_PRIVATE": "true",
+        "MONGODB_URI": "mongodb://127.0.0.1:27017/botflow",
+        "RUST_LOG": "info,botflow=debug"
+      }
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug Worker (botflow-worker)",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=botflow-worker",
+          "--package=botflow-worker"
+        ],
+        "filter": {
+          "name": "botflow-worker",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "check: all",
+      "env": {
+        "CARGO_HTTP_CHECK_REVOKE": "false",
+        "MONGODB_URI": "mongodb://127.0.0.1:27017/botflow",
+        "RUST_LOG": "info,botflow=debug"
+      }
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug Server (port 8789)",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=botflow-server",
+          "--package=botflow-app"
+        ],
+        "filter": {
+          "name": "botflow-server",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "check: all",
+      "env": {
+        "CARGO_HTTP_CHECK_REVOKE": "false",
+        "HOST": "127.0.0.1",
+        "PORT": "8789",
+        "BOTFLOW_AUTH_DISABLED": "1",
+        "HTTP_ALLOW_PRIVATE": "true",
+        "MONGODB_URI": "mongodb://127.0.0.1:27017/botflow",
+        "RUST_LOG": "info,botflow=debug"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Server + Worker",
+      "configurations": [
+        "Debug Server (botflow-server)",
+        "Debug Worker (botflow-worker)"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "Debug All",
+      "configurations": [
+        "Debug Desktop (botflow)",
+        "Debug Server (port 8789)",
+        "Debug Worker (botflow-worker)"
+      ],
+      "stopAll": true
+    }
+  ]
+}

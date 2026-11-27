@@ -4,13 +4,16 @@ pub const DATAFLOW_ROLES: &[&str] = &[
     "viewer",
     "api_consumer",
     "mcp_consumer",
+    "shell_user",
 ];
 
+#[allow(dead_code)]
 pub struct RoleCapability {
     pub id: &'static str,
     pub label: &'static str,
 }
 
+#[allow(dead_code)]
 pub struct RoleDefinition {
     pub id: &'static str,
     pub name: &'static str,
@@ -18,6 +21,7 @@ pub struct RoleDefinition {
     pub capabilities: &'static [RoleCapability],
 }
 
+#[allow(dead_code)]
 pub static ROLE_DEFINITIONS: &[RoleDefinition] = &[
     RoleDefinition {
         id: "admin",
@@ -105,5 +109,20 @@ pub static ROLE_DEFINITIONS: &[RoleDefinition] = &[
             id: "mcp",
             label: "Use MCP tools",
         }],
+    },
+    RoleDefinition {
+        id: "shell_user",
+        name: "Shell user",
+        description: "End-user of a dumb client shell (BFF / screen APIs).",
+        capabilities: &[
+            RoleCapability {
+                id: "bff",
+                label: "Call screen / BFF endpoints",
+            },
+            RoleCapability {
+                id: "api",
+                label: "Call API projects",
+            },
+        ],
     },
 ];

@@ -173,6 +173,9 @@ pub fn DataFlowApiPanel() -> Element {
     let mut name = use_signal(String::new);
     let mut expires_in = use_signal(String::new);
     let mut selected_project_ids = use_signal(Vec::<String>::new);
+    let mut company_id = use_signal(String::new);
+    let mut companies = use_signal(Vec::<ProjectOpt>::new);
+    let mut call_scopes = use_signal(String::new);
     let mut readonly = use_signal(|| false);
     let mut creating = use_signal(|| false);
     let mut created_secret = use_signal(|| None::<String>);
@@ -184,6 +187,7 @@ pub fn DataFlowApiPanel() -> Element {
             loading.set(true);
             let keys_res = crate::api::get_json("/api/settings/api-keys").await;
             let projects_res = crate::api::get_json("/api/api-projects").await;
+            let companies_res = crate::api::get_json("/api/companies").await;
             match keys_res {
                 Ok(v) => {
                     keys.set(parse_keys(&v));
@@ -193,6 +197,27 @@ pub fn DataFlowApiPanel() -> Element {
             }
             if let Ok(v) = projects_res {
                 projects.set(parse_projects(&v));
+            }
+            if let Ok(v) = companies_res {
+                let arr = v
+                    .get("companies")
+                    .and_then(|x| x.as_array())
+                    .cloned()
+                    .unwrap_or_default();
+                companies.set(
+                    arr.into_iter()
+                        .filter_map(|c| {
+                            let id = json_str(&c, "id");
+                            if id.is_empty() {
+                                return None;
+                            }
+                            Some(ProjectOpt {
+                                id,
+                                label: json_str(&c, "name"),
+                            })
+                        })
+                        .collect(),
+                );
             }
             loading.set(false);
         });
@@ -211,6 +236,8 @@ pub fn DataFlowApiPanel() -> Element {
         creating.set(true);
         let exp = expires_in();
         let projs = selected_project_ids();
+        let company = company_id();
+        let scopes_raw = call_scopes();
         let ro = readonly();
         spawn(async move {
             let mut body = serde_json::json!({ "name": trimmed });
@@ -231,6 +258,29 @@ pub fn DataFlowApiPanel() -> Element {
                     ),
                 );
             }
+            if !company.trim().is_empty() {
+                meta.insert(
+                    "companyId".into(),
+                    serde_json::Value::String(company.trim().to_string()),
+                );
+            }
+            let mut scopes = Vec::new();
+            for line in scopes_raw.lines() {
+                let line = line.trim();
+                if line.is_empty() {
+                    continue;
+                }
+                let mut parts = line.splitn(2, char::is_whitespace);
+                let method = parts.next().unwrap_or("*").trim();
+                let path = parts.next().unwrap_or("*").trim();
+                scopes.push(serde_json::json!({
+                    "method": method,
+                    "pathPattern": path,
+                }));
+            }
+            if !scopes.is_empty() {
+                meta.insert("scopes".into(), serde_json::Value::Array(scopes));
+            }
             if ro {
                 meta.insert("readonly".into(), serde_json::Value::Bool(true));
             }
@@ -249,6 +299,8 @@ pub fn DataFlowApiPanel() -> Element {
                     name.set(String::new());
                     expires_in.set(String::new());
                     selected_project_ids.set(Vec::new());
+                    company_id.set(String::new());
+                    call_scopes.set(String::new());
                     readonly.set(false);
                     err.set(None);
                     if let Ok(list) = crate::api::get_json("/api/settings/api-keys").await {
@@ -262,13 +314,13 @@ pub fn DataFlowApiPanel() -> Element {
     };
 
     rsx! {
-        div { class: "flex h-full flex-col overflow-auto",
+        div { class: "flex h-full min-h-0 flex-1 flex-col overflow-auto",
             div { class: "border-b px-8 py-5",
                 h1 { class: "text-[1.75rem] font-normal leading-[1.25] tracking-normal",
-                    "DataFlow API"
+                    "API Integration"
                 }
                 p { class: "mt-3 text-sm leading-[1.35] text-muted-foreground",
-                    "Create instance API keys for public API project endpoints. Send the key in the "
+                    "Issue API keys so external apps (Cloudflare Workers, webhooks, partners, CI) can call your published API projects. Send the key in the "
                     code { class: "text-foreground", "X-Api-Key" }
                     " header to "
                     code { class: "text-foreground", "/apis/{{slug}}/…" }
@@ -276,20 +328,20 @@ pub fn DataFlowApiPanel() -> Element {
                 }
             }
 
-            div { class: "space-y-6 p-6",
+            div { class: "min-h-0 flex-1 space-y-6 p-6",
                 Card {
                     CardHeader { class: Some("px-4 pt-4 pb-0".into()),
-                        CardTitle { class: Some("text-sm".into()), "Public API access" }
+                        CardTitle { class: Some("text-sm".into()), "How external callers connect" }
                     }
                     CardContent { class: Some("px-4 pb-4 pt-2".into()),
                         p { class: "text-sm text-muted-foreground",
                             "Each API project is served at "
                             code { class: "text-foreground", "/apis/{{slug}}" }
-                            " with OpenAPI and Swagger UI under that path. Keys are stored hashed in MongoDB ("
+                            " with OpenAPI and Swagger UI under that path. Keys are stored hashed ("
                             code { class: "text-foreground", "bf_" }
-                            " prefix). Studio "
+                            " prefix). In-app studio "
                             code { class: "text-foreground", "/api/*" }
-                            " routes still use your signed-in session."
+                            " routes still use your signed-in session — these keys are only for outside callers."
                         }
                     }
                 }
@@ -371,6 +423,33 @@ pub fn DataFlowApiPanel() -> Element {
                             }
                         }
                     }
+                    div { class: "mt-3 grid gap-3 md:grid-cols-2",
+                        div {
+                            Label { class: Some("text-xs text-muted-foreground".into()),
+                                "Company (optional)"
+                            }
+                            Select {
+                                class: Some("mt-1".into()),
+                                value: company_id(),
+                                onchange: move |e: FormEvent| company_id.set(e.value()),
+                                SelectOption { value: String::new(), "No company" }
+                                for c in companies() {
+                                    SelectOption { value: c.id.clone(), "{c.label}" }
+                                }
+                            }
+                        }
+                        div {
+                            Label { class: Some("text-xs text-muted-foreground".into()),
+                                "Call scopes (one per line: METHOD /path*)"
+                            }
+                            Input {
+                                class: Some("mt-1 h-9".into()),
+                                value: call_scopes(),
+                                placeholder: Some("GET /portfolio/*".into()),
+                                oninput: move |e: FormEvent| call_scopes.set(e.value()),
+                            }
+                        }
+                    }
                     div { class: "mt-3",
                         Label { class: Some("text-xs text-muted-foreground".into()),
                             "Project scope"
@@ -382,7 +461,7 @@ pub fn DataFlowApiPanel() -> Element {
                                     label { class: "flex cursor-pointer items-center gap-2 rounded-sm px-1 py-1 hover:bg-muted/50",
                                         Checkbox {
                                             checked: all_selected,
-                                            aria_label: "All API projects".into(),
+                                            aria_label: "All API projects".to_string(),
                                             on_checked_change: move |_| {
                                                 selected_project_ids.set(Vec::new());
                                             },
@@ -422,7 +501,7 @@ pub fn DataFlowApiPanel() -> Element {
                         }
                     }
                     p { class: "mt-3 text-xs text-muted-foreground",
-                        "Read-only keys may only call GET, HEAD, and OPTIONS. Leave project scope empty (All) or select one or more API projects."
+                        "Read-only keys may only call GET, HEAD, and OPTIONS. Scope by company, projects, and call patterns (METHOD path*). Empty project list = all projects."
                     }
                     }
                 }
@@ -441,7 +520,7 @@ pub fn DataFlowApiPanel() -> Element {
                     if keys().is_empty() && !loading() {
                         Empty { class: Some("border-0 py-8".into()),
                             EmptyDescription {
-                                "No API keys yet. Create one to call public API project endpoints."
+                                "No API keys yet. Create one so external apps can call your API projects."
                             }
                         }
                     } else {

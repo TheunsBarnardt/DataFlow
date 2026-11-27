@@ -122,7 +122,7 @@ pub fn UsersPanel() -> Element {
     };
 
     rsx! {
-        div { class: "flex h-full flex-col overflow-auto",
+        div { class: "flex h-full min-h-0 flex-1 flex-col overflow-auto",
             div { class: "border-b px-8 py-5",
                 h1 { class: "text-[1.75rem] font-normal leading-[1.25]", "Users" }
                 p { class: "mt-1 text-sm text-muted-foreground",
@@ -141,7 +141,7 @@ pub fn UsersPanel() -> Element {
                 }
             }
 
-            div { class: "grid gap-6 p-6 lg:grid-cols-[minmax(280px,360px)_1fr]",
+            div { class: "grid min-h-0 flex-1 gap-6 p-6 lg:grid-cols-[minmax(280px,360px)_1fr]",
                 Card {
                     CardHeader { class: Some("px-4 pt-4 pb-0".into()),
                         CardTitle { class: Some("text-sm".into()), "Create user" }

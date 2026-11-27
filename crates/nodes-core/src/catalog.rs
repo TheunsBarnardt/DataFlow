@@ -1,8 +1,8 @@
 //! Full BotFlow node catalog mirrored from TypeScript `DAY_ONE_NODE_TYPES`.
 
 use crate::{
-    api_extra, control_extra, data, files_extra, http, logic, microsoft, triggers, triggers_extra,
-    wait,
+    api_extra, cm_com, control_extra, data, files_extra, http, logic, microsoft, triggers,
+    triggers_extra, wait,
 };
 use async_trait::async_trait;
 use botflow_node_api::{
@@ -52,6 +52,7 @@ pub const ALL_NODE_SPECS: &[NodeSpec] = &[
     NodeSpec { type_name: "executeWorkflow", display_name: "Execute Sub-workflow", category: "control", is_trigger: false },
     NodeSpec { type_name: "executeCommand", display_name: "Execute Command", category: "control", is_trigger: false },
     NodeSpec { type_name: "httpRequest", display_name: "HTTP Request", category: "api", is_trigger: false },
+    NodeSpec { type_name: "cmCom", display_name: "CM.com", category: "api", is_trigger: false },
     NodeSpec { type_name: "webhookRespond", display_name: "Respond to Webhook", category: "api", is_trigger: false },
     NodeSpec { type_name: "apiRespond", display_name: "Respond to API", category: "api", is_trigger: false },
     NodeSpec { type_name: "graphql", display_name: "GraphQL", category: "api", is_trigger: false },
@@ -171,6 +172,7 @@ pub fn register_specialized(registry: &mut NodeRegistry) {
     files_extra::register(registry);
     api_extra::register(registry);
     microsoft::register(registry);
+    cm_com::register(registry);
 }
 
 pub fn fill_missing_from_catalog(registry: &mut NodeRegistry) {

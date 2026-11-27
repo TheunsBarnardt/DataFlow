@@ -258,7 +258,7 @@ pub fn build_openapi_document(project: &Value, endpoints: &[Value]) -> Value {
         },
         "servers": [{
             "url": format!("{}/apis/{}", public_base_url(), slug),
-            "description": "DataFlow API project",
+            "description": "BotFlow API Integration",
         }],
         "paths": paths,
         "components": components,
@@ -501,7 +501,7 @@ async fn authorize_endpoint(
             {
                 if botflow_storage::instance_api_key_allows(&verified, &pid, &slug, method, path)
                 {
-                    return Ok(Some(json!({ "apiKeyId": verified.get("id") })));
+                    return Ok(Some(botflow_storage::api_key_auth_context(&verified)));
                 }
                 return Err((
                     StatusCode::FORBIDDEN,
@@ -559,12 +559,54 @@ async fn authorize_endpoint(
                 .and_then(|s| s.as_str())
                 .unwrap_or("botflow-dev-jwt-secret");
             match verify_hs256_jwt(&token, secret) {
-                Ok(payload) => Ok(Some(payload)),
-                Err(_) => Err((
-                    StatusCode::UNAUTHORIZED,
-                    Json(json!({ "message": "Unauthorized" })),
-                )
-                    .into_response()),
+                Ok(payload) => {
+                    // Enrich with BotFlow auth context when sub/role are present.
+                    let sub = payload
+                        .get("sub")
+                        .or_else(|| payload.get("nameid"))
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("");
+                    let role = payload
+                        .get("role")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("shell_user");
+                    if !sub.is_empty() {
+                        if let Ok(ctx) =
+                            botflow_storage::build_auth_context(&state.app.db, sub, role).await
+                        {
+                            let mut merged = payload;
+                            if let Some(obj) = merged.as_object_mut() {
+                                obj.insert("botflow".into(), ctx);
+                            }
+                            return Ok(Some(merged));
+                        }
+                    }
+                    Ok(Some(payload))
+                }
+                Err(_) => {
+                    // Also accept studio-issued BotFlow JWTs (instance secret).
+                    if let Ok(claims) = state.jwt.verify(&token) {
+                        let ctx = botflow_storage::build_auth_context(
+                            &state.app.db,
+                            &claims.sub,
+                            &claims.role,
+                        )
+                        .await
+                        .unwrap_or_else(|_| {
+                            json!({ "sub": claims.sub, "role": claims.role })
+                        });
+                        return Ok(Some(json!({
+                            "sub": claims.sub,
+                            "role": claims.role,
+                            "botflow": ctx,
+                        })));
+                    }
+                    Err((
+                        StatusCode::UNAUTHORIZED,
+                        Json(json!({ "message": "Unauthorized" })),
+                    )
+                        .into_response())
+                }
             }
         }
         other => Err((

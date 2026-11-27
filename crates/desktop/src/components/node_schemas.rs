@@ -42,6 +42,7 @@ pub struct WhenClause {
 #[derive(Debug, Clone, Deserialize)]
 pub struct NodeSchema {
     #[serde(default)]
+    #[allow(dead_code)]
     pub description: String,
     #[serde(default)]
     pub fields: Vec<FieldDef>,
@@ -78,42 +79,6 @@ pub fn field_visible(field: &FieldDef, parameters: &Value) -> bool {
         Value::Array(arr) => arr.iter().any(|eq| current == Some(eq)),
         other => current == Some(other),
     }
-}
-
-pub fn compare_ops() -> &'static [FieldOption] {
-    static OPS: OnceLock<Vec<FieldOption>> = OnceLock::new();
-    OPS.get_or_init(|| {
-        [
-            ("equals", "Equals"),
-            ("notEquals", "Not equals"),
-            ("contains", "Contains"),
-            ("notContains", "Not contains"),
-            ("startsWith", "Starts with"),
-            ("endsWith", "Ends with"),
-            ("regex", "Regex"),
-            ("exists", "Exists"),
-            ("notExists", "Does not exist"),
-            ("empty", "Is empty"),
-            ("notEmpty", "Is not empty"),
-            ("truthy", "Truthy"),
-            ("falsy", "Falsy"),
-            ("gt", "Greater than"),
-            ("gte", "Greater or equal"),
-            ("lt", "Less than"),
-            ("lte", "Less or equal"),
-        ]
-        .into_iter()
-        .map(|(value, label)| FieldOption {
-            value: value.into(),
-            label: label.into(),
-        })
-        .collect()
-    })
-}
-
-pub fn is_credential_field(key: &str) -> bool {
-    let k = key.to_lowercase();
-    k == "credentialid" || k.contains("credential")
 }
 
 pub fn merge_defaults(node_type: &str, existing: &Value) -> Value {

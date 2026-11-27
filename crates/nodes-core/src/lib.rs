@@ -1,5 +1,6 @@
 mod api_extra;
 mod catalog;
+mod cm_com;
 mod control_extra;
 mod data;
 mod dataverse;

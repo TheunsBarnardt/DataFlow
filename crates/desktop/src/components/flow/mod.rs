@@ -12,4 +12,3 @@ pub use flow_canvas::{
 };
 pub use handles::node_accent;
 pub use http_method_styles::http_method_badge_class;
-pub use node_glyphs::NodeGlyph;
