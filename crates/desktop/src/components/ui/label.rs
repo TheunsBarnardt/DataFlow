@@ -13,7 +13,7 @@ pub fn Label(
     );
     rsx! {
         label {
-            r#for: r#for.unwrap_or_default(),
+            r#for: r#for,
             class: "{class}",
             {children}
         }

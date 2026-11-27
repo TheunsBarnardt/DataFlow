@@ -167,8 +167,16 @@ impl NodeExecutor for ExecuteCommandNode {
                 "executeCommand disabled (set ALLOW_EXECUTE_COMMAND=1)",
             ));
         }
-        let output = tokio::process::Command::new("cmd")
-            .args(["/C", cmd])
+        let mut command = tokio::process::Command::new("cmd");
+        command.args(["/C", cmd]);
+        // Avoid flashing a console window when spawning cmd on Windows.
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+            command.creation_flags(CREATE_NO_WINDOW);
+        }
+        let output = command
             .output()
             .await
             .map_err(|e| NodeError::msg(e.to_string()))?;

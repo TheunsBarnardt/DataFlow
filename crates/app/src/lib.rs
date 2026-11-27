@@ -31,7 +31,9 @@ impl BootConfig {
             mongo_uri: std::env::var("MONGODB_URI")
                 .unwrap_or_else(|_| "mongodb://127.0.0.1:27017/botflow".into()),
             cors_origins: std::env::var("CORS_ORIGINS").unwrap_or_else(|_| {
-                "http://127.0.0.1:8788,http://localhost:8788,tauri://localhost,http://tauri.localhost,https://tauri.localhost".into()
+                // Include Dioxus desktop webview origins so Monaco workers can importScripts
+                // from /vendor/monaco (engine HTTP) without CORS failures.
+                "http://127.0.0.1:8788,http://localhost:8788,http://dioxus.index.html,https://dioxus.index.html,dioxus://index.html,http://dioxus.localhost,https://dioxus.localhost,tauri://localhost,http://tauri.localhost,https://tauri.localhost".into()
             }),
             jwt_secret: std::env::var("BOTFLOW_JWT_SECRET")
                 .unwrap_or_else(|_| "botflow-dev-jwt-secret".into()),

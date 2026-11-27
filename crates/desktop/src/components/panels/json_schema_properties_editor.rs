@@ -5,7 +5,7 @@ use super::json_schema_sample::{
     is_editable_object_schema, is_plain_schema_object, parse_schema_value, property_rows_to_schema,
     schema_to_property_rows, SchemaPropertyRow, SCHEMA_PROP_TYPES,
 };
-use crate::components::ui::MonacoEditor;
+use crate::components::ui::CodeEditor;
 use crate::format_code::{format_code, CodeLanguage};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -42,11 +42,15 @@ pub fn JsonSchemaPropertiesEditor(
         }
     });
 
-    let json_text = match &value {
+    let json_text_str = match &value {
         Value::String(s) => s.clone(),
         Value::Null => String::new(),
         other => serde_json::to_string_pretty(other).unwrap_or_default(),
     };
+    let mut json_text = use_signal(|| json_text_str.clone());
+    if json_text.peek().as_str() != json_text_str.as_str() {
+        json_text.set(json_text_str.clone());
+    }
 
     let emit_rows = move |next_rows: Vec<SchemaPropertyRow>| {
         let cleaned: Vec<_> = next_rows
@@ -103,7 +107,7 @@ pub fn JsonSchemaPropertiesEditor(
                         class: "rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted",
                         title: "Format",
                         onclick: {
-                            let src = json_text.clone();
+                            let src = json_text_str.clone();
                             move |_| {
                                 let result = format_code(&src, CodeLanguage::Json);
                                 if !result.ok {
@@ -278,13 +282,14 @@ pub fn JsonSchemaPropertiesEditor(
                     "."
                 }
             } else {
-                MonacoEditor {
-                    value: json_text.clone(),
+                CodeEditor {
+                    value: json_text,
                     language: CodeLanguage::Json,
                     height_px: 120,
                     show_format: false,
                     placeholder: Some("{ \"type\": \"object\", \"properties\": { \"username\": { \"type\": \"string\", \"example\": \"jdoe\" } } }".into()),
                     on_change: move |next: String| {
+                        json_text.set(next.clone());
                         let raw = next.trim();
                         if raw.is_empty() {
                             on_change.call(serde_json::json!({}));

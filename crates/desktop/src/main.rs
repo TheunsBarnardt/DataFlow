@@ -8,6 +8,7 @@ mod app;
 mod components;
 mod roles;
 mod format_code;
+mod codemirror_assets;
 mod styles;
 mod theme;
 
@@ -60,17 +61,18 @@ fn main() -> Result<()> {
     // Keep the Tokio runtime alive for the engine while Dioxus runs the UI.
     std::mem::forget(rt);
 
-    dioxus::LaunchBuilder::desktop()
-        .with_cfg(
-            dioxus::desktop::Config::new()
-                .with_window(
-                    dioxus::desktop::WindowBuilder::new()
-                        .with_title("BotFlow")
-                        .with_inner_size(dioxus::desktop::LogicalSize::new(1440.0, 900.0))
-                        .with_min_inner_size(dioxus::desktop::LogicalSize::new(1100.0, 700.0)),
-                )
-                .with_disable_context_menu(true),
+    let desktop_cfg = dioxus::desktop::Config::new()
+        .with_window(
+            dioxus::desktop::WindowBuilder::new()
+                .with_title("BotFlow")
+                .with_inner_size(dioxus::desktop::LogicalSize::new(1440.0, 900.0))
+                .with_min_inner_size(dioxus::desktop::LogicalSize::new(1100.0, 700.0)),
         )
+        .with_disable_context_menu(true);
+    let desktop_cfg = codemirror_assets::with_config(desktop_cfg);
+
+    dioxus::LaunchBuilder::desktop()
+        .with_cfg(desktop_cfg)
         .launch(app::App);
 
     Ok(())

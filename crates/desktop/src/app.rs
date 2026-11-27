@@ -56,6 +56,9 @@ struct SessionUser {
 
 #[component]
 pub fn App() -> Element {
+    crate::codemirror_assets::use_asset_routes();
+    crate::codemirror_assets::preload();
+
     let mut theme = use_signal(|| Theme::Dark);
     let mut auth_loading = use_signal(|| true);
     let mut session = use_signal(|| None::<SessionUser>);

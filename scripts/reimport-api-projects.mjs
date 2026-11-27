@@ -143,27 +143,27 @@ async function mongoApi(method, path, body) {
     const _id = new ObjectId();
     const doc = {
       ...body,
-      _id: String(_id),
+      _id,
       createdBy: "local",
       updatedBy: "local",
       createdAt: now,
       updatedAt: now,
     };
     await mongoDb.collection("api_projects").insertOne(doc);
-    return { ...doc, id: String(_id) };
+    return { ...doc, _id: String(_id), id: String(_id) };
   }
   if (method === "POST" && path === "/api/workflows") {
     const _id = new ObjectId();
     const doc = {
       ...body,
-      _id: String(_id),
+      _id,
       createdBy: "local",
       updatedBy: "local",
       createdAt: now,
       updatedAt: now,
     };
     await mongoDb.collection("workflows").insertOne(doc);
-    return { ...doc, id: String(_id) };
+    return { ...doc, _id: String(_id), id: String(_id) };
   }
   throw new Error(`mongoApi unsupported ${method} ${path}`);
 }

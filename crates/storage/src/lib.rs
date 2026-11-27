@@ -219,9 +219,11 @@ fn parse_run_doc(doc: Document) -> Result<RunDoc> {
     Ok(run)
 }
 
+/// Match `_id` whether Mongo stored a real ObjectId or a 24-hex string
+/// (reimport/`mongoApi` historically inserted `String(new ObjectId())`).
 fn id_filter(id: &str) -> Document {
     if let Ok(oid) = ObjectId::parse_str(id) {
-        doc! { "_id": oid }
+        doc! { "$or": [ { "_id": oid }, { "_id": id } ] }
     } else {
         doc! { "_id": id }
     }

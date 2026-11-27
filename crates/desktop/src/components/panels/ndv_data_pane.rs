@@ -4,6 +4,8 @@ use dioxus::prelude::*;
 use serde_json::Value;
 
 use super::binary_viewer::{has_binary_data, BinaryViewer};
+use crate::components::ui::CodeEditor;
+use crate::format_code::CodeLanguage;
 
 pub const DF_DRAG_MIME: &str = "application/x-dataflow-expr";
 
@@ -263,6 +265,8 @@ pub fn NdvDataPane(
     let io_tabs = input_data.is_some() && data.is_some();
     let mut io_tab = use_signal(|| "output");
     let root = expr_prefix.unwrap_or_else(|| "$json".into());
+    // Always allocate — Json view mounts Monaco; keep hook order stable across tabs.
+    let mut json_value = use_signal(String::new);
 
     let active_data = if io_tabs {
         if io_tab() == "input" {
@@ -326,6 +330,11 @@ pub fn NdvDataPane(
         }
     };
 
+    if json_value.peek().as_str() != json_text.as_str() {
+        json_value.set(json_text.clone());
+    }
+    let json_editor_id = format!("ndv-json-{}", io_tab());
+
     rsx! {
         div { class: "flex min-h-0 flex-1 flex-col gap-2",
             div { class: "text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
@@ -373,8 +382,16 @@ pub fn NdvDataPane(
             if active_data.is_none() {
                 p { class: "text-[11px] text-muted-foreground", "{empty_hint}" }
             } else if view() == View::Json {
-                pre { class: "min-h-0 flex-1 overflow-auto rounded-md border bg-muted/20 p-2 font-mono text-[10px]",
-                    "{json_text}"
+                div { class: "flex min-h-0 flex-1 flex-col",
+                    CodeEditor {
+                        value: json_value,
+                        language: CodeLanguage::Json,
+                        fill: true,
+                        read_only: true,
+                        show_format: false,
+                        id: Some(json_editor_id),
+                        on_change: move |_| {},
+                    }
                 }
             } else if view() == View::Table {
                 div { class: "min-h-0 flex-1 overflow-auto rounded-md border",

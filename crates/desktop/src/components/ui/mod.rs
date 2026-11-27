@@ -5,12 +5,12 @@ mod avatar;
 mod badge;
 mod button;
 mod card;
+mod code_editor;
 mod code_textarea;
 mod confirm_delete_dialog;
 mod empty;
 mod input;
 mod label;
-mod monaco_editor;
 mod page_loader;
 mod resizable;
 mod separator;
@@ -24,6 +24,7 @@ pub use button::{Button, ButtonSize, ButtonVariant};
 pub use card::{
     Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardSize, CardTitle,
 };
+pub use code_editor::CodeEditor;
 pub use code_textarea::CodeTextarea;
 pub use confirm_delete_dialog::ConfirmDeleteDialog;
 pub use empty::{
@@ -31,7 +32,6 @@ pub use empty::{
 };
 pub use input::Input;
 pub use label::Label;
-pub use monaco_editor::MonacoEditor;
 pub use page_loader::PageLoader;
 pub use resizable::{ResizableHandle, ResizableOrientation, ResizablePanel, ResizablePanelGroup};
 pub use separator::{Separator, SeparatorOrientation};

@@ -436,7 +436,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-app"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "botflow-application-services",
@@ -454,7 +454,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-application-services"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "botflow-events",
@@ -476,7 +476,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-desktop"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "botflow-app",
@@ -498,7 +498,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-events"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "botflow-workflow-model",
  "chrono",
@@ -511,7 +511,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-http-server"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "axum",
@@ -536,7 +536,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-integrations"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -557,7 +557,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-node-api"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -572,7 +572,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-nodes-core"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "async-trait",
  "botflow-node-api",
@@ -592,7 +592,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-runtime-core"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "botflow-events",
  "botflow-node-api",
@@ -607,7 +607,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-runtime-scheduler"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "botflow-events",
@@ -627,7 +627,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-security"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "aes-gcm",
  "anyhow",
@@ -646,7 +646,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-storage"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "botflow-workflow-model",
@@ -662,7 +662,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-worker"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "botflow-application-services",
@@ -685,7 +685,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-workflow-model"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "chrono",
  "serde",
@@ -696,7 +696,7 @@ dependencies = [
 
 [[package]]
 name = "botflow-workflow-validation"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "botflow-node-api",
  "botflow-workflow-model",

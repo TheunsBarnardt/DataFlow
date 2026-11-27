@@ -111,6 +111,7 @@ pub fn ApiProjectsPanel(
         if let Some(id) = selected_for_load {
             detail.set(None);
             detail_loading.set(true);
+            let clear_selected = on_selected_project_id_change;
             spawn(async move {
                 match crate::api::get_json(&format!("/api/api-projects/{id}")).await {
                     Ok(v) => {
@@ -119,7 +120,16 @@ pub fn ApiProjectsPanel(
                     }
                     Err(e) => {
                         detail.set(None);
-                        err.set(Some(e));
+                        // Stale selection after reimport (old project id) — drop it
+                        // instead of leaving the list page stuck on "Not found".
+                        if e == "Not found" {
+                            err.set(None);
+                            if let Some(cb) = clear_selected {
+                                cb.call(None);
+                            }
+                        } else {
+                            err.set(Some(e));
+                        }
                     }
                 }
                 detail_loading.set(false);

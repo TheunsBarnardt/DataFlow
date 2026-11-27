@@ -20,7 +20,7 @@ members = [
 default-members = ["crates/desktop", "crates/app"]
 
 [workspace.package]
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 license = "UNLICENSED"
 authors = ["BotFlow"]

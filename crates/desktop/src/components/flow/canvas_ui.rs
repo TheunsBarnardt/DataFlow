@@ -750,7 +750,12 @@ pub fn FlowCanvas(
                 },
                 on_node_click: move |id: String| {
                     close_menus();
-                    open_details.call(id);
+                    // Select only — editor opens on double-click (node view / pane).
+                    nodes.with_mut(|ns| {
+                        for n in ns.iter_mut() {
+                            n.selected = n.id == id;
+                        }
+                    });
                 },
                 on_edge_click: move |id: String| {
                     node_menu.set(None);

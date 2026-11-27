@@ -76,10 +76,14 @@ pub fn build_router(state: AppState, cfg: &HttpConfig) -> Router {
         .merge(public_apis::router().with_state(http_state.clone()))
         .merge(ui::router().with_state(http_state));
 
-    // Local Monaco (desktop Query/SQL highlighting) — avoids blocked CDN in webview.
+    // Local editor assets (desktop Query/SQL highlighting) — avoids blocked CDN in webview.
     if let Some(monaco_dir) = monaco_static_dir() {
         info!(path = %monaco_dir.display(), "serving local Monaco at /vendor/monaco");
         app = app.nest_service("/vendor/monaco", ServeDir::new(monaco_dir));
+    }
+    if let Some(cm_dir) = codemirror_static_dir() {
+        info!(path = %cm_dir.display(), "serving local CodeMirror at /vendor/codemirror");
+        app = app.nest_service("/vendor/codemirror", ServeDir::new(cm_dir));
     }
 
     // Optional static fallback (WEB_DIST). Primary studio is the Dioxus desktop app.
@@ -102,6 +106,17 @@ fn monaco_static_dir() -> Option<PathBuf> {
         PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../desktop/assets/monaco"),
     ];
     candidates.into_iter().find(|p| p.join("vs/loader.js").is_file())
+}
+
+fn codemirror_static_dir() -> Option<PathBuf> {
+    let candidates = [
+        PathBuf::from("assets/codemirror"),
+        PathBuf::from("crates/desktop/assets/codemirror"),
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../desktop/assets/codemirror"),
+    ];
+    candidates
+        .into_iter()
+        .find(|p| p.join("bf-codemirror.js").is_file())
 }
 
 pub async fn serve(state: AppState, cfg: HttpConfig) -> Result<()> {

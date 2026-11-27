@@ -9,7 +9,7 @@ use super::switch_rules_editor::SwitchRulesEditor;
 use super::variable_aware_field::VariableAwareTextarea;
 use crate::components::node_schemas::FieldDef;
 use super::json_schema_properties_editor::JsonSchemaPropertiesEditor;
-use crate::components::ui::{MonacoEditor, Switch};
+use crate::components::ui::{CodeEditor, Switch};
 use crate::format_code::CodeLanguage;
 
 fn value_as_string(value: &Value) -> String {
@@ -153,7 +153,7 @@ pub fn FieldControl(
             code_value.set(text);
         }
         return rsx! {
-            MonacoEditor {
+            CodeEditor {
                 value: code_value,
                 language,
                 language_hint: field.language.clone(),
@@ -191,7 +191,7 @@ pub fn FieldControl(
             json_value.set(text);
         }
         return rsx! {
-            MonacoEditor {
+            CodeEditor {
                 value: json_value,
                 language: CodeLanguage::Json,
                 height_px: 120,
