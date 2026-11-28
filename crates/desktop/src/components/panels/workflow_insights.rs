@@ -6,7 +6,7 @@ use crate::components::ui::{
     Alert, AlertDescription, AlertVariant, AreaChart, Badge, BadgeVariant, Button, ButtonSize,
     ButtonVariant, Card, CardContent, CardSize, ChartCurve, DataTable, DataTableBody, DataTableCell,
     DataTableHead, DataTableHeader, DataTableRow, DataTableWrapper, Empty, EmptyDescription,
-    EmptyHeader, SvgAreaChart,
+    EmptyHeader,
 };
 
 fn fmt_count(n: f64) -> String {
@@ -110,13 +110,10 @@ fn traffic_chart_values(data: &[&serde_json::Value]) -> String {
     serde_json::to_string(&[success, failed]).unwrap_or_else(|_| "[]".into())
 }
 
-fn duration_series(data: &[&serde_json::Value]) -> (Vec<String>, Vec<f64>) {
-    // Avg request duration (ms) per bucket — same axis as Traffic, values match table Duration.
-    let labels: Vec<String> = data
-        .iter()
-        .map(|d| d.get("date").map(json_string).unwrap_or_default())
-        .collect();
-    let values: Vec<f64> = data
+fn duration_chart_values(data: &[&serde_json::Value], avg_ms: f64) -> String {
+    // Avg request duration (ms) per bucket. When avg is known, stack Normal (≤ avg)
+    // and Slow (excess) like Traffic’s Success/Errors.
+    let durations: Vec<f64> = data
         .iter()
         .map(|d| {
             if series_f64(d, "total") <= 0.0 {
@@ -126,7 +123,13 @@ fn duration_series(data: &[&serde_json::Value]) -> (Vec<String>, Vec<f64>) {
             }
         })
         .collect();
-    (labels, values)
+    if avg_ms > 0.0 {
+        let normal: Vec<f64> = durations.iter().map(|&v| v.min(avg_ms)).collect();
+        let slow: Vec<f64> = durations.iter().map(|&v| (v - avg_ms).max(0.0)).collect();
+        serde_json::to_string(&[normal, slow]).unwrap_or_else(|_| "[]".into())
+    } else {
+        serde_json::to_string(&[durations]).unwrap_or_else(|_| "[]".into())
+    }
 }
 
 #[component]
@@ -317,7 +320,13 @@ pub fn WorkflowApiInsights(
     let traffic_labels = chart_labels(&chart_data);
     let traffic_series =
         serde_json::to_string(&["Success", "Errors"]).unwrap_or_else(|_| "[]".into());
-    let (duration_labels, duration_values) = duration_series(&chart_data);
+    let duration_values = duration_chart_values(&chart_data, avg_ms);
+    let duration_labels = traffic_labels.clone();
+    let duration_series = if avg_ms > 0.0 {
+        serde_json::to_string(&["Normal", "Slow"]).unwrap_or_else(|_| "[]".into())
+    } else {
+        serde_json::to_string(&["Duration"]).unwrap_or_else(|_| "[]".into())
+    };
 
     rsx! {
         div { class: "flex h-full min-h-0 flex-col gap-3 overflow-y-auto bg-background p-4",
@@ -408,7 +417,7 @@ pub fn WorkflowApiInsights(
             // Left: Recent requests · Right: Traffic / Outcomes / Latency
             div { class: "grid min-h-0 flex-1 gap-3 lg:grid-cols-2",
                 Card {
-                    class: Some("min-h-0 gap-0 overflow-hidden p-0".into()),
+                    class: Some("h-full min-h-0 gap-0 overflow-hidden p-0".into()),
                     CardContent {
                         class: Some("flex h-full min-h-0 flex-col space-y-2 p-3".into()),
                         div { class: "flex items-center justify-between gap-2",
@@ -498,18 +507,18 @@ pub fn WorkflowApiInsights(
                     }
                 }
 
-                div { class: "flex min-h-0 flex-col gap-3",
+                div { class: "flex h-full min-h-0 flex-col gap-3",
                     Card {
-                        class: Some("gap-0 overflow-hidden p-0".into()),
+                        class: Some("min-h-0 flex-1 gap-0 overflow-hidden p-0".into()),
                         CardContent {
-                            class: Some("space-y-3 p-3".into()),
-                            div {
+                            class: Some("flex h-full min-h-0 flex-1 flex-col space-y-2 p-3".into()),
+                            div { class: "shrink-0",
                                 h3 { class: "text-sm font-semibold", "Traffic" }
                                 p { class: "text-[11px] text-muted-foreground", "Successful vs failed requests over time" }
                             }
                             if chart_data.is_empty() {
                                 Empty {
-                                    class: Some("h-[220px] border-0".into()),
+                                    class: Some("min-h-0 flex-1 border-0".into()),
                                     EmptyHeader {
                                         EmptyDescription {
                                             if loading() { "Loading traffic…" } else { "No requests in this window" }
@@ -518,7 +527,7 @@ pub fn WorkflowApiInsights(
                                 }
                             } else {
                                 AreaChart {
-                                    class: Some("h-[220px] w-full".into()),
+                                    class: Some("min-h-[180px] flex-1 w-full".into()),
                                     json_values: traffic_values,
                                     json_labels: traffic_labels,
                                     series_names: Some(traffic_series),
@@ -532,16 +541,16 @@ pub fn WorkflowApiInsights(
                         }
                     }
                     Card {
-                        class: Some("gap-0 overflow-hidden p-0".into()),
+                        class: Some("min-h-0 flex-1 gap-0 overflow-hidden p-0".into()),
                         CardContent {
-                            class: Some("space-y-3 p-3".into()),
-                            div {
+                            class: Some("flex h-full min-h-0 flex-1 flex-col space-y-2 p-3".into()),
+                            div { class: "shrink-0",
                                 h3 { class: "text-sm font-semibold", "Duration" }
                                 p { class: "text-[11px] text-muted-foreground", "Average request duration over time" }
                             }
                             if chart_data.is_empty() {
                                 Empty {
-                                    class: Some("h-[220px] border-0".into()),
+                                    class: Some("min-h-0 flex-1 border-0".into()),
                                     EmptyHeader {
                                         EmptyDescription {
                                             if loading() { "Loading duration…" } else { "No duration data in this window" }
@@ -549,13 +558,17 @@ pub fn WorkflowApiInsights(
                                     }
                                 }
                             } else {
-                                // SVG (not Apex) — second ApexCharts instance stays blank in the desktop webview.
-                                SvgAreaChart {
-                                    labels: duration_labels,
-                                    values: duration_values,
-                                    series_name: "Duration".to_string(),
+                                AreaChart {
+                                    class: Some("min-h-[180px] flex-1 w-full".into()),
+                                    json_values: duration_values,
+                                    json_labels: duration_labels,
+                                    series_names: Some(duration_series),
+                                    stack_type: Some("normal".into()),
+                                    curve: ChartCurve::Smooth,
+                                    gradient: Some(true),
+                                    show_grid: Some(true),
+                                    show_yaxis: Some(true),
                                     value_suffix: Some("ms".into()),
-                                    class: Some("h-[220px] w-full".into()),
                                 }
                             }
                         }

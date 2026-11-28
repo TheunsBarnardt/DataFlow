@@ -198,7 +198,7 @@ pub fn App() -> Element {
     if session().is_none() {
         return rsx! {
             style { dangerous_inner_html: crate::styles::STUDIO_CSS }
-            div { class: "{root_class}",
+            div { class: "{root_class} items-center justify-center",
                 LoginPage {
                     on_logged_in: move |(name, role)| {
                         session.set(Some(SessionUser { name, role }));

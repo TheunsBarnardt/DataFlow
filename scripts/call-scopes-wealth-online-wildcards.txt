@@ -1,0 +1,5 @@
+* /Admin/*
+* /Auth/*
+* /Onboarding/*
+GET /Reference/*
+* /Support/*

@@ -7,9 +7,9 @@ use crate::components::ui::{
 };
 
 fn logo_src() -> String {
-    const BYTES: &[u8] = include_bytes!("../../../assets/dataflow-logo.jpg");
+    const BYTES: &[u8] = include_bytes!("../../../assets/dataflow-logo.png");
     let b64 = base64::engine::general_purpose::STANDARD.encode(BYTES);
-    format!("data:image/jpeg;base64,{b64}")
+    format!("data:image/png;base64,{b64}")
 }
 
 #[component]
@@ -22,7 +22,7 @@ pub fn LoginPage(on_logged_in: EventHandler<(String, String)>) -> Element {
 
     rsx! {
         div {
-            class: "relative flex min-h-full items-center justify-center overflow-hidden px-4",
+            class: "relative flex h-full w-full min-h-0 items-center justify-center overflow-hidden px-4",
             style: "background:
                 radial-gradient(ellipse 90% 55% at 50% -15%, rgba(77, 184, 233, 0.22), transparent 55%),
                 radial-gradient(ellipse 55% 45% at 100% 100%, rgba(245, 130, 32, 0.12), transparent 50%),
@@ -33,7 +33,7 @@ pub fn LoginPage(on_logged_in: EventHandler<(String, String)>) -> Element {
                     img {
                         src: "{logo()}",
                         alt: "DATAFLOW — Workflow & API Automation",
-                        class: "mx-auto h-auto w-full max-w-[280px] object-contain select-none",
+                        class: "mx-auto h-auto w-full max-w-[280px] bg-transparent object-contain select-none",
                     }
                     CardDescription { class: Some("pt-1".into()),
                         "Sign in with your username and password"

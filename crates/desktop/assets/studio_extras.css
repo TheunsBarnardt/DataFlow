@@ -108,3 +108,26 @@ select option {
   --color-muted-foreground: var(--muted-foreground);
   --color-chart-grid: var(--border);
 }
+
+/* SvgAreaChart — match ApexCharts gradual draw used by Traffic */
+@keyframes bf-svg-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes bf-svg-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.bf-svg-area {
+  opacity: 0;
+  animation: bf-svg-fade 0.8s ease 0.12s forwards;
+}
+.bf-svg-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: bf-svg-draw 0.8s ease forwards;
+}
+.bf-svg-dot {
+  opacity: 0;
+  animation: bf-svg-fade 0.35s ease 0.55s forwards;
+}
